@@ -14,7 +14,6 @@ export default class CanvasManager {
 	private lastFrameTime: number = 0;
 	private frameInterval: number;
 	private _targetFPS: number;
-	public image: HTMLImageElement | null = null;
 
 	constructor(canvasId: string, targetFPS: number = 60) {
 		this._targetFPS = targetFPS;
