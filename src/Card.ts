@@ -41,10 +41,10 @@ export const CARD_TYPE = {
 			descriptionFontSize: 14,
 			descriptionColor: '#333',
 			categoryFontSize: 25,
-			categoryColor: '#000',
-			categoryBendPercent: 0.04,
+			categoryColor: '#36281f',
+			categoryBendPercent: 0.07,
 			titlePosition: 'below-icon' as CardTitlePosition,
-			iconSize: 0.25,
+			iconSize: 0.3,
 			smallIconSize: 0.08,
 			backgroundColor: '#e2dbc8',
 			defaultHeight: 400,
@@ -246,7 +246,7 @@ export default class Card {
 				ctx,
 				this.config.category,
 				w / 2,
-				h * 0.1,
+				h * 0.15,
 				w,
 				style.categoryBendPercent,
 			);
@@ -282,6 +282,7 @@ export default class Card {
 		bendPercent: number = 0.01,
 	): void {
 		const bendPixels = Math.max(0, fullImageWidth * bendPercent);
+		const halfImageWidth = Math.max(1, fullImageWidth / 2);
 
 		if (bendPixels <= 0) {
 			ctx.textAlign = 'center';
@@ -291,10 +292,10 @@ export default class Card {
 
 		ctx.save();
 		ctx.textAlign = 'left';
+		ctx.textBaseline = 'alphabetic';
 
 		const textWidth = ctx.measureText(text).width;
 		const startX = centerX - textWidth / 2;
-		const halfTextWidth = Math.max(1, textWidth / 2);
 
 		let currentX = startX;
 
@@ -302,10 +303,17 @@ export default class Card {
 			const char = text[i];
 			const charWidth = ctx.measureText(char).width;
 			const charCenterX = currentX + charWidth / 2;
-			const normalized = (charCenterX - centerX) / halfTextWidth; // -1 to 1
+			const xFromCenter = charCenterX - centerX;
+			const normalized = Math.max(-1, Math.min(1, xFromCenter / halfImageWidth));
 			const yOffset = -bendPixels * (1 - normalized * normalized);
+			const slope = (2 * bendPixels * normalized) / halfImageWidth;
+			const rotation = Math.atan(slope);
 
-			ctx.fillText(char, currentX, baselineY + yOffset);
+			ctx.save();
+			ctx.translate(charCenterX, baselineY + yOffset);
+			ctx.rotate(rotation);
+			ctx.fillText(char, -charWidth / 2, 0);
+			ctx.restore();
 			currentX += charWidth;
 		}
 

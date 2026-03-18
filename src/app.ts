@@ -10,8 +10,8 @@ window.addEventListener('DOMContentLoaded', async () => {
 		category: 'ACHIEVEMENT DIARY',
 		title: 'Complete the Falador Easy Achievement Diary',
 		description: 'I don\'t even know what to put here, Just complete the diary..',
-		icon: './images/achievement.png',
-		smallIcons: ['icon1.png', 'icon2.png'],
+		icon: './images/Achievement_Diaries.png',
+		smallIcons: ['./images/icon1.png', './images/icon2.png'],
 	});
 
 	// Generate the card canvas once
