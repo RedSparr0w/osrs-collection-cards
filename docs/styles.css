@@ -1,0 +1,98 @@
+:root {
+  /* ── Body ──────────────────────────────────────────────────────────────────*/
+  --body-border:            #94866d;
+  --body-dark:              #b8a282;
+  --body-mid:               #d0bd97;
+  --body-light:             #d8ccb4;
+  --body-main:              #e2dbc8;
+  --body-background-color:  #c0a886;
+
+  /* ── Buttons & Links ───────────────────────────────────────────────────────*/
+  --button-border:          #3c352a;
+  --button-dark:            #18140c;
+  --button-light:           #3a301d;
+  --osrsw-brown:            #605443;
+  --link-color:             #936039;
+  --background-link-color:  #52351e;
+
+  /* ── Gray ──────────────────────────────────────────────────────────────────*/
+  --mineshaft:              #333333;
+  --tundora:                #4c4c4c;
+  --boulder:                #777777;
+  --silver:                 #cccccc;
+  --gallery:                #eeeeee;
+  --alabaster:              #f9f9f9;
+
+  /* ── Status: Red ───────────────────────────────────────────────────────────*/
+  --mocaccino:              #801c13;
+  --old-brick:              #9f261e;
+  --flamingo:               #ee4231;
+  --apricot-peach:          #fbc0ba;
+  --bridesmaid:             #feecea;
+
+  /* ── Status: Orange ────────────────────────────────────────────────────────*/
+  --antique-bronze:         #7a3f08;
+  --korma:                  #b55e0c;
+  --ecstasy:                #f7861b;
+  --corvette:               #fbcfa6;
+  --lace:                   #fef0e4;
+
+  /* ── Status: Yellow ────────────────────────────────────────────────────────*/
+  --cinnamon:               #786300;
+  --olive:                  #a48900;
+  --supernova:              #f9d000;
+  --golden:                 #fcea94;
+  --half-dutch:             #fef9de;
+
+  /* ── Status: Green ─────────────────────────────────────────────────────────*/
+  --san-felix:              #2e5e05;
+  --la-palma:               #3c780a;
+  --lima:                   #6bc71f;
+  --caper:                  #c3e8a3;
+  --frost:                  #ecf8e3;
+
+  /* ── Status: Blue ──────────────────────────────────────────────────────────*/
+  --regal-blue:             #03436b;
+  --venice-blue:            #0b5884;
+  --curious-blue:           #3ea6e6;
+  --jordy-blue:             #aad9f5;
+  --tropical-blue:          #e5f3fc;
+
+  /* ── Status: Purple ─────────────────────────────────────────────────────────*/
+  --honey-flower:           #3d276b;
+  --seance:                 #4f348b;
+  --medium-purple:          #855cd8;
+  --perfume:                #cfc0f0;
+  --heliotrope:             #f0ecfa;
+
+  /* ── Status: Pink ───────────────────────────────────────────────────────────*/
+  --cosmic:                 #6d3662;
+  --cannon-pink:            #984c89;
+  --lavender:               #e874cf;
+  --cherub:                 #f5c8ec;
+  --french-lilac:           #fceef9;
+
+  /* ── Status: Neutral Gray-Blue ──────────────────────────────────────────────*/
+  --river-bed:              #444e5a;
+  --shuttle-gray:           #5d6773;
+  --gray-chateau:           #949eaa;
+  --mystic:                 #e4eaee;
+  --black-haze:             #f9fafa;
+
+  /* ── Dark Mode Blue ─────────────────────────────────────-──────────────────*/
+  --black-pearl:            #071022;
+  --big-stone:              #172136;
+  --cloud-burst:            #222e45;
+  --pickled-bluewood:       #313e59;
+  --waikawa-grey:           #596e96;
+  --portage:                #8cabe6;
+
+
+  /* ── Dark Mode Brown ───────────────────────────────────────────────────────*/
+  --ebony-brown:            #1b1612;
+  --mocha-brown:            #28221d;
+  --cacao-brown:            #312a25;
+  --sable-brown:            #3e362f;
+  --taupe-brown:            #736559;
+  --kharid-sand:            #b79d7e;
+}
