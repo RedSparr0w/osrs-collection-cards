@@ -187,16 +187,24 @@ export default class Card {
 			if (style.titlePosition === 'above-icon') {
 				currentY = h * 0.1;
 			} else {
-				currentY = h * 0.45; // Below icon
+				currentY = h * 0.42; // Below icon
 			}
 
 			ctx.font = `${style.titleFontSize}px ${style.titleFontFamily}`;
 			ctx.fillStyle = style.titleColor;
 			ctx.textAlign = 'center';
 
-			// Draw title
-			ctx.fillText(this.config.title, w / 2, currentY);
-			currentY += style.titleFontSize + 10;
+			// Draw wrapped title and move description start directly after it
+			const titleLineHeight = style.titleFontSize + 2;
+			const titleBottomY = this.drawMultilineText(
+				ctx,
+				this.config.title,
+				w / 2,
+				currentY,
+				w * 0.9,
+				titleLineHeight,
+			);
+			currentY = titleBottomY + 20;
 		}
 
 		// Layer 5: Description text
@@ -204,15 +212,16 @@ export default class Card {
 			ctx.font = `${style.descriptionFontSize}px ${style.descriptionFontFamily}`;
 			ctx.fillStyle = style.descriptionColor;
 			ctx.textAlign = 'center';
-			this.drawMultilineText(
+			const descriptionLineHeight = style.descriptionFontSize + 2;
+			const descriptionBottomY = this.drawMultilineText(
 				ctx,
 				this.config.description,
 				w / 2,
 				currentY,
 				w * 0.85,
-				style.descriptionFontSize + 2,
+				descriptionLineHeight,
 			);
-			currentY += style.descriptionFontSize * 2 + 15;
+			currentY = descriptionBottomY + 15;
 		}
 
 		// Layer 6: Small icons array
@@ -246,7 +255,7 @@ export default class Card {
 				ctx,
 				this.config.category,
 				w / 2,
-				h * 0.15,
+				h * 0.155,
 				w,
 				style.categoryBendPercent,
 			);
@@ -330,22 +339,24 @@ export default class Card {
 		y: number,
 		maxWidth: number,
 		lineHeight: number,
-	): void {
+	): number {
 		const words = text.split(' ');
 		let line = '';
+		let currentY = y;
 
 		for (const word of words) {
 			const testLine = line + (line ? ' ' : '') + word;
 			const metrics = ctx.measureText(testLine);
 
 			if (metrics.width > maxWidth && line) {
-				ctx.fillText(line, x, y);
+				ctx.fillText(line, x, currentY);
 				line = word;
-				y += lineHeight;
+				currentY += lineHeight;
 			} else {
 				line = testLine;
 			}
 		}
-		ctx.fillText(line, x, y);
+		ctx.fillText(line, x, currentY);
+		return currentY;
 	}
 }
