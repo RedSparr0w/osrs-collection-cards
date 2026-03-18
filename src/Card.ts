@@ -45,7 +45,7 @@ export const CARD_TYPE = {
 			categoryBendPercent: 0.07,
 			titlePosition: 'below-icon' as CardTitlePosition,
 			iconSize: 0.3,
-			smallIconSize: 0.08,
+			smallIconSize: 0.1,
 			backgroundColor: '#e2dbc8',
 			defaultHeight: 400,
 		},
@@ -174,7 +174,7 @@ export default class Card {
 			if (iconImg) {
 				const iconSize = w * style.iconSize;
 				const iconX = (w - iconSize) / 2;
-				const iconY = h * 0.15; // Top third of card
+				const iconY = h * 0.145; // Top third of card
 				ctx.drawImage(iconImg, iconX, iconY, iconSize, iconSize);
 			}
 		}

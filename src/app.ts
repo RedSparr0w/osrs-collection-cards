@@ -11,7 +11,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 		title: 'Complete the Falador Easy Achievement Diary',
 		description: 'I don\'t even know what to put here, Just complete the diary..',
 		icon: './images/Achievement_Diaries.png',
-		smallIcons: ['./images/icon1.png', './images/icon2.png'],
+		smallIcons: ['./images/Bronze_defender.png', './images/Iron_defender.png', './images/Steel_defender.png', './images/Mithril_defender.png', './images/Adamant_defender.png', './images/Rune_defender.png', './images/Dragon_defender.png'],
 	});
 
 	// Generate the card canvas once
