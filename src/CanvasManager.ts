@@ -52,7 +52,6 @@ export default class CanvasManager {
 		return new Promise((resolve, reject) => {
 			const img = new Image();
 			img.onload = () => {
-				this.image = img;
 				resolve(img);
 			};
 			img.onerror = () => reject(new Error(`Failed to load image: ${src}`));

@@ -1,24 +1,15 @@
 import CanvasManager from "./CanvasManager";
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
 	const canvasManager = new CanvasManager('main-canvas');
 
-	const cardTemplateImg = new Image();
-	cardTemplateImg.src = './images/CardTemplate.png';
-	let cardTemplateLoaded = false;
-	cardTemplateImg.onload = () => { cardTemplateLoaded = true; };
+	const cardTemplateImg = await canvasManager.loadImage('./images/CardTemplate.png');
 
 	// Load CardMask.png
-	const maskImg = new Image();
-	maskImg.src = './images/CardMask.png';
-	let maskLoaded = false;
-	maskImg.onload = () => { maskLoaded = true; };
+	const maskImg = await canvasManager.loadImage('./images/CardMask.png');
 
 	// Load Achievement_Diaries.png
-	const achievementImg = new Image();
-	achievementImg.src = './images/Achievement_Diaries.png';
-	let achievementLoaded = false;
-	achievementImg.onload = () => { achievementLoaded = true; };
+	const achievementImg = await canvasManager.loadImage('./images/Achievement_Diaries.png');
 
 	canvasManager.addAnimationCallback((ctx, canvas, frame, deltaTime) => {
 		const img = cardTemplateImg;
@@ -36,21 +27,17 @@ window.addEventListener('DOMContentLoaded', () => {
 			const cardX = cardCenters[i];
 			ctx.save();
 			ctx.translate(cardX, centerY);
-			if (maskLoaded) {
-				ctx.drawImage(maskImg, -img.width * baseScale / 2, -img.height * baseScale / 2, img.width * baseScale, img.height * baseScale);
-			}
+			ctx.drawImage(maskImg, -img.width * baseScale / 2, -img.height * baseScale / 2, img.width * baseScale, img.height * baseScale);
 			// Draw achievement image (top middle, behind card, in front of mask)
-			if (achievementLoaded) {
-				const achWidth = img.width * baseScale * 0.4;
-				const achHeight = achWidth * (achievementImg.height / achievementImg.width);
-				ctx.drawImage(
-					achievementImg,
-					-achWidth / 2,
-					-img.height * baseScale / 2 + 20,
-					achWidth,
-					achHeight
-				);
-			}
+			const achWidth = img.width * baseScale * 0.4;
+			const achHeight = achWidth * (achievementImg.height / achievementImg.width);
+			ctx.drawImage(
+				achievementImg,
+				-achWidth / 2,
+				-img.height * baseScale / 2 + 20,
+				achWidth,
+				achHeight
+			);
 			// Draw card image
 			ctx.drawImage(img, -img.width * baseScale / 2, -img.height * baseScale / 2, img.width * baseScale, img.height * baseScale);
 			ctx.restore();
