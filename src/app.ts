@@ -1,46 +1,33 @@
 import CanvasManager from "./CanvasManager";
+import Card from "./Card";
 
 window.addEventListener('DOMContentLoaded', async () => {
 	const canvasManager = new CanvasManager('main-canvas');
 
-	const cardTemplateImg = await canvasManager.loadImage('./images/CardTemplate.png');
+	// Create and generate the card
+	const card = new Card({
+		scale: 0.5,
+		backgroundColor: '#e2dbc8',
+		iconUrl: './images/achievement.png',
+		iconSize: 0.25,
+		titleText: 'Diary Name',
+		titlePosition: 'below-icon',
+		descriptionText: 'Some achievement description...',
+		smallIconUrls: ['icon1.png', 'icon2.png'],
+		templateTitleText: 'Optional overlay text'
+	});
 
-	// Load CardMask.png
-	const maskImg = await canvasManager.loadImage('./images/CardMask.png');
+	// Generate the card canvas once
+	const cardCanvas = await card.generateCanvas();
 
-	// Load Achievement_Diaries.png
-	const achievementImg = await canvasManager.loadImage('./images/Achievement_Diaries.png');
-
+	// Draw it in the animation loop
 	canvasManager.addAnimationCallback((ctx, canvas, frame, deltaTime) => {
-		const img = cardTemplateImg;
-		const centerY = canvas.height / 2;
-		// Card positions: center, left, right
-		const numCards = 3;
-		const spacing = Math.min(canvas.width / 4, 350);
-		const baseScale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.35;
-		const cardCenters = [
-			canvas.width / 2,
-			canvas.width / 2 - spacing,
-			canvas.width / 2 + spacing
-		];
-		for (let i = 0; i < numCards; i++) {
-			const cardX = cardCenters[i];
-			ctx.save();
-			ctx.translate(cardX, centerY);
-			ctx.drawImage(maskImg, -img.width * baseScale / 2, -img.height * baseScale / 2, img.width * baseScale, img.height * baseScale);
-			// Draw achievement image (top middle, behind card, in front of mask)
-			const achWidth = img.width * baseScale * 0.4;
-			const achHeight = achWidth * (achievementImg.height / achievementImg.width);
-			ctx.drawImage(
-				achievementImg,
-				-achWidth / 2,
-				-img.height * baseScale / 2 + 20,
-				achWidth,
-				achHeight
-			);
-			// Draw card image
-			ctx.drawImage(img, -img.width * baseScale / 2, -img.height * baseScale / 2, img.width * baseScale, img.height * baseScale);
-			ctx.restore();
-		}
+		const cardWidth = 300;
+		const cardHeight = (cardCanvas.height / cardCanvas.width) * cardWidth;
+		const centerX = canvas.width / 2 - cardWidth / 2;
+		const centerY = canvas.height / 2 - cardHeight / 2;
+
+		// Draw the generated card
+		ctx.drawImage(cardCanvas, centerX, centerY, cardWidth, cardHeight);
 	});
 });
