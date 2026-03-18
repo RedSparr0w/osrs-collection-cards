@@ -1,3 +1,22 @@
+/* ── Fonts ─────────────────────────────────────────────────────────────────────*/
+@font-face {
+  font-family: 'Runescape Bold';
+  src: url('fonts/runescape_bold.ttf') format('truetype');
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: 'Runescape';
+  src: url('fonts/runescape.ttf') format('truetype');
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: 'Runescape Small';
+  src: url('fonts/runescape_small.ttf') format('truetype');
+  font-weight: normal;
+}
+
 :root {
   /* ── Body ──────────────────────────────────────────────────────────────────*/
   --body-border:            #94866d;

@@ -69,6 +69,8 @@ export interface CardConfig {
 
 	// Text style
 	fontFamily?: string;
+	titleFontFamily?: string; // Separate font for title (defaults to Runescape Bold)
+	descriptionFontFamily?: string; // Separate font for description (defaults to Runescape)
 }
 
 export default class Card {
@@ -80,13 +82,15 @@ export default class Card {
 	constructor(config: CardConfig) {
 		this.config = {
 			templateId: CARD_TEMPLATE_IDS.BASIC as CardTemplateId,
-			fontFamily: 'Arial, sans-serif',
+			fontFamily: 'Runescape, Arial, sans-serif',
+			titleFontFamily: 'Runescape Bold, Arial Black, sans-serif',
+			descriptionFontFamily: 'Runescape, Arial, sans-serif',
 			titleFontSize: 18,
 			titleColor: '#000',
 			descriptionFontSize: 14,
 			descriptionColor: '#333',
-			templateTitleFontSize: 16,
-			templateTitleColor: '#fff',
+			templateTitleFontSize: 24,
+			templateTitleColor: '#222',
 			iconSize: 0.25,
 			smallIconSize: 0.08,
 			backgroundColor: '#e2dbc8',
@@ -219,16 +223,18 @@ export default class Card {
 				currentY = h * 0.45; // Below icon
 			}
 
-			ctx.font = `${this.config.titleFontSize}px ${this.config.fontFamily}`;
+			ctx.font = `${this.config.titleFontSize}px ${this.config.titleFontFamily}`;
 			ctx.fillStyle = this.config.titleColor!;
 			ctx.textAlign = 'center';
-			this.drawMultilineText(ctx, this.config.titleText, w / 2, currentY, w * 0.9);
+
+			// Draw title
+            ctx.fillText(this.config.titleText, w / 2, currentY);
 			currentY += (this.config.titleFontSize || 18) + 10;
 		}
 
 		// Layer 5: Description text
 		if (this.config.descriptionText) {
-			ctx.font = `${this.config.descriptionFontSize}px ${this.config.fontFamily}`;
+			ctx.font = `${this.config.descriptionFontSize}px ${this.config.descriptionFontFamily}`;
 			ctx.fillStyle = this.config.descriptionColor!;
 			ctx.textAlign = 'center';
 			this.drawMultilineText(ctx, this.config.descriptionText, w / 2, currentY, w * 0.85);
@@ -259,10 +265,10 @@ export default class Card {
 
 		// Layer 8: Optional title text on top of template
 		if (this.config.templateTitleText) {
-			ctx.font = `${this.config.templateTitleFontSize}px ${this.config.fontFamily}`;
+			ctx.font = `${this.config.templateTitleFontSize}px ${this.config.titleFontFamily}`;
 			ctx.fillStyle = this.config.templateTitleColor!;
 			ctx.textAlign = 'center';
-			ctx.fillText(this.config.templateTitleText, w / 2, h * 0.1);
+            this.drawCurvedText(ctx, this.config.templateTitleText, w / 2, h * 0.1, 60);
 		}
 	}
 
@@ -281,6 +287,48 @@ export default class Card {
 	async generateImageUrl(): Promise<string> {
 		const canvas = await this.generateCanvas();
 		return canvas.toDataURL('image/png');
+	}
+
+	/**
+	 * Draw curved text on canvas
+	 */
+	private drawCurvedText(
+		ctx: CanvasRenderingContext2D,
+		text: string,
+		centerX: number,
+		centerY: number,
+		curveRadius: number,
+	): void {
+		if (curveRadius === 0) {
+			// No curve, just draw straight
+			ctx.textAlign = 'center';
+			ctx.fillText(text, centerX, centerY);
+			return;
+		}
+
+		const textWidth = ctx.measureText(text).width;
+		const angle = textWidth / Math.abs(curveRadius);
+
+		ctx.save();
+		ctx.translate(centerX, centerY);
+
+		// Draw each character along the curve
+		let currentAngle = -angle / 2;
+		const dir = curveRadius > 0 ? 1 : -1;
+
+		for (let i = 0; i < text.length; i++) {
+			const char = text[i];
+			const charWidth = ctx.measureText(char).width;
+
+			ctx.save();
+			ctx.rotate(currentAngle * dir);
+			ctx.fillText(char, 0, -curveRadius);
+			ctx.restore();
+
+			currentAngle += (charWidth / Math.abs(curveRadius));
+		}
+
+		ctx.restore();
 	}
 
 	/**

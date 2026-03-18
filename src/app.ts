@@ -12,6 +12,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 		iconSize: 0.25,
 		titleText: 'Diary Name',
 		titlePosition: 'below-icon',
+		titleCurve: 150, // Curves the title (positive = curve up, negative = curve down)
 		descriptionText: 'Some achievement description...',
 		smallIconUrls: ['icon1.png', 'icon2.png'],
 		templateTitleText: 'Optional overlay text'
