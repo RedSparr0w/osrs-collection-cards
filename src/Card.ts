@@ -1,87 +1,38 @@
 /**
- * Available card template IDs
+ * Card type definitions and defaults.
+ * Each type owns its template, mask, and style preset.
  */
-export const CARD_TEMPLATE_IDS = {
-	BASIC: 'basic',
-	// MEDIEVAL: 'medieval',
-	// DARK: 'dark',
-} as const;
+type CardTitlePosition = 'above-icon' | 'below-icon';
 
-export type CardTemplateId = typeof CARD_TEMPLATE_IDS[keyof typeof CARD_TEMPLATE_IDS];
-
-/**
- * Available card templates
- */
-export const CARD_TEMPLATES: Record<string, string> = {
-	basic: './images/CardTemplate_Basic.png',
-	// Add more templates here as needed
-	// medieval: './images/CardTemplate_Medieval.png',
-	// dark: './images/CardTemplate_Dark.png',
-};
-
-/**
- * Available card masks (automatically matched to templates)
- */
-export const CARD_MASKS: Record<string, string> = {
-	basic: './images/CardMask_Basic.png',
-	// Add more masks here as needed
-	// medieval: './images/CardMask_Medieval.png',
-	// dark: './images/CardMask_Dark.png',
-};
-
-/**
- * Card rendering configuration and generation
- */
-export interface CardConfig {
-	// Template and mask selection (mask is auto-matched to template)
-	templateId?: CardTemplateId; // Defaults to 'basic' if not provided
-
-	// Layout
-	scale: number; // 0-1, scales the card template
-	width?: number; // Will be calculated from template if not provided
-	height?: number; // Will be calculated from template if not provided
-
-	// Background color (applied via mask)
-	backgroundColor?: string;
-
-	// Icon at top middle
-	iconUrl?: string;
-	iconSize?: number; // Relative to card width (0-1)
-
-	// Text elements
-	titleText?: string;
-	titleFontSize?: number;
-	titleColor?: string;
-	titlePosition?: 'above-icon' | 'below-icon'; // Where to place title relative to icon
-
-	descriptionText?: string;
-	descriptionFontSize?: number;
-	descriptionColor?: string;
-
-	// Small icons array (shown below description)
-	smallIconUrls?: string[];
-	smallIconSize?: number; // Relative to card width (0-1)
-
-	// Optional title text on top of template
-	templateTitleText?: string;
-	templateTitleFontSize?: number;
-	templateTitleColor?: string;
-
-	// Text style
-	fontFamily?: string;
-	titleFontFamily?: string; // Separate font for title (defaults to Runescape Bold)
-	descriptionFontFamily?: string; // Separate font for description (defaults to Runescape)
+interface CardTypeConfig {
+	fontFamily: string;
+	titleFontFamily: string;
+	descriptionFontFamily: string;
+	titleFontSize: number;
+	titleColor: string;
+	descriptionFontSize: number;
+	descriptionColor: string;
+	categoryFontSize: number;
+	categoryColor: string;
+	categoryBendPercent: number;
+	titlePosition: CardTitlePosition;
+	iconSize: number;
+	smallIconSize: number;
+	backgroundColor: string;
+	defaultHeight: number;
 }
 
-export default class Card {
-	private config: CardConfig;
-	private templateImg: HTMLImageElement | null = null;
-	private maskImg: HTMLImageElement | null = null;
-	private loadedImages: Map<string, HTMLImageElement> = new Map();
+export interface CardTypeDefinition {
+	template: string;
+	mask: string;
+	config: CardTypeConfig;
+}
 
-	constructor(config: CardConfig) {
-		this.config = {
-			templateId: CARD_TEMPLATE_IDS.BASIC as CardTemplateId,
+export const CARD_TYPE = {
+	BASIC: {
+		template: './images/CardTemplate_Basic.png',
+		mask: './images/CardMask_Basic.png',
+		config: {
 			fontFamily: 'Runescape, Arial, sans-serif',
 			titleFontFamily: 'Runescape Bold, Arial Black, sans-serif',
 			descriptionFontFamily: 'Runescape, Arial, sans-serif',
@@ -89,12 +40,44 @@ export default class Card {
 			titleColor: '#000',
 			descriptionFontSize: 14,
 			descriptionColor: '#333',
-			templateTitleFontSize: 24,
-			templateTitleColor: '#222',
+			categoryFontSize: 25,
+			categoryColor: '#000',
+			categoryBendPercent: 0.04,
+			titlePosition: 'below-icon' as CardTitlePosition,
 			iconSize: 0.25,
 			smallIconSize: 0.08,
 			backgroundColor: '#e2dbc8',
+			defaultHeight: 400,
+		},
+	},
+} as const;
+
+/**
+ * User-configurable card input
+ */
+export interface CardConfig {
+	type?: CardTypeDefinition;
+	title?: string;
+	description?: string;
+	icon?: string;
+	smallIcons?: string[];
+	category?: string;
+}
+
+export default class Card {
+	private config: CardConfig;
+	private type: CardTypeDefinition;
+	private templateImg: HTMLImageElement | null = null;
+	private maskImg: HTMLImageElement | null = null;
+	private loadedImages: Map<string, HTMLImageElement> = new Map();
+	private width: number = 0;
+	private height: number = 0;
+
+	constructor(config: CardConfig) {
+		this.type = config.type ?? CARD_TYPE.BASIC;
+		this.config = {
 			...config,
+			type: this.type,
 		};
 	}
 
@@ -102,36 +85,19 @@ export default class Card {
 	 * Pre-load all images used in the card
 	 */
 	async loadImages(): Promise<void> {
-		// Load template and mask images
-		const templateId = this.config.templateId || CARD_TEMPLATE_IDS.BASIC;
-		const templateUrl = CARD_TEMPLATES[templateId];
-		const maskUrl = CARD_MASKS[templateId];
+		this.templateImg = await this.loadImage(this.type.template);
+		this.maskImg = await this.loadImage(this.type.mask);
 
-		if (!templateUrl) {
-			throw new Error(`Unknown template: ${templateId}`);
-		}
-		if (!maskUrl) {
-			throw new Error(`Unknown mask for template: ${templateId}`);
-		}
-
-		this.templateImg = await this.loadImage(templateUrl);
-		this.maskImg = await this.loadImage(maskUrl);
-
-		// Calculate dimensions based on template if not provided
-		if (!this.config.width || !this.config.height) {
+		if (!this.width || !this.height) {
 			const aspectRatio = this.templateImg.width / this.templateImg.height;
-			if (!this.config.height) {
-				this.config.height = 400; // default height
-			}
-			if (!this.config.width) {
-				this.config.width = this.config.height * aspectRatio;
-			}
+			this.height = this.type.config.defaultHeight;
+			this.width = this.height * aspectRatio;
 		}
 
 		// Load other images (gracefully skip if they fail)
 		const urlsToLoad = [
-			...(this.config.iconUrl ? [this.config.iconUrl] : []),
-			...(this.config.smallIconUrls || []),
+			...(this.config.icon ? [this.config.icon] : []),
+			...(this.config.smallIcons || []),
 		];
 
 		// Use allSettled to continue rendering even if optional images fail to load
@@ -180,8 +146,9 @@ export default class Card {
 		const ctx = targetCanvas.getContext('2d');
 		if (!ctx) throw new Error('Could not get 2D context');
 
-		const w = this.config.width!;
-		const h = this.config.height!;
+		const style = this.type.config;
+		const w = this.width;
+		const h = this.height;
 
 		targetCanvas.width = w;
 		targetCanvas.height = h;
@@ -196,16 +163,16 @@ export default class Card {
 		ctx.globalCompositeOperation = 'source-atop';
 
 		// Layer 2: Background color (only visible within mask)
-		if (this.config.backgroundColor) {
-			ctx.fillStyle = this.config.backgroundColor;
+		if (style.backgroundColor) {
+			ctx.fillStyle = style.backgroundColor;
 			ctx.fillRect(0, 0, w, h);
 		}
 
 		// Layer 3: Icon at top middle
-		if (this.config.iconUrl) {
-			const iconImg = this.loadedImages.get(this.config.iconUrl);
+		if (this.config.icon) {
+			const iconImg = this.loadedImages.get(this.config.icon);
 			if (iconImg) {
-				const iconSize = w * (this.config.iconSize || 0.25);
+				const iconSize = w * style.iconSize;
 				const iconX = (w - iconSize) / 2;
 				const iconY = h * 0.15; // Top third of card
 				ctx.drawImage(iconImg, iconX, iconY, iconSize, iconSize);
@@ -216,39 +183,46 @@ export default class Card {
 		let currentY = h * 0.15; // Start below icon
 
 		// Layer 4: Title text (above or below icon)
-		if (this.config.titleText) {
-			if (this.config.titlePosition === 'above-icon') {
+		if (this.config.title) {
+			if (style.titlePosition === 'above-icon') {
 				currentY = h * 0.1;
 			} else {
 				currentY = h * 0.45; // Below icon
 			}
 
-			ctx.font = `${this.config.titleFontSize}px ${this.config.titleFontFamily}`;
-			ctx.fillStyle = this.config.titleColor!;
+			ctx.font = `${style.titleFontSize}px ${style.titleFontFamily}`;
+			ctx.fillStyle = style.titleColor;
 			ctx.textAlign = 'center';
 
 			// Draw title
-            ctx.fillText(this.config.titleText, w / 2, currentY);
-			currentY += (this.config.titleFontSize || 18) + 10;
+			ctx.fillText(this.config.title, w / 2, currentY);
+			currentY += style.titleFontSize + 10;
 		}
 
 		// Layer 5: Description text
-		if (this.config.descriptionText) {
-			ctx.font = `${this.config.descriptionFontSize}px ${this.config.descriptionFontFamily}`;
-			ctx.fillStyle = this.config.descriptionColor!;
+		if (this.config.description) {
+			ctx.font = `${style.descriptionFontSize}px ${style.descriptionFontFamily}`;
+			ctx.fillStyle = style.descriptionColor;
 			ctx.textAlign = 'center';
-			this.drawMultilineText(ctx, this.config.descriptionText, w / 2, currentY, w * 0.85);
-			currentY += (this.config.descriptionFontSize || 14) * 2 + 15;
+			this.drawMultilineText(
+				ctx,
+				this.config.description,
+				w / 2,
+				currentY,
+				w * 0.85,
+				style.descriptionFontSize + 2,
+			);
+			currentY += style.descriptionFontSize * 2 + 15;
 		}
 
 		// Layer 6: Small icons array
-		if (this.config.smallIconUrls && this.config.smallIconUrls.length > 0) {
-			const smallIconSize = w * (this.config.smallIconSize || 0.08);
-			const totalWidth = this.config.smallIconUrls.length * smallIconSize + (this.config.smallIconUrls.length - 1) * 5;
+		if (this.config.smallIcons && this.config.smallIcons.length > 0) {
+			const smallIconSize = w * style.smallIconSize;
+			const totalWidth = this.config.smallIcons.length * smallIconSize + (this.config.smallIcons.length - 1) * 5;
 			const startX = (w - totalWidth) / 2;
 
-			for (let i = 0; i < this.config.smallIconUrls.length; i++) {
-				const url = this.config.smallIconUrls[i];
+			for (let i = 0; i < this.config.smallIcons.length; i++) {
+				const url = this.config.smallIcons[i];
 				const img = this.loadedImages.get(url);
 				if (img) {
 					const x = startX + i * (smallIconSize + 5);
@@ -263,12 +237,19 @@ export default class Card {
 		// Layer 7: Card template (front layer)
 		ctx.drawImage(this.templateImg, 0, 0, w, h);
 
-		// Layer 8: Optional title text on top of template
-		if (this.config.templateTitleText) {
-			ctx.font = `${this.config.templateTitleFontSize}px ${this.config.titleFontFamily}`;
-			ctx.fillStyle = this.config.templateTitleColor!;
+		// Layer 8: Optional category text on top of template
+		if (this.config.category) {
+			ctx.font = `${style.categoryFontSize}px ${style.titleFontFamily}`;
+			ctx.fillStyle = style.categoryColor;
 			ctx.textAlign = 'center';
-            this.drawCurvedText(ctx, this.config.templateTitleText, w / 2, h * 0.1, 60);
+			this.drawCurvedText(
+				ctx,
+				this.config.category,
+				w / 2,
+				h * 0.1,
+				w,
+				style.categoryBendPercent,
+			);
 		}
 	}
 
@@ -296,36 +277,36 @@ export default class Card {
 		ctx: CanvasRenderingContext2D,
 		text: string,
 		centerX: number,
-		centerY: number,
-		curveRadius: number,
+		baselineY: number,
+		fullImageWidth: number,
+		bendPercent: number = 0.01,
 	): void {
-		if (curveRadius === 0) {
-			// No curve, just draw straight
+		const bendPixels = Math.max(0, fullImageWidth * bendPercent);
+
+		if (bendPixels <= 0) {
 			ctx.textAlign = 'center';
-			ctx.fillText(text, centerX, centerY);
+			ctx.fillText(text, centerX, baselineY);
 			return;
 		}
 
-		const textWidth = ctx.measureText(text).width;
-		const angle = textWidth / Math.abs(curveRadius);
-
 		ctx.save();
-		ctx.translate(centerX, centerY);
+		ctx.textAlign = 'left';
 
-		// Draw each character along the curve
-		let currentAngle = -angle / 2;
-		const dir = curveRadius > 0 ? 1 : -1;
+		const textWidth = ctx.measureText(text).width;
+		const startX = centerX - textWidth / 2;
+		const halfTextWidth = Math.max(1, textWidth / 2);
+
+		let currentX = startX;
 
 		for (let i = 0; i < text.length; i++) {
 			const char = text[i];
 			const charWidth = ctx.measureText(char).width;
+			const charCenterX = currentX + charWidth / 2;
+			const normalized = (charCenterX - centerX) / halfTextWidth; // -1 to 1
+			const yOffset = -bendPixels * (1 - normalized * normalized);
 
-			ctx.save();
-			ctx.rotate(currentAngle * dir);
-			ctx.fillText(char, 0, -curveRadius);
-			ctx.restore();
-
-			currentAngle += (charWidth / Math.abs(curveRadius));
+			ctx.fillText(char, currentX, baselineY + yOffset);
+			currentX += charWidth;
 		}
 
 		ctx.restore();
@@ -340,10 +321,10 @@ export default class Card {
 		x: number,
 		y: number,
 		maxWidth: number,
+		lineHeight: number,
 	): void {
 		const words = text.split(' ');
 		let line = '';
-		let lineHeight = this.config.titleFontSize || 18;
 
 		for (const word of words) {
 			const testLine = line + (line ? ' ' : '') + word;

@@ -1,21 +1,17 @@
 import CanvasManager from "./CanvasManager";
-import Card from "./Card";
+import Card, { CARD_TYPE } from "./Card";
 
 window.addEventListener('DOMContentLoaded', async () => {
 	const canvasManager = new CanvasManager('main-canvas');
 
 	// Create and generate the card
 	const card = new Card({
-		scale: 0.5,
-		backgroundColor: '#e2dbc8',
-		iconUrl: './images/achievement.png',
-		iconSize: 0.25,
-		titleText: 'Diary Name',
-		titlePosition: 'below-icon',
-		titleCurve: 150, // Curves the title (positive = curve up, negative = curve down)
-		descriptionText: 'Some achievement description...',
-		smallIconUrls: ['icon1.png', 'icon2.png'],
-		templateTitleText: 'Optional overlay text'
+		type: CARD_TYPE.BASIC,
+		category: 'ACHIEVEMENT DIARY',
+		title: 'Complete the Falador Easy Achievement Diary',
+		description: 'I don\'t even know what to put here, Just complete the diary..',
+		icon: './images/achievement.png',
+		smallIcons: ['icon1.png', 'icon2.png'],
 	});
 
 	// Generate the card canvas once
