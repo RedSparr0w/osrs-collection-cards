@@ -2,7 +2,6 @@
  * Card type definitions and defaults.
  * Each type owns its template, mask, and style preset.
  */
-type CardTitlePosition = 'above-icon' | 'below-icon';
 
 interface CardTypeConfig {
 	fontFamily: string;
@@ -15,7 +14,6 @@ interface CardTypeConfig {
 	categoryFontSize: number;
 	categoryColor: string;
 	categoryBendPercent: number;
-	titlePosition: CardTitlePosition;
 	iconSize: number;
 	smallIconSize: number;
 	backgroundColor: string;
@@ -43,7 +41,6 @@ export const CARD_TYPE = {
 			categoryFontSize: 25,
 			categoryColor: '#36281f',
 			categoryBendPercent: 0.07,
-			titlePosition: 'below-icon' as CardTitlePosition,
 			iconSize: 0.3,
 			smallIconSize: 0.1,
 			backgroundColor: '#e2dbc8',
@@ -72,6 +69,7 @@ export default class Card {
 	private loadedImages: Map<string, HTMLImageElement> = new Map();
 	private width: number = 0;
 	private height: number = 0;
+	private cachedCanvas: HTMLCanvasElement | null = null;
 
 	constructor(config: CardConfig) {
 		this.type = config.type ?? CARD_TYPE.BASIC;
@@ -134,6 +132,20 @@ export default class Card {
 	}
 
 	/**
+	 * Generate and cache a canvas for this card. Returns the cached canvas on subsequent calls.
+	 */
+	async generateCanvas(): Promise<HTMLCanvasElement> {
+		if (this.cachedCanvas) {
+			return this.cachedCanvas;
+		}
+
+		const canvas = document.createElement('canvas');
+		await this.render(canvas);
+		this.cachedCanvas = canvas;
+		return canvas;
+	}
+
+	/**
 	 * Render the card onto a canvas
 	 */
 	async render(targetCanvas: HTMLCanvasElement): Promise<void> {
@@ -184,11 +196,7 @@ export default class Card {
 
 		// Layer 4: Title text (above or below icon)
 		if (this.config.title) {
-			if (style.titlePosition === 'above-icon') {
-				currentY = h * 0.1;
-			} else {
-				currentY = h * 0.42; // Below icon
-			}
+			currentY = h * 0.42; // Below icon
 
 			ctx.font = `${style.titleFontSize}px ${style.titleFontFamily}`;
 			ctx.fillStyle = style.titleColor;
@@ -260,15 +268,6 @@ export default class Card {
 				style.categoryBendPercent,
 			);
 		}
-	}
-
-	/**
-	 * Generate a card and return it as a canvas
-	 */
-	async generateCanvas(): Promise<HTMLCanvasElement> {
-		const canvas = document.createElement('canvas');
-		await this.render(canvas);
-		return canvas;
 	}
 
 	/**

@@ -6,28 +6,30 @@ window.addEventListener('DOMContentLoaded', async () => {
 	const canvasManager = new CanvasManager('main-canvas');
 	const taskManager = new TaskManager();
 	await taskManager.initialize();
+	console.log('tasks', taskManager.getTasks());
 
-	// Create and generate the card
-	const card = new Card({
-		type: CARD_TYPE.BASIC,
-		category: 'ACHIEVEMENT DIARY',
-		title: 'Complete the Falador Easy Achievement Diary',
-		description: 'I don\'t even know what to put here, Just complete the diary..',
-		icon: './images/Achievement_Diaries.png',
-		smallIcons: ['./images/Bronze_defender.png', './images/Iron_defender.png', './images/Steel_defender.png', './images/Mithril_defender.png', './images/Adamant_defender.png', './images/Rune_defender.png', './images/Dragon_defender.png'],
-	});
+	const tasks = taskManager.getTasks();
+	
+	// Create cards from tasks and generate canvases
+	console.debug('Generating cards for tasks...');
+	await Promise.all(tasks.map(task => task.getCard()));
 
-	// Generate the card canvas once
-	const cardCanvas = await card.generateCanvas();
+	console.debug('All cards generated, setting up animation callbacks...');
+	tasks.forEach(async (task, index) => {
 
-	// Draw it in the animation loop
-	canvasManager.addAnimationCallback((ctx, canvas, frame, deltaTime) => {
-		const cardWidth = 300;
-		const cardHeight = (cardCanvas.height / cardCanvas.width) * cardWidth;
-		const centerX = canvas.width / 2 - cardWidth / 2;
-		const centerY = canvas.height / 2 - cardHeight / 2;
+		if (index >= 10) return; // Limit to first 10 tasks for demo purposes
+		const card = task.card;
+		if (!card) return console.debug(`No card for task ${task.id} (${task.name})`);
+		
+		const cardCanvas = await card.generateCanvas();
+		if (!cardCanvas) return console.debug(`No canvas for task ${task.id} (${task.name})`);
 
-		// Draw the generated card
-		ctx.drawImage(cardCanvas, centerX, centerY, cardWidth, cardHeight);
+		canvasManager.addAnimationCallback((ctx, canvas, frame, deltaTime) => {
+			const cardWidth = 300;
+			const cardHeight = (cardCanvas.height / cardCanvas.width) * cardWidth;
+			const randomX = parseInt(task.id.replace(/\W/g, ''), 36) % (canvas.width - cardWidth);
+			const randomY = parseInt(task.id.replace(/\W/g, ''), 36) % (canvas.height - cardHeight);
+			ctx.drawImage(cardCanvas, randomX, randomY, cardWidth, cardHeight);
+		});
 	});
 });
