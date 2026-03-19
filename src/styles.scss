@@ -334,7 +334,7 @@ body {
         rgba(255, 255, 255, 0) 70%
       );
       mix-blend-mode: screen;
-      animation: card-shine-sweep 2.6s ease-in-out forwards;
+      animation: card-shine-sweep 3.6s ease-in-out forwards;
     }
   }
 
@@ -418,6 +418,7 @@ body {
   }
 
   .small-icons {
+    transform: translateZ(1px);
     mask-image:linear-gradient(
         to bottom,
         rgba(0, 0, 0, 0) 0%,

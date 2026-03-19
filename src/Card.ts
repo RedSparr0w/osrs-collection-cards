@@ -309,7 +309,6 @@ export default class Card {
 		backImage.loading = 'eager';
 		backImage.decoding = 'async';
 		backImage.src = this.backImg.src;
-		backImage.alt = this.config.title ? `${this.config.title} card back` : 'Card back';
 		backFace.appendChild(backImage);
 
 		rotator.appendChild(frontFace);
