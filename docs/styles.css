@@ -163,18 +163,18 @@ body {
 
 @keyframes card-shine-sweep {
   0% {
-    transform: translateX(-120%) skewX(-22deg);
+    transform: translateX(-100%) skewX(-22deg);
     opacity: 0;
   }
   18% {
-    opacity: 0.4;
+    opacity: 0.42;
   }
   36% {
-    transform: translateX(120%) skewX(-22deg);
+    transform: translateX(100%) skewX(-22deg);
     opacity: 0;
   }
   100% {
-    transform: translateX(120%) skewX(-22deg);
+    transform: translateX(100%) skewX(-22deg);
     opacity: 0;
   }
 }
@@ -201,11 +201,12 @@ body {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   transform-style: preserve-3d;
   transform-origin: center bottom;
-  transform: perspective(900px) rotateX(0deg) rotateZ(-0.8deg) translateY(0);
+  transform: perspective(900px) rotateX(0deg) rotateZ(-0.8deg) translateY(0) translateZ(0);
   transition: transform 220ms ease, box-shadow 220ms ease;
 }
 .task-card:hover {
-  transform: perspective(900px) rotateX(-10deg) rotateZ(-0.8deg) translateY(-10px);
+  transform: perspective(900px) rotateX(-10deg) rotateZ(-0.8deg) translateY(-10px) translateZ(100px);
+  z-index: 10;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.54);
 }
 .task-card:hover::before {
@@ -215,9 +216,9 @@ body {
   content: "";
   position: absolute;
   inset: -20% -40%;
-  z-index: 6;
+  z-index: 20;
   pointer-events: none;
-  background: linear-gradient(110deg, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.07) 46%, var(--golden) 50%, rgba(255, 255, 255, 0.07) 54%, rgba(255, 255, 255, 0) 65%);
+  background: linear-gradient(110deg, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.07) 45%, var(--golden) 50%, rgba(255, 255, 255, 0.07) 55%, rgba(255, 255, 255, 0) 70%);
   mix-blend-mode: screen;
   animation: card-shine-sweep 4.2s ease-in-out infinite;
 }

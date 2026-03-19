@@ -26,7 +26,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 	let renderedTasks = 0;
 	for (const task of tasks) {
-		if (Math.random() > 0.015) continue;
+		if (Math.random() > 0.02) continue;
 		setTimeout(async () => {
 			const card = await task.getCard();
 			const cardElement = await card.generateElement();
