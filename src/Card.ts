@@ -185,9 +185,9 @@ export default class Card {
 			const iconImg = this.loadedImages.get(this.config.icon);
 			if (iconImg) {
 				const iconSize = w * style.iconSize;
-				const iconX = (w - iconSize) / 2;
-				const iconY = h * 0.145; // Top third of card
-				ctx.drawImage(iconImg, iconX, iconY, iconSize, iconSize);
+				const iconCenterX = w / 2;
+				const iconCenterY = h * 0.145 + iconSize / 2;
+				this.drawImageContained(ctx, iconImg, iconCenterX, iconCenterY, iconSize);
 			}
 		}
 
@@ -242,8 +242,8 @@ export default class Card {
 				const url = this.config.smallIcons[i];
 				const img = this.loadedImages.get(url);
 				if (img) {
-					const x = startX + i * (smallIconSize + 5);
-					ctx.drawImage(img, x, currentY, smallIconSize, smallIconSize);
+					const slotX = startX + i * (smallIconSize + 5);
+					this.drawImageContained(ctx, img, slotX + smallIconSize / 2, currentY + smallIconSize / 2, smallIconSize);
 				}
 			}
 		}
@@ -276,6 +276,23 @@ export default class Card {
 	async generateImageUrl(): Promise<string> {
 		const canvas = await this.generateCanvas();
 		return canvas.toDataURL('image/png');
+	}
+
+	/**
+	 * Draw an image centered in a square slot, scaled so its largest dimension fills
+	 * the slot size without distorting the aspect ratio.
+	 */
+	private drawImageContained(
+		ctx: CanvasRenderingContext2D,
+		img: HTMLImageElement,
+		centerX: number,
+		centerY: number,
+		slotSize: number,
+	): void {
+		const scale = slotSize / Math.max(img.naturalWidth, img.naturalHeight);
+		const drawW = img.naturalWidth * scale;
+		const drawH = img.naturalHeight * scale;
+		ctx.drawImage(img, centerX - drawW / 2, centerY - drawH / 2, drawW, drawH);
 	}
 
 	/**
