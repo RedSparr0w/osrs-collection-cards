@@ -19,6 +19,28 @@ window.addEventListener('DOMContentLoaded', async () => {
 	console.log('tasks', taskManager.getTasks());
 
 	const tasks = taskManager.getTasks();
+	let activeCard: Awaited<ReturnType<typeof tasks[number]['getCard']>> | null = null;
+	let activeCardElement: HTMLElement | null = null;
+
+	const clearCenterOffset = (element: HTMLElement): void => {
+		element.style.setProperty('--active-x', '0px');
+		element.style.setProperty('--active-y', '0px');
+	};
+
+	const updateCenterOffset = (element: HTMLElement): void => {
+		const rect = element.getBoundingClientRect();
+		const targetX = window.innerWidth / 2 - (rect.left + rect.width / 2);
+		const targetY = window.innerHeight / 1.7 - (rect.top + rect.height / 2);
+		element.style.setProperty('--active-x', `${targetX}px`);
+		element.style.setProperty('--active-y', `${targetY}px`);
+		element.style.setProperty('--active-rotate-x', `350deg`);
+	};
+
+	window.addEventListener('resize', () => {
+		if (activeCardElement) {
+			updateCenterOffset(activeCardElement);
+		}
+	});
 
 	if (statusText) {
 		statusText.textContent = `Rendering ${tasks.length} cards...`;
@@ -35,7 +57,25 @@ window.addEventListener('DOMContentLoaded', async () => {
 			cardElement.tabIndex = 0;
 			cardElement.setAttribute('role', 'button');
 			cardElement.setAttribute('aria-label', `Flip ${task.name}`);
-			cardElement.addEventListener('click', () => card.toggleActive());
+			cardElement.addEventListener('click', () => {
+				if (activeCardElement === cardElement) {
+					clearCenterOffset(cardElement);
+					card.setActive(false);
+					activeCard = null;
+					activeCardElement = null;
+					return;
+				}
+
+				if (activeCard && activeCardElement) {
+					clearCenterOffset(activeCardElement);
+					activeCard.setActive(false);
+				}
+
+				updateCenterOffset(cardElement);
+				card.setActive(true);
+				activeCard = card;
+				activeCardElement = cardElement;
+			});
 			setTimeout(() => cardGrid.appendChild(cardElement), renderedTasks * 200); // Stagger card additions for visual effect
 			setTimeout(() =>{
 				card.setFlipped(false);

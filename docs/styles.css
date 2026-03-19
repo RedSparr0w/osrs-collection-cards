@@ -202,6 +202,12 @@ body {
   }
 }
 .task-card {
+  --active-x: 0px;
+  --active-y: 0px;
+  --active-scale: 1;
+  --active-rotate-x: 6deg;
+  --active-rotate-z: var(--fan-rotate, 0deg);
+  --active-dip: var(--fan-dip, 0px);
   --card-bg: #e2dbc8;
   --card-title-color: #000;
   --card-desc-color: #333;
@@ -223,8 +229,8 @@ body {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   transform-style: preserve-3d;
   transform-origin: center bottom;
-  transform: rotateX(6deg) rotateZ(var(--fan-rotate, 0deg)) translateY(var(--fan-dip, 0px));
-  transition: transform 220ms ease, box-shadow 220ms ease, margin 220ms ease, all 220ms ease;
+  transform: translate(var(--active-x), var(--active-y)) rotateX(var(--active-rotate-x)) rotateZ(var(--active-rotate-z)) translateY(var(--active-dip)) scale(var(--active-scale));
+  transition: transform 500ms ease, box-shadow 220ms ease, margin 220ms ease;
   will-change: transform;
   animation: deal-card 2s ease-in-out forwards;
 }
@@ -409,20 +415,22 @@ body {
   z-index: 8;
 }
 .task-card.is-active {
-  position: absolute;
-  transition: all 1s ease;
-  transform: rotateX(0deg) rotateZ(0deg) translateY(0px);
-  height: 70vh;
-  top: 0;
-  z-index: 1000 !important;
+  --active-rotate-x: 0deg;
+  --active-rotate-z: 0deg;
+  --active-dip: 0px;
+  --active-scale: 2;
+  z-index: 100 !important;
+}
+.task-card.is-active .card-rotator {
+  rotate: y 360deg;
+  transition: rotate 500ms ease-out;
 }
 .task-card:hover:not(.is-active) {
   transform: rotateX(-8deg) rotateZ(var(--fan-rotate, 0deg)) translateY(-16px) translateZ(60px);
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.58);
   margin: 0 40px;
-  z-index: 10;
 }
-.task-card:hover:not(.is-active)::before {
+.task-card:hover::after {
   content: "";
   position: absolute;
   inset: -20% -40%;
@@ -430,7 +438,7 @@ body {
   pointer-events: none;
   background: linear-gradient(110deg, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.07) 45%, var(--golden) 50%, rgba(255, 255, 255, 0.07) 55%, rgba(255, 255, 255, 0) 70%);
   mix-blend-mode: screen;
-  animation: card-shine-sweep 2.6s ease-in-out infinite;
+  animation: card-shine-sweep 2.6s ease-in-out forwards;
 }
 .task-card.is-flipped .card-rotator {
   transform: rotateY(180deg);
