@@ -320,7 +320,7 @@ body {
   }
 
   &:hover {
-    .card-rotator::after {
+    .card-face::after {
       content: '';
       position: absolute;
       inset: -20% -40%;
@@ -353,6 +353,7 @@ body {
   }
 
   .card-face {
+    overflow: clip;
     position: absolute;
     inset: 0;
     backface-visibility: hidden;
