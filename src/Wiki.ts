@@ -1,3 +1,5 @@
+import { resolve } from "path";
+
 const CL_CACHE_KEY = 'collection_log_items';
 const CL_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
 const PLAYER_CL_CACHE_PREFIX = 'player_collection_log';
@@ -14,17 +16,15 @@ export type CollectionLogItem = {
 
 
 export default class Wiki {
-    collectionLogMap: Map<number, CollectionLogItem>;
+    collectionLogMap: Map<number, CollectionLogItem> = new Map();
 
-    constructor() {
-        this.collectionLogMap = new Map();
-    }
+    constructor() {}
 
     getCollectionLogEntry(itemId: number): CollectionLogItem | undefined {
         return this.collectionLogMap.get(itemId);
     }
 
-    setCollectionLogItems(items: Partial<CollectionLogItem>[] = []) {
+    setCollectionLogItems(items: Partial<CollectionLogItem>[] = []): void {
         this.collectionLogMap.clear();
         items.forEach(item => {
             const itemId = +(item?.id ?? 0);
@@ -41,14 +41,14 @@ export default class Wiki {
         });
     }
 
-    async loadCollectionLogItems() {
+    async loadCollectionLogItems(forceRefresh: boolean = false): Promise<Map<number, CollectionLogItem>> {
         try {
             const raw = localStorage.getItem(CL_CACHE_KEY);
             if (raw) {
                 const { ts, data } = JSON.parse(raw);
-                if (Date.now() - ts < CL_CACHE_TTL && Array.isArray(data)) {
+                if (!forceRefresh && Date.now() - ts < CL_CACHE_TTL && Array.isArray(data)) {
                     this.setCollectionLogItems(data);
-                    return this.collectionLogMap;
+                    return Promise.resolve(this.collectionLogMap);
                 }
             }
         } catch {
@@ -70,7 +70,7 @@ export default class Wiki {
             const table = doc.querySelector('table.wikitable');
             if (!table) {
                 console.warn('No collection log table found');
-                return;
+                return Promise.resolve(this.collectionLogMap);
             }
 
             const cacheData: Partial<CollectionLogItem>[] = [];
@@ -112,16 +112,8 @@ export default class Wiki {
             console.warn('Failed to load collection log data', error);
         }
 
-        return this.collectionLogMap;
+        return Promise.resolve(this.collectionLogMap);
     }
-
-    // normalizeUsername(value) {
-    //     return (value || '').trim().replace(/\s+/g, ' ');
-    // }
-
-    // toSyncUsername(value) {
-    //     return this.normalizeUsername(value).replace(/\W/g, '_');
-    // }
 
     // async loadPlayerData(username, options = {}) {
     //     const { forceRefresh = false } = options;

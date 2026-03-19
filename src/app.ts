@@ -24,17 +24,17 @@ window.addEventListener('DOMContentLoaded', async () => {
 		statusText.textContent = `Rendering ${tasks.length} cards...`;
 	}
 
-	const fragment = document.createDocumentFragment();
 	let renderedTasks = 0;
 	for (const task of tasks) {
 		if (Math.random() > 0.015) continue;
-		const card = await task.getCard();
-		const cardElement = await card.generateElement();
-		fragment.appendChild(cardElement);
+		setTimeout(async () => {
+			const card = await task.getCard();
+			const cardElement = await card.generateElement();
+			cardGrid.appendChild(cardElement);
+		}, renderedTasks * 100);
 		renderedTasks++;
 	}
 
-	cardGrid.replaceChildren(fragment);
 
 	if (statusText) {
 		statusText.textContent = `Rendered ${renderedTasks} cards`;
