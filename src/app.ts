@@ -70,10 +70,14 @@ window.addEventListener('DOMContentLoaded', async () => {
 					activeCard.setActive(false);
 				}
 
-				updateCenterOffset(cardElement);
 				card.setActive(true);
 				activeCard = card;
 				activeCardElement = cardElement;
+				requestAnimationFrame(() => {
+					if (activeCardElement === cardElement) {
+						updateCenterOffset(cardElement);
+					}
+				});
 			});
 			setTimeout(() => cardGrid.appendChild(cardElement), renderedTasks * 200); // Stagger card additions for visual effect
 			setTimeout(() =>{
