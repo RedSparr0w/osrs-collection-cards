@@ -35,11 +35,11 @@ window.addEventListener('DOMContentLoaded', async () => {
 			cardElement.tabIndex = 0;
 			cardElement.setAttribute('role', 'button');
 			cardElement.setAttribute('aria-label', `Flip ${task.name}`);
-			cardElement.addEventListener('click', () => card.toggleFlipped());
-			cardGrid.appendChild(cardElement);
+			cardElement.addEventListener('click', () => card.toggleActive());
+			setTimeout(() => cardGrid.appendChild(cardElement), renderedTasks * 200); // Stagger card additions for visual effect
 			setTimeout(() =>{
 				card.setFlipped(false);
-			}, 1000 + renderedTasks * 200); // Stagger card additions for visual effect
+			}, 3000 + renderedTasks * 200); // Stagger card additions for visual effect
 			renderedTasks++;
 		} catch (error) {
 			console.warn(`Failed to render card for task ${task.id}:`, error);

@@ -62,6 +62,7 @@ export interface CardConfig {
 	smallIcons?: string[];
 	category?: string;
 	flipped?: boolean;
+	active?: boolean;
 }
 
 export default class Card {
@@ -129,6 +130,17 @@ export default class Card {
 		this.setFlipped(!this.config.flipped);
 	}
 
+	setActive(active: boolean): void {
+		this.config.active = active;
+		if (this.cachedElement) {
+			this.cachedElement.classList.toggle('is-active', active);
+		}
+	}
+
+	toggleActive(): void {
+		this.setActive(!this.config.active);
+	}
+
 	/**
 	 * Load a single image by URL
 	 */
@@ -185,6 +197,7 @@ export default class Card {
 		const root = document.createElement('article');
 		root.className = 'task-card';
 		root.classList.toggle('is-flipped', Boolean(this.config.flipped));
+		root.classList.toggle('is-active', Boolean(this.config.active));
 		root.style.setProperty('--card-bg', style.backgroundColor);
 		root.style.setProperty('--card-title-color', style.titleColor);
 		root.style.setProperty('--card-desc-color', style.descriptionColor);
