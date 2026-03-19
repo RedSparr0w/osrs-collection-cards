@@ -25,15 +25,20 @@ window.addEventListener('DOMContentLoaded', async () => {
 	}
 
 	let renderedTasks = 0;
-	for (const task of tasks) {
-		if (Math.random() > 0.02) continue;
-		setTimeout(async () => {
-			const card = await task.getCard();
-			const cardElement = await card.generateElement();
+	const tasksToRender = 3;
+	tasks.sort((a, b) => Math.random() - 0.5); // Shuffle tasks randomly
+	tasks.slice(0, tasksToRender).forEach(async (task) => {
+		try {
+			const cardElement = await task.getCard().then(card => card.generateElement());
 			cardGrid.appendChild(cardElement);
-		}, renderedTasks * 100);
-		renderedTasks++;
-	}
+			renderedTasks++;
+		} catch (error) {
+			console.warn(`Failed to render card for task ${task.id}:`, error);
+		}
+		if (statusText) {
+			statusText.textContent = `Rendered ${renderedTasks} of ${tasksToRender} cards...`;
+		}
+	});
 
 
 	if (statusText) {
