@@ -44,6 +44,14 @@ export default class HandRenderer {
 					}
 				});
 
+				cardElement.addEventListener('contextmenu', (e: MouseEvent) => {
+					e.preventDefault();
+					if (this.cardController.isActive(cardElement)) {
+						this.cardController.deactivate();
+					}
+					card.toggleFlipped();
+				});
+
 				cardGrid.appendChild(cardElement);
 				setTimeout(() => card.setFlipped(false), flipDelayMs);
 				renderedCount++;
