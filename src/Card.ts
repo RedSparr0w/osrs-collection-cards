@@ -22,6 +22,7 @@ interface CardTypeConfig {
 
 export interface CardTypeDefinition {
 	template: string;
+	back: string;
 	mask: string;
 	config: CardTypeConfig;
 }
@@ -29,6 +30,7 @@ export interface CardTypeDefinition {
 export const CARD_TYPE = {
 	BASIC: {
 		template: './images/CardTemplate_Basic.png',
+		back: './images/CardBack_Basic.png',
 		mask: './images/CardMask_Basic.png',
 		config: {
 			fontFamily: 'Runescape, Arial, sans-serif',
@@ -59,12 +61,14 @@ export interface CardConfig {
 	icon?: string;
 	smallIcons?: string[];
 	category?: string;
+	flipped?: boolean;
 }
 
 export default class Card {
 	private config: CardConfig;
 	private type: CardTypeDefinition;
 	private templateImg: HTMLImageElement | null = null;
+	private backImg: HTMLImageElement | null = null;
 	private maskImg: HTMLImageElement | null = null;
 	private static sharedLoadedImages: Map<string, HTMLImageElement> = new Map();
 	private loadedImages: Map<string, HTMLImageElement> = new Map();
@@ -86,6 +90,7 @@ export default class Card {
 	 */
 	async loadImages(): Promise<void> {
 		this.templateImg = await this.loadImage(this.type.template);
+		this.backImg = await this.loadImage(this.type.back);
 		this.maskImg = await this.loadImage(this.type.mask);
 
 		if (!this.width || !this.height) {
@@ -111,6 +116,17 @@ export default class Card {
 				console.warn(`Optional image failed to load: ${urlsToLoad[index]}`);
 			}
 		});
+	}
+
+	setFlipped(flipped: boolean): void {
+		this.config.flipped = flipped;
+		if (this.cachedElement) {
+			this.cachedElement.classList.toggle('is-flipped', flipped);
+		}
+	}
+
+	toggleFlipped(): void {
+		this.setFlipped(!this.config.flipped);
 	}
 
 	/**
@@ -161,9 +177,14 @@ export default class Card {
 			throw new Error('Template image failed to load');
 		}
 
+		if (!this.backImg) {
+			throw new Error('Back image failed to load');
+		}
+
 		const style = this.type.config;
 		const root = document.createElement('article');
 		root.className = 'task-card';
+		root.classList.toggle('is-flipped', Boolean(this.config.flipped));
 		root.style.setProperty('--card-bg', style.backgroundColor);
 		root.style.setProperty('--card-title-color', style.titleColor);
 		root.style.setProperty('--card-desc-color', style.descriptionColor);
@@ -190,6 +211,12 @@ export default class Card {
 			root.style.maskSize = '100% 100%';
 			(root.style as CSSStyleDeclaration & { webkitMaskSize?: string }).webkitMaskSize = '100% 100%';
 		}
+
+		const rotator = document.createElement('div');
+		rotator.className = 'card-rotator';
+
+		const frontFace = document.createElement('div');
+		frontFace.className = 'card-face card-face--front';
 
 		const content = document.createElement('div');
 		content.className = 'content';
@@ -243,7 +270,7 @@ export default class Card {
 			}
 		}
 
-		root.appendChild(content);
+		frontFace.appendChild(content);
 
 		const templateOverlay = document.createElement('img');
 		templateOverlay.className = 'template';
@@ -252,14 +279,29 @@ export default class Card {
 		templateOverlay.src = this.templateImg.src;
 		templateOverlay.alt = '';
 		templateOverlay.ariaHidden = 'true';
-		root.appendChild(templateOverlay);
+		frontFace.appendChild(templateOverlay);
 
 		if (this.config.category) {
 			const category = document.createElement('div');
 			category.className = 'category';
 			category.textContent = this.config.category;
-			root.appendChild(category);
+			frontFace.appendChild(category);
 		}
+
+		const backFace = document.createElement('div');
+		backFace.className = 'card-face card-face--back';
+
+		const backImage = document.createElement('img');
+		backImage.className = 'card-back-image';
+		backImage.loading = 'eager';
+		backImage.decoding = 'async';
+		backImage.src = this.backImg.src;
+		backImage.alt = this.config.title ? `${this.config.title} card back` : 'Card back';
+		backFace.appendChild(backImage);
+
+		rotator.appendChild(frontFace);
+		rotator.appendChild(backFace);
+		root.appendChild(rotator);
 
 		this.cachedElement = root;
 		return root;

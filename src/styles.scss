@@ -207,7 +207,7 @@ body {
 /// Generates :nth-child rules for $min–$max card counts using the CSS sibling-count trick:
 /// :nth-child($i):nth-last-child($n - $i + 1) uniquely targets card at position $i
 /// when there are exactly $n children total — no JS required.
-@mixin fan-layout($min: 3, $max: 6, $spread: 22deg, $max-dip: 36px) {
+@mixin fan-layout($min: 3, $max: 10, $spread: 22deg, $max-dip: 36px) {
   @for $n from $min through $max {
     @for $i from 1 through $n {
       &:nth-child(#{$i}):nth-last-child(#{$n - $i + 1}) {
@@ -269,12 +269,13 @@ body {
   transition: transform 220ms ease, box-shadow 220ms ease, margin 220ms ease, all 220ms ease;
   will-change: transform;
 
-  @include fan-layout(3, 6, 24deg, 36px);
+  @include fan-layout(1, 8, 24deg, 36px);
 
   &:hover {
     transform: rotateX(-8deg) rotateZ(var(--fan-rotate, 0deg)) translateY(-16px) translateZ(60px);
     box-shadow: 0 16px 32px rgba(0, 0, 0, 0.58);
     margin: 0 40px;
+    z-index: 10;
 
     &::before {
       content: '';
@@ -293,6 +294,43 @@ body {
       mix-blend-mode: screen;
       animation: card-shine-sweep 2.6s ease-in-out infinite;
     }
+  }
+
+  &.is-flipped {
+    .card-rotator {
+      transform: rotateY(180deg);
+    }
+  }
+
+  .card-rotator {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transition: transform 420ms ease;
+  }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .card-face--front {
+    transform: rotateY(0deg);
+  }
+
+  .card-face--back {
+    transform: rotateY(180deg);
+    background: var(--card-bg);
+  }
+
+  .card-back-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
   }
 
   .content {

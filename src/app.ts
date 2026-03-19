@@ -29,10 +29,17 @@ window.addEventListener('DOMContentLoaded', async () => {
 	tasks.sort((a, b) => Math.random() - 0.5); // Shuffle tasks randomly
 	tasks.slice(0, tasksToRender).forEach(async (task) => {
 		try {
-			const cardElement = await task.getCard().then(card => card.generateElement());
+			const card = await task.getCard();
+			const cardElement = await card.generateElement();
+			card.setFlipped(true);
+			cardElement.tabIndex = 0;
+			cardElement.setAttribute('role', 'button');
+			cardElement.setAttribute('aria-label', `Flip ${task.name}`);
+			cardElement.addEventListener('click', () => card.toggleFlipped());
+			cardGrid.appendChild(cardElement);
 			setTimeout(() =>{
-				cardGrid.appendChild(cardElement);
-			}, renderedTasks * 150); // Stagger card additions for visual effect
+				card.setFlipped(false);
+			}, 1000 + renderedTasks * 200); // Stagger card additions for visual effect
 			renderedTasks++;
 		} catch (error) {
 			console.warn(`Failed to render card for task ${task.id}:`, error);
