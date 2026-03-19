@@ -319,7 +319,7 @@ body {
   }
 
   &:hover {
-    &::after {
+    .card-rotator::after {
       content: '';
       position: absolute;
       inset: -20% -40%;
