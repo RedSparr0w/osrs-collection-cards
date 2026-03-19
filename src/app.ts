@@ -33,7 +33,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 		const targetY = window.innerHeight / 1.7 - (rect.top + rect.height / 2);
 		element.style.setProperty('--active-x', `${targetX}px`);
 		element.style.setProperty('--active-y', `${targetY}px`);
-		element.style.setProperty('--active-rotate-x', `350deg`);
 	};
 
 	window.addEventListener('resize', () => {
