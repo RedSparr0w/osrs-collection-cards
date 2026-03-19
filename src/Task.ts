@@ -60,7 +60,7 @@ export default class Task implements TaskInformation {
       const { CARD_TYPE } = await import('./Card');
       this.card = new Card({
         type: CARD_TYPE.BASIC,
-        category: this.tier,
+        category: this.tier.toUpperCase(),
         title: this.name,
         description: this.tip,
         icon: collectionLog.getCollectionLogEntry(this.displayItemId)?.imageUrl || this.imageLink,

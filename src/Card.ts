@@ -235,17 +235,30 @@ export default class Card {
 		// Layer 6: Small icons array
 		if (this.config.smallIcons && this.config.smallIcons.length > 0) {
 			const smallIconSize = w * style.smallIconSize;
-			const totalWidth = this.config.smallIcons.length * smallIconSize + (this.config.smallIcons.length - 1) * 5;
-			const startX = (w - totalWidth) / 2;
+			const gap = 5;
+			const maxRowWidth = w * 0.85;
+			const iconsPerRow = Math.max(1, Math.floor((maxRowWidth + gap) / (smallIconSize + gap)));
 
 			for (let i = 0; i < this.config.smallIcons.length; i++) {
 				const url = this.config.smallIcons[i];
 				const img = this.loadedImages.get(url);
-				if (img) {
-					const slotX = startX + i * (smallIconSize + 5);
-					this.drawImageContained(ctx, img, slotX + smallIconSize / 2, currentY + smallIconSize / 2, smallIconSize);
-				}
+				if (!img) continue;
+
+				const row = Math.floor(i / iconsPerRow);
+				const col = i % iconsPerRow;
+
+				// How many icons are on this row (last row may have fewer)
+				const iconsOnThisRow = Math.min(iconsPerRow, this.config.smallIcons.length - row * iconsPerRow);
+				const rowWidth = iconsOnThisRow * smallIconSize + (iconsOnThisRow - 1) * gap;
+				const rowStartX = (w - rowWidth) / 2;
+
+				const slotX = rowStartX + col * (smallIconSize + gap);
+				const slotY = currentY + row * (smallIconSize + gap);
+				this.drawImageContained(ctx, img, slotX + smallIconSize / 2, slotY + smallIconSize / 2, smallIconSize);
 			}
+
+			const totalRows = Math.ceil(this.config.smallIcons.length / iconsPerRow);
+			currentY += totalRows * (smallIconSize + gap);
 		}
 
 		// Reset composite operation before drawing template
@@ -288,11 +301,17 @@ export default class Card {
 		centerX: number,
 		centerY: number,
 		slotSize: number,
+		pixelatedThreshold: number = 100,
 	): void {
+		const isPixelated = Math.max(img.naturalWidth, img.naturalHeight) < pixelatedThreshold;
 		const scale = slotSize / Math.max(img.naturalWidth, img.naturalHeight);
 		const drawW = img.naturalWidth * scale;
 		const drawH = img.naturalHeight * scale;
+
+		ctx.save();
+		ctx.imageSmoothingEnabled = !isPixelated;
 		ctx.drawImage(img, centerX - drawW / 2, centerY - drawH / 2, drawW, drawH);
+		ctx.restore();
 	}
 
 	/**
