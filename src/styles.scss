@@ -282,7 +282,7 @@ body {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   transform-style: preserve-3d;
   transform-origin: center bottom;
-    transform: rotateX(6deg) rotateZ(var(--fan-rotate, 0deg)) translateY(var(--fan-dip, 0px));
+  transform: rotateX(6deg) rotateZ(var(--fan-rotate, 0deg)) translateY(var(--fan-dip, 0px));
   transition: transform 220ms ease, box-shadow 220ms ease, margin 220ms ease, all 220ms ease;
   will-change: transform;
   animation: deal-card 2s ease-in-out forwards;
@@ -290,14 +290,14 @@ body {
   @include fan-layout(1, 8, 24deg, 36px);
 
   &.is-active {
-    transform: rotateX(0deg) rotateZ(0deg) translateY(0px) !important;
     position: absolute;
+    transform: rotateX(0deg) rotateZ(0deg) translateY(0px);
     height: 70vh;
     top: 0;
     z-index: 1000 !important;
   }
 
-  &:hover {
+  &:hover:not(.is-active) {
     transform: rotateX(-8deg) rotateZ(var(--fan-rotate, 0deg)) translateY(-16px) translateZ(60px);
     box-shadow: 0 16px 32px rgba(0, 0, 0, 0.58);
     margin: 0 40px;
