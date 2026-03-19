@@ -2,8 +2,8 @@ import { resolve } from "path";
 
 const CL_CACHE_KEY = 'collection_log_items';
 const CL_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
-const PLAYER_CL_CACHE_PREFIX = 'player_collection_log';
-const PLAYER_CL_CACHE_TTL = 1000 * 60 * 60; // 1 hour
+const PLAYER_CACHE_PREFIX = 'player_data';
+const PLAYER_CACHE_TTL = 1000 * 60 * 60; // 1 hour
 
 export type CollectionLogItem = {
   id: number
@@ -115,89 +115,87 @@ export default class Wiki {
         return Promise.resolve(this.collectionLogMap);
     }
 
-    // async loadPlayerData(username, options = {}) {
-    //     const { forceRefresh = false } = options;
-    //     const normalized = this.normalizeUsername(username);
-    //     if (!normalized) {
-    //         return {
-    //             obtainedItemIds: new Set(),
-    //             completedAchievementDiaryKeys: new Set(),
-    //             playerSkillExperienceBySkill: new Map(),
-    //             playerSkillLevelBySkill: new Map()
-    //         };
-    //     }
+    async loadPlayerData(username: string, options: { forceRefresh?: boolean } = {}) {
+        // Replace multiple spaces with a single underscore and trim whitespace
+        username = username.trim().replace(/\s+/g, '_');
+        // Get our default/specified options
+        const {
+          forceRefresh = false,
+        } = options;
 
-    //     const cacheKey = `${PLAYER_CL_CACHE_PREFIX}:${this.toSyncUsername(username).toLowerCase()}`;
-    //     if (!forceRefresh) {
-    //         try {
-    //             const raw = localStorage.getItem(cacheKey);
-    //             if (raw) {
-    //                 const { ts, ids, achievementDiaryKeys, skillExperience, skillLevels } = JSON.parse(raw);
-    //                 if (Date.now() - ts < PLAYER_CL_CACHE_TTL && Array.isArray(ids)) {
-    //                     const cachedSkillExperience = new Map();
-    //                     this.extractSkillExperienceFromContainer(skillExperience, cachedSkillExperience);
+        if (!username) {
+            return {
+                ts: 0,
+                obtainedItemIds: new Set(),
+                achievementDiaries: new Set(),
+                skills: new Map(),
+            };
+        }
 
-    //                     const cachedSkillLevels = new Map();
-    //                     this.extractSkillLevelsFromContainer(skillLevels, cachedSkillLevels);
+        // Load from cache if available and not expired
+        const cacheKey = `${PLAYER_CACHE_PREFIX}:${username.toLowerCase()}`;
+        if (!forceRefresh) {
+            try {
+                const raw = localStorage.getItem(cacheKey);
+                if (raw) {
+                    const { ts, obtainedItemIds, achievementDiaries, skills } = JSON.parse(raw);
+                    if (Date.now() - ts < PLAYER_CACHE_TTL && Array.isArray(obtainedItemIds)) {
 
-    //                     PlayerProgress.finalizeSkillSnapshots(cachedSkillExperience, cachedSkillLevels);
+                        return {
+                            obtainedItemIds: new Set(obtainedItemIds.map(id => Number(id)).filter(id => Number.isInteger(id) && id > 0)),
+                            achievementDiaries: new Set(
+                                Array.isArray(achievementDiaries)
+                                    ? achievementDiaries.map(value => String(value))
+                                    : []
+                            ),
+                            skills: new Map(
+                                Object.entries(skills ?? {}).map(([skill, exp]) => [skill, Number(exp)])
+                            )
+                        };
+                    }
+                }
+            } catch {
+                // ignore corrupt cache
+            }
+        }
 
-    //                     return {
-    //                         obtainedItemIds: new Set(ids.map(id => Number(id)).filter(id => Number.isInteger(id) && id > 0)),
-    //                         completedAchievementDiaryKeys: new Set(
-    //                             Array.isArray(achievementDiaryKeys)
-    //                                 ? achievementDiaryKeys.map(value => String(value))
-    //                                 : []
-    //                         ),
-    //                         playerSkillExperienceBySkill: cachedSkillExperience,
-    //                         playerSkillLevelBySkill: cachedSkillLevels
-    //                     };
-    //                 }
-    //             }
-    //         } catch {
-    //             // ignore corrupt cache
-    //         }
-    //     }
+        try {
+            const syncName = encodeURIComponent(username.replace(/ /g, '_'));
+            const url = `https://sync.runescape.wiki/runelite/player/${syncName}/STANDARD`;
+            const response = await fetch(url, { cache: forceRefresh ? 'no-store' : 'default' });
+            if (!response.ok) {
+                throw new Error(`sync request failed (${response.status})`);
+            }
 
-    //     try {
-    //         const syncName = encodeURIComponent(this.toSyncUsername(normalized));
-    //         const url = `https://sync.runescape.wiki/runelite/player/${syncName}/STANDARD`;
-    //         const response = await fetch(url, { cache: forceRefresh ? 'no-store' : 'default' });
-    //         if (!response.ok) {
-    //             throw new Error(`sync request failed (${response.status})`);
-    //         }
+            const payload = await response.json();
+            const obtainedItemIds = payload.collection_log;
+            const achievementDiaries = payload.achievement_diaries;
+            const skills = new Map();
+            Object.entries(payload.levels).forEach(([name, level]) => {
+                skills.set(name, level);
+            });
 
-    //         const payload = await response.json();
-    //         const ids = Array.isArray(payload.collection_log)
-    //             ? payload.collection_log.map(id => Number(id)).filter(id => Number.isInteger(id) && id > 0)
-    //             : [];
-    //         const completedAchievementDiaryKeys = this.extractCompletedAchievementDiaryKeys(payload.achievement_diaries);
-    //         const playerSkillExperienceBySkill = this.extractPlayerSkillExperience(payload);
-    //         const playerSkillLevelBySkill = this.extractPlayerSkillLevels(payload);
+    
 
-    //         PlayerProgress.finalizeSkillSnapshots(playerSkillExperienceBySkill, playerSkillLevelBySkill);
+            try {
+                localStorage.setItem(cacheKey, JSON.stringify({
+                    ts: Date.now(),
+                    obtainedItemIds,
+                    achievementDiaries: Array.from(achievementDiaries),
+                    skills: Array.from(skills),
+                }));
+            } catch {
+                // ignore localStorage failures
+            }
 
-    //         try {
-    //             localStorage.setItem(cacheKey, JSON.stringify({
-    //                 ts: Date.now(),
-    //                 ids,
-    //                 achievementDiaryKeys: Array.from(completedAchievementDiaryKeys),
-    //                 skillExperience: Object.fromEntries(playerSkillExperienceBySkill),
-    //                 skillLevels: Object.fromEntries(playerSkillLevelBySkill)
-    //             }));
-    //         } catch {
-    //             // ignore localStorage failures
-    //         }
-
-    //         return {
-    //             obtainedItemIds: new Set(ids),
-    //             completedAchievementDiaryKeys,
-    //             playerSkillExperienceBySkill,
-    //             playerSkillLevelBySkill
-    //         };
-    //     } catch (error) {
-    //         console.warn('Failed to load player collection log', error);
-    //         return null;
-    //     }
-    // }
+            return {
+                obtainedItemIds: new Set(obtainedItemIds),
+                achievementDiaries,
+                skills
+            };
+        } catch (error) {
+            console.warn('Failed to load player collection log', error);
+            return null;
+        }
+    }
 }

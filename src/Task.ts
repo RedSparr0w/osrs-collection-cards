@@ -1,7 +1,8 @@
 import { TASK_STATES, TIERS } from "./Constants"
 import Wiki from "./Wiki"
-const collectionLog = new Wiki();
-collectionLog.loadCollectionLogItems();
+const wikiData = new Wiki();
+wikiData.loadCollectionLogItems();
+wikiData.loadPlayerData('Zamoraky V');
 
 export interface TaskRoot {
   name: TIERS,
@@ -53,7 +54,8 @@ export default class Task implements TaskInformation {
    * The Card is cached for subsequent calls.
    */
   async getCard() {
-    await collectionLog.loadCollectionLogItems(); // Ensure collection log data is loaded
+    await wikiData.loadCollectionLogItems(); // Ensure collection log data is loaded
+    await wikiData.loadPlayerData('Zamoraky V');
 
     if (!this.card) {
       const Card = (await import('./Card')).default;
@@ -63,8 +65,8 @@ export default class Task implements TaskInformation {
         category: this.tier.toUpperCase(),
         title: this.name,
         description: this.tip,
-        icon: collectionLog.getCollectionLogEntry(this.displayItemId)?.imageUrl || this.imageLink.replace(/(_detail)?\.png$/, '_detail.png')?.replace(/_icon(_detail)?/, '') || '',
-        smallIcons: [this.verification.itemIds ? this.verification.itemIds.map(id => collectionLog.getCollectionLogEntry(id)?.iconUrl || '') : []]
+        icon: wikiData.getCollectionLogEntry(this.displayItemId)?.imageUrl || this.imageLink.replace(/(_detail)?\.png$/, '_detail.png')?.replace(/_icon(_detail)?/, '') || '',
+        smallIcons: [this.verification.itemIds ? this.verification.itemIds.map(id => wikiData.getCollectionLogEntry(id)?.iconUrl || '') : []]
           .flat()
           .filter(Boolean),
       });

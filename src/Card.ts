@@ -1,6 +1,6 @@
 /**
  * Card type definitions and defaults.
- * Each type owns its template, mask, and style preset.
+ * Each type owns its template, and style preset.
  */
 
 interface CardTypeConfig {
@@ -22,14 +22,12 @@ interface CardTypeConfig {
 
 export interface CardTypeDefinition {
 	template: string;
-	mask: string;
 	config: CardTypeConfig;
 }
 
 export const CARD_TYPE = {
 	BASIC: {
 		template: './images/CardTemplate_Basic.png',
-		mask: './images/CardMask_Basic.png',
 		config: {
 			fontFamily: 'Runescape, Arial, sans-serif',
 			titleFontFamily: 'Runescape Bold, Arial Black, sans-serif',
@@ -65,12 +63,10 @@ export default class Card {
 	private config: CardConfig;
 	private type: CardTypeDefinition;
 	private templateImg: HTMLImageElement | null = null;
-	private maskImg: HTMLImageElement | null = null;
 	private static sharedLoadedImages: Map<string, HTMLImageElement> = new Map();
 	private loadedImages: Map<string, HTMLImageElement> = new Map();
 	private width: number = 0;
 	private height: number = 0;
-	private cachedCanvas: HTMLCanvasElement | null = null;
 	private cachedElement: HTMLElement | null = null;
 
 	constructor(config: CardConfig) {
@@ -86,7 +82,6 @@ export default class Card {
 	 */
 	async loadImages(): Promise<void> {
 		this.templateImg = await this.loadImage(this.type.template);
-		this.maskImg = await this.loadImage(this.type.mask);
 
 		if (!this.width || !this.height) {
 			const aspectRatio = this.templateImg.width / this.templateImg.height;
@@ -178,17 +173,6 @@ export default class Card {
 
 		if (this.width > 0 && this.height > 0) {
 			root.style.aspectRatio = `${this.width} / ${this.height}`;
-		}
-
-		if (this.type.mask) {
-			root.style.maskImage = `url(${this.type.mask})`;
-			(root.style as CSSStyleDeclaration & { webkitMaskImage?: string }).webkitMaskImage = `url(${this.type.mask})`;
-			root.style.maskRepeat = 'no-repeat';
-			(root.style as CSSStyleDeclaration & { webkitMaskRepeat?: string }).webkitMaskRepeat = 'no-repeat';
-			root.style.maskPosition = 'center';
-			(root.style as CSSStyleDeclaration & { webkitMaskPosition?: string }).webkitMaskPosition = 'center';
-			root.style.maskSize = '100% 100%';
-			(root.style as CSSStyleDeclaration & { webkitMaskSize?: string }).webkitMaskSize = '100% 100%';
 		}
 
 		const content = document.createElement('div');
