@@ -1,5 +1,4 @@
 import CanvasManager from "./CanvasManager";
-import Card, { CARD_TYPE } from "./Card";
 import TaskManager from "./TaskManager";
 
 window.addEventListener('DOMContentLoaded', async () => {
@@ -17,7 +16,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 	console.debug('All cards generated, setting up animation callbacks...');
 	tasks.forEach(async (task, index) => {
 
-		if (index >= 10) return; // Limit to first 10 tasks for demo purposes
+		if (Math.random() > 0.05) return; // Limit to first 20 tasks for demo purposes
 		const card = task.card;
 		if (!card) return console.debug(`No card for task ${task.id} (${task.name})`);
 		

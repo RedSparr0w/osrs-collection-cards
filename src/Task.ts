@@ -63,7 +63,7 @@ export default class Task implements TaskInformation {
         category: this.tier.toUpperCase(),
         title: this.name,
         description: this.tip,
-        icon: collectionLog.getCollectionLogEntry(this.displayItemId)?.imageUrl || this.imageLink,
+        icon: collectionLog.getCollectionLogEntry(this.displayItemId)?.imageUrl || this.imageLink.replace(/(_detail)?\.png$/, '_detail.png') || '',
         smallIcons: [this.verification.itemIds ? this.verification.itemIds.map(id => collectionLog.getCollectionLogEntry(id)?.iconUrl || '') : []].flat(),
       });
     }
