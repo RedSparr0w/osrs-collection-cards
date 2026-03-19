@@ -73,6 +73,10 @@ window.addEventListener('DOMContentLoaded', async () => {
 		const onPointerMove = (e: PointerEvent) => {
 			if (activeCardElement !== element) {
 				document.body.removeEventListener('pointermove', onPointerMove);
+				element.style.removeProperty('--active-rotate-x');
+				element.style.removeProperty('--active-rotate-z');
+				element.style.removeProperty('--brightness');
+				return;
 			};
 			const maxRotation = 5;
 			const rect = element.getBoundingClientRect();
@@ -87,16 +91,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 			let brightness = mapRange(localY, 0, rect.height, 1.1, 0.9);
 			element.style.setProperty('--brightness', `${brightness}`);
 		}
-		const onPointerLeave = () => {
-			if (activeCardElement !== element) {
-				document.body.removeEventListener('pointerleave', onPointerLeave);
-			};
-			element.style.removeProperty('--active-rotate-x');
-			element.style.removeProperty('--active-rotate-z');
-			element.style.removeProperty('--brightness');
-		}
 		document.body.addEventListener('pointermove', onPointerMove);
-		document.body.addEventListener('pointerleave', onPointerLeave);
 	};
 
 	window.addEventListener('resize', () => {

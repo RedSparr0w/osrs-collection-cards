@@ -240,9 +240,10 @@ body {
   transform-style: preserve-3d;
   transform-origin: center bottom;
   transform: translate(var(--active-x), var(--active-y)) rotateX(var(--active-rotate-x)) rotateZ(var(--active-rotate-z)) translateY(var(--active-dip));
-  transition: transform 500ms ease, flex-basis 500ms ease, margin 500ms ease, box-shadow 220ms ease;
+  transition: all 200ms ease, transform 500ms ease, flex-basis 500ms ease, margin 500ms ease, box-shadow 220ms ease;
   will-change: transform;
   animation: deal-card 2s ease-in-out forwards;
+  filter: brightness(var(--brightness, 1));
 }
 .task-card:nth-child(1):nth-last-child(1) {
   --fan-rotate: 0deg;
@@ -429,11 +430,12 @@ body {
   --active-rotate-z: 0deg;
   --active-dip: 0px;
   z-index: 100 !important;
+  transform-origin: center center;
 }
 .task-card.is-active .card-rotator {
   rotate: y 360deg;
 }
-.task-card:hover .card-rotator::after {
+.task-card:hover .card-face::after {
   content: "";
   position: absolute;
   inset: -20% -40%;
@@ -451,8 +453,10 @@ body {
   inset: 0;
   transform-style: preserve-3d;
   transition: transform 420ms ease, rotate 500ms ease-out;
+  transform: rotateY(var(--active-rotate-y, 0deg));
 }
 .task-card .card-face {
+  overflow: clip;
   position: absolute;
   inset: 0;
   backface-visibility: hidden;
