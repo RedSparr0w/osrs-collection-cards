@@ -22,21 +22,49 @@ window.addEventListener('DOMContentLoaded', async () => {
 	let activeCard: Awaited<ReturnType<typeof tasks[number]['getCard']>> | null = null;
 	let activeCardElement: HTMLElement | null = null;
 
+	const getNumericCssVar = (element: HTMLElement, name: string, fallback = 0): number => {
+		const raw = getComputedStyle(element).getPropertyValue(name).trim();
+		const value = Number.parseFloat(raw);
+		return Number.isFinite(value) ? value : fallback;
+	};
+
+	const setActiveSizeForViewport = (element: HTMLElement): void => {
+		const currentSize = getNumericCssVar(element, '--active-size', 1) || 1;
+		const baseHeight = element.offsetHeight / currentSize;
+		if (!baseHeight) {
+			return;
+		}
+		const targetHeight = window.innerHeight * 0.8;
+		const nextSize = targetHeight / baseHeight;
+		element.style.setProperty('--active-size', `${nextSize}`);
+	};
+
 	const clearCenterOffset = (element: HTMLElement): void => {
 		element.style.setProperty('--active-x', '0px');
 		element.style.setProperty('--active-y', '0px');
+		element.style.removeProperty('--active-size');
 	};
 
 	const updateCenterOffset = (element: HTMLElement): void => {
-		const rect = element.getBoundingClientRect();
-		const targetX = window.innerWidth / 2 - (rect.left + rect.width / 2);
-		const targetY = window.innerHeight / 1.7 - (rect.top + rect.height / 2);
+		let centerX = element.offsetLeft + element.offsetWidth / 2;
+		let centerY = element.offsetTop + element.offsetHeight / 2;
+		let parent = element.offsetParent as HTMLElement | null;
+
+		while (parent) {
+			centerX += parent.offsetLeft - parent.scrollLeft;
+			centerY += parent.offsetTop - parent.scrollTop;
+			parent = parent.offsetParent as HTMLElement | null;
+		}
+
+		const targetX = window.innerWidth / 2 - centerX;
+		const targetY = window.innerHeight / 2 - centerY;
 		element.style.setProperty('--active-x', `${targetX}px`);
 		element.style.setProperty('--active-y', `${targetY}px`);
 	};
 
 	window.addEventListener('resize', () => {
 		if (activeCardElement) {
+			setActiveSizeForViewport(activeCardElement);
 			updateCenterOffset(activeCardElement);
 		}
 	});
@@ -70,12 +98,18 @@ window.addEventListener('DOMContentLoaded', async () => {
 					activeCard.setActive(false);
 				}
 
+				setActiveSizeForViewport(cardElement);
 				card.setActive(true);
 				activeCard = card;
 				activeCardElement = cardElement;
 				requestAnimationFrame(() => {
 					if (activeCardElement === cardElement) {
 						updateCenterOffset(cardElement);
+						requestAnimationFrame(() => {
+							if (activeCardElement === cardElement) {
+								updateCenterOffset(cardElement);
+							}
+						});
 					}
 				});
 			});

@@ -260,6 +260,7 @@ body {
 }
 
 .task-card {
+  --card-base-size: clamp(160px, 20vw, 260px);
   --active-x: 0px;
   --active-y: 0px;
   --active-size: 1;
@@ -283,8 +284,8 @@ body {
   z-index: 1;
   flex-grow: 0;
   flex-shrink: 0;
-  flex-basis: calc(clamp(160px, 20vw, 260px) * var(--active-size));
-  margin: 0 -25px;
+  flex-basis: calc(var(--card-base-size) * var(--active-size));
+  margin: 0 calc((var(--card-base-size) * (1 - var(--active-size)) * 0.5) - 25px);
   aspect-ratio: 3 / 4;
   border-radius: 12px;
   overflow: hidden;
@@ -292,7 +293,7 @@ body {
   transform-style: preserve-3d;
   transform-origin: center bottom;
   transform: translate(var(--active-x), var(--active-y)) rotateX(var(--active-rotate-x)) rotateZ(var(--active-rotate-z)) translateY(var(--active-dip));
-  transition: transform 500ms ease, flex-basis 500ms ease, box-shadow 220ms ease, margin 220ms ease;
+  transition: transform 500ms ease, flex-basis 500ms ease, margin 500ms ease, box-shadow 220ms ease;
   will-change: transform;
   animation: deal-card 2s ease-in-out forwards;
 
@@ -302,7 +303,6 @@ body {
     --active-rotate-x: 0deg;
     --active-rotate-z: 0deg;
     --active-dip: 0px;
-    --active-size: 2;
     z-index: 100 !important;
     .card-rotator {
       rotate: y 360deg;
