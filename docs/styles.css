@@ -187,6 +187,17 @@ body {
     opacity: 0;
   }
 }
+@keyframes cosmos-reveal {
+  0% {
+    mask-position: 200% 0;
+  }
+  36% {
+    mask-position: -200% 0;
+  }
+  100% {
+    mask-position: -200% 0;
+  }
+}
 /* ── Card Component ──────────────────────────────────────────────────────────*/
 @keyframes deal-card {
   0% {
@@ -205,6 +216,7 @@ body {
 .card-grid:not(:has(.is-active)) .task-card:hover {
   transform: rotateX(-8deg) rotateZ(var(--fan-rotate, 0deg)) translateY(-16px) translateZ(60px);
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.58);
+  padding: 0 40px;
   margin: 0 40px;
 }
 
@@ -435,15 +447,22 @@ body {
 .task-card.is-active .card-rotator {
   rotate: y 360deg;
 }
+.task-card:hover .card-face::before {
+  mask-image: linear-gradient(110deg, transparent 5%, black 30%, transparent 45%);
+  mask-size: 200% 100%;
+  mask-position: 200% 0;
+  mask-repeat: no-repeat;
+  animation: cosmos-reveal 4s ease-in-out forwards;
+}
 .task-card:hover .card-face::after {
   content: "";
   position: absolute;
   inset: -20% -40%;
   z-index: 20;
   pointer-events: none;
-  background: linear-gradient(110deg, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.07) 45%, var(--golden) 50%, rgba(255, 255, 255, 0.07) 55%, rgba(255, 255, 255, 0) 70%);
+  background: linear-gradient(110deg, rgba(255, 255, 255, 0) 20%, rgba(255, 255, 255, 0.07) 35%, var(--golden) 50%, rgba(255, 255, 255, 0.07) 55%, rgba(255, 255, 255, 0) 70%);
   mix-blend-mode: screen;
-  animation: card-shine-sweep 3.6s ease-in-out forwards;
+  animation: card-shine-sweep 4s ease-in-out forwards;
 }
 .task-card.is-flipped .card-rotator {
   transform: rotateY(180deg);
@@ -461,6 +480,16 @@ body {
   inset: 0;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+}
+.task-card .card-face::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 21;
+  pointer-events: none;
+  background: url("./images/cosmos-middle-trans.png") center/cover;
+  mix-blend-mode: color-dodge;
+  mask-image: linear-gradient(110deg, transparent 99%, black 99.1%, transparent 99.2%);
 }
 .task-card .card-face--front {
   transform: rotateY(0deg);
