@@ -1,3 +1,5 @@
+@use 'sass:math';
+
 /* ── Fonts ─────────────────────────────────────────────────────────────────────*/
 @font-face {
   font-family: 'Runescape Bold';
@@ -125,15 +127,20 @@ html,
 body {
   margin: 0;
   padding: 0;
-  min-height: 100%;
   background: radial-gradient(circle at top center, #272116 0%, #18120c 55%, #0f0a06 100%);
   color: var(--gallery);
   font-family: 'Runescape', Arial, sans-serif;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 }
 
 .app-shell {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
   padding: 20px;
+  overflow: hidden;
 }
 
 .app-header {
@@ -166,11 +173,50 @@ body {
 }
 
 .card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
-  align-items: start;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 0 40px;
   perspective: 1400px;
+  perspective-origin: 50% 60%;
+}
+
+// ── Fan layout helpers ────────────────────────────────────────────────────────
+/// Returns the rotateZ angle for card $i of $n total, spread evenly across $spread degrees.
+/// Leftmost card → -$spread/2, rightmost → +$spread/2, centre → 0.
+@function fan-angle($i, $n, $spread: 22deg) {
+  @if $n <= 1 {
+    @return 0deg;
+  }
+  $t: math.div($i - 1, $n - 1); // 0 → 1
+  @return $spread * ($t - 0.5); // -spread/2 → +spread/2
+}
+
+/// Returns the downward translateY dip for card $i of $n (outer cards sit lower).
+@function fan-dip($i, $n, $max-dip: 36px) {
+  @if $n <= 1 {
+    @return 0px;
+  }
+  $t: math.div($i - 1, $n - 1);
+  $normalized: 2 * $t - 1; // -1 → 1
+  @return $max-dip * ($normalized * $normalized); // 0 at centre, $max-dip at edges
+}
+
+/// Generates :nth-child rules for $min–$max card counts using the CSS sibling-count trick:
+/// :nth-child($i):nth-last-child($n - $i + 1) uniquely targets card at position $i
+/// when there are exactly $n children total — no JS required.
+@mixin fan-layout($min: 3, $max: 6, $spread: 22deg, $max-dip: 36px) {
+  @for $n from $min through $max {
+    @for $i from 1 through $n {
+      &:nth-child(#{$i}):nth-last-child(#{$n - $i + 1}) {
+        --fan-rotate: #{fan-angle($i, $n, $spread)};
+        --fan-dip: #{fan-dip($i, $n, $max-dip)};
+        z-index: $i;
+      }
+    }
+  }
 }
 
 @keyframes card-shine-sweep {
@@ -210,28 +256,26 @@ body {
   --card-small-icon-size: 28px;
 
   position: relative;
-  width: 100%;
-  max-width: 300px;
-  margin: 0 auto;
+  z-index: 1;
+  flex: 0 0 clamp(160px, 20vw, 260px);
+  margin: 0 -25px;
   aspect-ratio: 3 / 4;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   transform-style: preserve-3d;
   transform-origin: center bottom;
-  transform: perspective(900px) rotateX(0deg) rotateZ(-0.8deg) translateY(0) translateZ(0);
-  transition: transform 220ms ease, box-shadow 220ms ease;
+  transform: rotateX(6deg) rotateZ(var(--fan-rotate, 0deg)) translateY(var(--fan-dip, 0px));
+  transition: transform 220ms ease, box-shadow 220ms ease, margin 220ms ease, all 220ms ease;
+  will-change: transform;
 
-  
+  @include fan-layout(3, 6, 24deg, 36px);
 
   &:hover {
-    transform: perspective(900px) rotateX(-10deg) rotateZ(-0.8deg) translateY(-10px) translateZ(100px);
-    z-index: 10;
-    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.54);
+    transform: rotateX(-8deg) rotateZ(var(--fan-rotate, 0deg)) translateY(-16px) translateZ(60px);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.58);
+    margin: 0 40px;
 
-    &::before {
-      animation-duration: 2.6s;
-    }
     &::before {
       content: '';
       position: absolute;
@@ -247,7 +291,7 @@ body {
         rgba(255, 255, 255, 0) 70%
       );
       mix-blend-mode: screen;
-      animation: card-shine-sweep 4.2s ease-in-out infinite;
+      animation: card-shine-sweep 2.6s ease-in-out infinite;
     }
   }
 

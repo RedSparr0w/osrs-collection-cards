@@ -113,15 +113,20 @@ html,
 body {
   margin: 0;
   padding: 0;
-  min-height: 100%;
   background: radial-gradient(circle at top center, #272116 0%, #18120c 55%, #0f0a06 100%);
   color: var(--gallery);
   font-family: "Runescape", Arial, sans-serif;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 }
 
 .app-shell {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
   padding: 20px;
+  overflow: hidden;
 }
 
 .app-header {
@@ -154,11 +159,14 @@ body {
 }
 
 .card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
-  align-items: start;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 0 40px;
   perspective: 1400px;
+  perspective-origin: 50% 60%;
 }
 
 @keyframes card-shine-sweep {
@@ -192,25 +200,113 @@ body {
   --card-icon-size: 30%;
   --card-small-icon-size: 28px;
   position: relative;
-  width: 100%;
-  max-width: 300px;
-  margin: 0 auto;
+  z-index: 1;
+  flex: 0 0 clamp(160px, 20vw, 260px);
+  margin: 0 -25px;
   aspect-ratio: 3/4;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   transform-style: preserve-3d;
   transform-origin: center bottom;
-  transform: perspective(900px) rotateX(0deg) rotateZ(-0.8deg) translateY(0) translateZ(0);
-  transition: transform 220ms ease, box-shadow 220ms ease;
+  transform: rotateX(6deg) rotateZ(var(--fan-rotate, 0deg)) translateY(var(--fan-dip, 0px));
+  transition: transform 220ms ease, box-shadow 220ms ease, margin 220ms ease, all 220ms ease;
+  will-change: transform;
+}
+.task-card:nth-child(1):nth-last-child(3) {
+  --fan-rotate: -12deg;
+  --fan-dip: 36px;
+  z-index: 1;
+}
+.task-card:nth-child(2):nth-last-child(2) {
+  --fan-rotate: 0deg;
+  --fan-dip: 0px;
+  z-index: 2;
+}
+.task-card:nth-child(3):nth-last-child(1) {
+  --fan-rotate: 12deg;
+  --fan-dip: 36px;
+  z-index: 3;
+}
+.task-card:nth-child(1):nth-last-child(4) {
+  --fan-rotate: -12deg;
+  --fan-dip: 36px;
+  z-index: 1;
+}
+.task-card:nth-child(2):nth-last-child(3) {
+  --fan-rotate: -4deg;
+  --fan-dip: 4px;
+  z-index: 2;
+}
+.task-card:nth-child(3):nth-last-child(2) {
+  --fan-rotate: 4deg;
+  --fan-dip: 4px;
+  z-index: 3;
+}
+.task-card:nth-child(4):nth-last-child(1) {
+  --fan-rotate: 12deg;
+  --fan-dip: 36px;
+  z-index: 4;
+}
+.task-card:nth-child(1):nth-last-child(5) {
+  --fan-rotate: -12deg;
+  --fan-dip: 36px;
+  z-index: 1;
+}
+.task-card:nth-child(2):nth-last-child(4) {
+  --fan-rotate: -6deg;
+  --fan-dip: 9px;
+  z-index: 2;
+}
+.task-card:nth-child(3):nth-last-child(3) {
+  --fan-rotate: 0deg;
+  --fan-dip: 0px;
+  z-index: 3;
+}
+.task-card:nth-child(4):nth-last-child(2) {
+  --fan-rotate: 6deg;
+  --fan-dip: 9px;
+  z-index: 4;
+}
+.task-card:nth-child(5):nth-last-child(1) {
+  --fan-rotate: 12deg;
+  --fan-dip: 36px;
+  z-index: 5;
+}
+.task-card:nth-child(1):nth-last-child(6) {
+  --fan-rotate: -12deg;
+  --fan-dip: 36px;
+  z-index: 1;
+}
+.task-card:nth-child(2):nth-last-child(5) {
+  --fan-rotate: -7.2deg;
+  --fan-dip: 12.96px;
+  z-index: 2;
+}
+.task-card:nth-child(3):nth-last-child(4) {
+  --fan-rotate: -2.4deg;
+  --fan-dip: 1.44px;
+  z-index: 3;
+}
+.task-card:nth-child(4):nth-last-child(3) {
+  --fan-rotate: 2.4deg;
+  --fan-dip: 1.44px;
+  z-index: 4;
+}
+.task-card:nth-child(5):nth-last-child(2) {
+  --fan-rotate: 7.2deg;
+  --fan-dip: 12.96px;
+  z-index: 5;
+}
+.task-card:nth-child(6):nth-last-child(1) {
+  --fan-rotate: 12deg;
+  --fan-dip: 36px;
+  z-index: 6;
 }
 .task-card:hover {
-  transform: perspective(900px) rotateX(-10deg) rotateZ(-0.8deg) translateY(-10px) translateZ(100px);
-  z-index: 10;
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.54);
-}
-.task-card:hover::before {
-  animation-duration: 2.6s;
+  transform: rotateX(-8deg) rotateZ(var(--fan-rotate, 0deg)) translateY(-16px) translateZ(60px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.58);
+  margin: 0 40px;
 }
 .task-card:hover::before {
   content: "";
@@ -220,7 +316,7 @@ body {
   pointer-events: none;
   background: linear-gradient(110deg, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.07) 45%, var(--golden) 50%, rgba(255, 255, 255, 0.07) 55%, rgba(255, 255, 255, 0) 70%);
   mix-blend-mode: screen;
-  animation: card-shine-sweep 4.2s ease-in-out infinite;
+  animation: card-shine-sweep 2.6s ease-in-out infinite;
 }
 .task-card .content {
   position: absolute;

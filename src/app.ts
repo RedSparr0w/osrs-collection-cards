@@ -25,12 +25,14 @@ window.addEventListener('DOMContentLoaded', async () => {
 	}
 
 	let renderedTasks = 0;
-	const tasksToRender = 3;
+	const tasksToRender = 5;
 	tasks.sort((a, b) => Math.random() - 0.5); // Shuffle tasks randomly
 	tasks.slice(0, tasksToRender).forEach(async (task) => {
 		try {
 			const cardElement = await task.getCard().then(card => card.generateElement());
-			cardGrid.appendChild(cardElement);
+			setTimeout(() =>{
+				cardGrid.appendChild(cardElement);
+			}, renderedTasks * 150); // Stagger card additions for visual effect
 			renderedTasks++;
 		} catch (error) {
 			console.warn(`Failed to render card for task ${task.id}:`, error);
