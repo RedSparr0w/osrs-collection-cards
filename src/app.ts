@@ -1,6 +1,10 @@
 import TaskManager from "./TaskManager";
 import './styles.scss';
 
+const mapRange = (value: number, inMin: number, inMax: number, outMin: number, outMax: number): number => {
+  return outMin + ((value - inMin) * (outMax - outMin)) / (inMax - inMin);
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
 	const taskManager = new TaskManager();
 	const cardGrid = document.getElementById('card-grid');
@@ -39,10 +43,13 @@ window.addEventListener('DOMContentLoaded', async () => {
 		element.style.setProperty('--active-size', `${nextSize}`);
 	};
 
-	const clearCenterOffset = (element: HTMLElement): void => {
+	const clearTransforms = (element: HTMLElement): void => {
 		element.style.setProperty('--active-x', '0px');
 		element.style.setProperty('--active-y', '0px');
 		element.style.removeProperty('--active-size');
+		element.style.removeProperty('--active-rotate-x');
+		element.style.removeProperty('--active-rotate-z');
+		element.style.removeProperty('--brightness');
 	};
 
 	const updateCenterOffset = (element: HTMLElement): void => {
@@ -60,6 +67,36 @@ window.addEventListener('DOMContentLoaded', async () => {
 		const targetY = window.innerHeight / 2 - centerY;
 		element.style.setProperty('--active-x', `${targetX}px`);
 		element.style.setProperty('--active-y', `${targetY}px`);
+	};
+
+	const apply3dTransforms = (element: HTMLElement): void => {
+		const onPointerMove = (e: PointerEvent) => {
+			if (activeCardElement !== element) {
+				document.body.removeEventListener('pointermove', onPointerMove);
+			};
+			const maxRotation = 5;
+			const rect = element.getBoundingClientRect();
+			const deltaX = e.clientX - rect.left;
+			const deltaY = e.clientY - rect.top;
+			const localX = Math.max(0, Math.min(rect.width, deltaX));
+			const localY = Math.max(0, Math.min(rect.height, deltaY));
+			const rotateX = mapRange(localY, 0, rect.height, maxRotation / 2, -maxRotation / 2);
+			const rotateZ = mapRange(localX, 0, rect.width, -maxRotation / 2, maxRotation / 2);
+			element.style.setProperty('--active-rotate-x', `${rotateX}deg`);
+			element.style.setProperty('--active-rotate-z', `${rotateZ}deg`);
+			let brightness = mapRange(localY, 0, rect.height, 1.1, 0.9);
+			element.style.setProperty('--brightness', `${brightness}`);
+		}
+		const onPointerLeave = () => {
+			if (activeCardElement !== element) {
+				document.body.removeEventListener('pointerleave', onPointerLeave);
+			};
+			element.style.removeProperty('--active-rotate-x');
+			element.style.removeProperty('--active-rotate-z');
+			element.style.removeProperty('--brightness');
+		}
+		document.body.addEventListener('pointermove', onPointerMove);
+		document.body.addEventListener('pointerleave', onPointerLeave);
 	};
 
 	window.addEventListener('resize', () => {
@@ -86,7 +123,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 			cardElement.setAttribute('aria-label', `Flip ${task.name}`);
 			cardElement.addEventListener('click', () => {
 				if (activeCardElement === cardElement) {
-					clearCenterOffset(cardElement);
+					clearTransforms(cardElement);
 					card.setActive(false);
 					activeCard = null;
 					activeCardElement = null;
@@ -94,7 +131,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 				}
 
 				if (activeCard && activeCardElement) {
-					clearCenterOffset(activeCardElement);
+					clearTransforms(activeCardElement);
 					activeCard.setActive(false);
 				}
 
@@ -108,6 +145,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 						requestAnimationFrame(() => {
 							if (activeCardElement === cardElement) {
 								updateCenterOffset(cardElement);
+								apply3dTransforms(cardElement);
 							}
 						});
 					}

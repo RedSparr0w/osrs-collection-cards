@@ -303,9 +303,10 @@ body {
   transform-style: preserve-3d;
   transform-origin: center bottom;
   transform: translate(var(--active-x), var(--active-y)) rotateX(var(--active-rotate-x)) rotateZ(var(--active-rotate-z)) translateY(var(--active-dip));
-  transition: transform 500ms ease, flex-basis 500ms ease, margin 500ms ease, box-shadow 220ms ease;
+  transition: all 200ms ease, transform 500ms ease, flex-basis 500ms ease, margin 500ms ease, box-shadow 220ms ease;
   will-change: transform;
   animation: deal-card 2s ease-in-out forwards;
+  filter: brightness(var(--brightness, 1));
 
   @include fan-layout(1, 8, 24deg, 36px);
 
@@ -314,6 +315,7 @@ body {
     --active-rotate-z: 0deg;
     --active-dip: 0px;
     z-index: 100 !important;
+    transform-origin: center center;
     .card-rotator {
       rotate: y 360deg;
     }
@@ -346,10 +348,12 @@ body {
   }
 
   .card-rotator {
+    // overflow: clip;
     position: absolute;
     inset: 0;
     transform-style: preserve-3d;
     transition: transform 420ms ease, rotate 500ms ease-out;
+    transform: rotateY(var(--active-rotate-y, 0deg));
   }
 
   .card-face {
