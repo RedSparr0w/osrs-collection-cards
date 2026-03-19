@@ -1,107 +1,119 @@
-/*!**************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/sass-loader/dist/cjs.js!./src/styles.scss ***!
-  \**************************************************************************************************************************************/
-@charset "UTF-8";
 /* ── Fonts ─────────────────────────────────────────────────────────────────────*/
 @font-face {
-  font-family: "Runescape Bold";
-  src: url("fonts/runescape_bold.ttf") format("truetype");
+  font-family: 'Runescape Bold';
+  src: url('fonts/runescape_bold.ttf') format('truetype');
   font-weight: bold;
 }
+
 @font-face {
-  font-family: "Runescape";
-  src: url("fonts/runescape.ttf") format("truetype");
+  font-family: 'Runescape';
+  src: url('fonts/runescape.ttf') format('truetype');
   font-weight: normal;
 }
+
 @font-face {
-  font-family: "Runescape Small";
-  src: url("fonts/runescape_small.ttf") format("truetype");
+  font-family: 'Runescape Small';
+  src: url('fonts/runescape_small.ttf') format('truetype');
   font-weight: normal;
 }
+
 :root {
   /* ── Body ──────────────────────────────────────────────────────────────────*/
-  --body-border: #94866d;
-  --body-dark: #b8a282;
-  --body-mid: #d0bd97;
-  --body-light: #d8ccb4;
-  --body-main: #e2dbc8;
-  --body-background-color: #c0a886;
+  --body-border:            #94866d;
+  --body-dark:              #b8a282;
+  --body-mid:               #d0bd97;
+  --body-light:             #d8ccb4;
+  --body-main:              #e2dbc8;
+  --body-background-color:  #c0a886;
+
   /* ── Buttons & Links ───────────────────────────────────────────────────────*/
-  --button-border: #3c352a;
-  --button-dark: #18140c;
-  --button-light: #3a301d;
-  --osrsw-brown: #605443;
-  --link-color: #936039;
-  --background-link-color: #52351e;
+  --button-border:          #3c352a;
+  --button-dark:            #18140c;
+  --button-light:           #3a301d;
+  --osrsw-brown:            #605443;
+  --link-color:             #936039;
+  --background-link-color:  #52351e;
+
   /* ── Gray ──────────────────────────────────────────────────────────────────*/
-  --mineshaft: #333333;
-  --tundora: #4c4c4c;
-  --boulder: #777777;
-  --silver: #cccccc;
-  --gallery: #eeeeee;
-  --alabaster: #f9f9f9;
+  --mineshaft:              #333333;
+  --tundora:                #4c4c4c;
+  --boulder:                #777777;
+  --silver:                 #cccccc;
+  --gallery:                #eeeeee;
+  --alabaster:              #f9f9f9;
+
   /* ── Status: Red ───────────────────────────────────────────────────────────*/
-  --mocaccino: #801c13;
-  --old-brick: #9f261e;
-  --flamingo: #ee4231;
-  --apricot-peach: #fbc0ba;
-  --bridesmaid: #feecea;
+  --mocaccino:              #801c13;
+  --old-brick:              #9f261e;
+  --flamingo:               #ee4231;
+  --apricot-peach:          #fbc0ba;
+  --bridesmaid:             #feecea;
+
   /* ── Status: Orange ────────────────────────────────────────────────────────*/
-  --antique-bronze: #7a3f08;
-  --korma: #b55e0c;
-  --ecstasy: #f7861b;
-  --corvette: #fbcfa6;
-  --lace: #fef0e4;
+  --antique-bronze:         #7a3f08;
+  --korma:                  #b55e0c;
+  --ecstasy:                #f7861b;
+  --corvette:               #fbcfa6;
+  --lace:                   #fef0e4;
+
   /* ── Status: Yellow ────────────────────────────────────────────────────────*/
-  --cinnamon: #786300;
-  --olive: #a48900;
-  --supernova: #f9d000;
-  --golden: #fcea94;
-  --half-dutch: #fef9de;
+  --cinnamon:               #786300;
+  --olive:                  #a48900;
+  --supernova:              #f9d000;
+  --golden:                 #fcea94;
+  --half-dutch:             #fef9de;
+
   /* ── Status: Green ─────────────────────────────────────────────────────────*/
-  --san-felix: #2e5e05;
-  --la-palma: #3c780a;
-  --lima: #6bc71f;
-  --caper: #c3e8a3;
-  --frost: #ecf8e3;
+  --san-felix:              #2e5e05;
+  --la-palma:               #3c780a;
+  --lima:                   #6bc71f;
+  --caper:                  #c3e8a3;
+  --frost:                  #ecf8e3;
+
   /* ── Status: Blue ──────────────────────────────────────────────────────────*/
-  --regal-blue: #03436b;
-  --venice-blue: #0b5884;
-  --curious-blue: #3ea6e6;
-  --jordy-blue: #aad9f5;
-  --tropical-blue: #e5f3fc;
+  --regal-blue:             #03436b;
+  --venice-blue:            #0b5884;
+  --curious-blue:           #3ea6e6;
+  --jordy-blue:             #aad9f5;
+  --tropical-blue:          #e5f3fc;
+
   /* ── Status: Purple ─────────────────────────────────────────────────────────*/
-  --honey-flower: #3d276b;
-  --seance: #4f348b;
-  --medium-purple: #855cd8;
-  --perfume: #cfc0f0;
-  --heliotrope: #f0ecfa;
+  --honey-flower:           #3d276b;
+  --seance:                 #4f348b;
+  --medium-purple:          #855cd8;
+  --perfume:                #cfc0f0;
+  --heliotrope:             #f0ecfa;
+
   /* ── Status: Pink ───────────────────────────────────────────────────────────*/
-  --cosmic: #6d3662;
-  --cannon-pink: #984c89;
-  --lavender: #e874cf;
-  --cherub: #f5c8ec;
-  --french-lilac: #fceef9;
+  --cosmic:                 #6d3662;
+  --cannon-pink:            #984c89;
+  --lavender:               #e874cf;
+  --cherub:                 #f5c8ec;
+  --french-lilac:           #fceef9;
+
   /* ── Status: Neutral Gray-Blue ──────────────────────────────────────────────*/
-  --river-bed: #444e5a;
-  --shuttle-gray: #5d6773;
-  --gray-chateau: #949eaa;
-  --mystic: #e4eaee;
-  --black-haze: #f9fafa;
+  --river-bed:              #444e5a;
+  --shuttle-gray:           #5d6773;
+  --gray-chateau:           #949eaa;
+  --mystic:                 #e4eaee;
+  --black-haze:             #f9fafa;
+
   /* ── Dark Mode Blue ─────────────────────────────────────-──────────────────*/
-  --black-pearl: #071022;
-  --big-stone: #172136;
-  --cloud-burst: #222e45;
-  --pickled-bluewood: #313e59;
-  --waikawa-grey: #596e96;
-  --portage: #8cabe6;
+  --black-pearl:            #071022;
+  --big-stone:              #172136;
+  --cloud-burst:            #222e45;
+  --pickled-bluewood:       #313e59;
+  --waikawa-grey:           #596e96;
+  --portage:                #8cabe6;
+
+
   /* ── Dark Mode Brown ───────────────────────────────────────────────────────*/
-  --ebony-brown: #1b1612;
-  --mocha-brown: #28221d;
-  --cacao-brown: #312a25;
-  --sable-brown: #3e362f;
-  --taupe-brown: #736559;
-  --kharid-sand: #b79d7e;
+  --ebony-brown:            #1b1612;
+  --mocha-brown:            #28221d;
+  --cacao-brown:            #312a25;
+  --sable-brown:            #3e362f;
+  --taupe-brown:            #736559;
+  --kharid-sand:            #b79d7e;
 }
 
 /* ── App Layout ──────────────────────────────────────────────────────────────*/
@@ -116,7 +128,7 @@ body {
   min-height: 100%;
   background: radial-gradient(circle at top center, #272116 0%, #18120c 55%, #0f0a06 100%);
   color: var(--gallery);
-  font-family: "Runescape", Arial, sans-serif;
+  font-family: 'Runescape', Arial, sans-serif;
 }
 
 .app-shell {
@@ -143,7 +155,7 @@ body {
 .app-header h1 {
   margin: 0;
   font-size: 22px;
-  font-family: "Runescape Bold", Arial Black, sans-serif;
+  font-family: 'Runescape Bold', Arial Black, sans-serif;
   color: #f0e5cd;
 }
 
@@ -161,6 +173,7 @@ body {
 }
 
 /* ── Card Component ──────────────────────────────────────────────────────────*/
+
 .task-card {
   --card-bg: #e2dbc8;
   --card-title-color: #000;
@@ -173,92 +186,106 @@ body {
   --card-font-body: 'Runescape', Arial, sans-serif;
   --card-icon-size: 30%;
   --card-small-icon-size: 28px;
+
   position: relative;
   width: 100%;
   max-width: 300px;
   margin: 0 auto;
-  aspect-ratio: 3/4;
+  aspect-ratio: 3 / 4;
   border-radius: 12px;
   overflow: hidden;
   background: var(--card-bg);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   transition: transform 140ms ease, box-shadow 140ms ease;
-}
-.task-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.5);
-}
-.task-card .content {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20% 8% 8%;
-  text-align: center;
-}
-.task-card .icon {
-  width: var(--card-icon-size);
-  height: 50px;
-  width: auto;
-  margin-top: 2%;
-  /* image-rendering: pixelated; */
-}
-.task-card .title {
-  margin: 10px 0 0;
-  color: var(--card-title-color);
-  font-family: var(--card-font-title);
-  font-size: var(--card-title-size);
-  line-height: 1.1;
-  text-wrap: balance;
-}
-.task-card .description {
-  margin: 0;
-  color: var(--card-desc-color);
-  font-family: var(--card-font-body);
-  font-size: var(--card-desc-size);
-  line-height: 1.1;
-}
-.task-card .small-icons {
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgb(0, 0, 0) 12px);
-  padding-top: 12px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 5px;
-  width: 100%;
-  overflow: hidden scroll;
-  margin-bottom: -40px;
-  padding-bottom: 40px;
-}
-.task-card .small-icons::-webkit-scrollbar {
-  width: 0px;
-}
-.task-card .small-icon {
-  width: var(--card-small-icon-size);
-  height: var(--card-small-icon-size);
-  object-fit: contain;
-  image-rendering: pixelated;
-}
-.task-card .template {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-.task-card .category {
-  position: absolute;
-  z-index: 3;
-  left: 50%;
-  top: 5%;
-  transform: translateX(-50%);
-  color: var(--card-category-color);
-  font-family: var(--card-font-title);
-  font-size: var(--card-category-size);
-  letter-spacing: 0.02em;
-  pointer-events: none;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.5);
+  }
+
+  .content {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20% 8% 8%;
+    text-align: center;
+  }
+
+  .icon {
+    width: var(--card-icon-size);
+    height: 50px;
+    width: auto;
+    margin-top: 2%;
+    /* image-rendering: pixelated; */
+  }
+
+  .title {
+    margin: 10px 0 0;
+    color: var(--card-title-color);
+    font-family: var(--card-font-title);
+    font-size: var(--card-title-size);
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+
+  .description {
+    margin: 0;
+    color: var(--card-desc-color);
+    font-family: var(--card-font-body);
+    font-size: var(--card-desc-size);
+    line-height: 1.1;
+  }
+
+  .small-icons {
+    mask-image:linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 1) 12px
+      );
+    padding-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    width: 100%;
+    overflow: hidden scroll;
+    margin-bottom: -40px;
+    padding-bottom: 40px;
+    
+    &::-webkit-scrollbar {
+      width: 0px;
+    }
+  }
+
+  .small-icon {
+    width: var(--card-small-icon-size);
+    height: var(--card-small-icon-size);
+    object-fit: contain;
+    image-rendering: pixelated;
+  }
+  .template {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .category {
+    position: absolute;
+    z-index: 3;
+    left: 50%;
+    top: 5%;
+    transform: translateX(-50%);
+    color: var(--card-category-color);
+    font-family: var(--card-font-title);
+    font-size: var(--card-category-size);
+    letter-spacing: 0.02em;
+    pointer-events: none;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
 }

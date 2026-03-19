@@ -192,13 +192,13 @@ export default class Card {
 		}
 
 		const content = document.createElement('div');
-		content.className = 'task-card__content';
+		content.className = 'content';
 
 		if (this.config.icon) {
 			const iconImg = this.loadedImages.get(this.config.icon);
 			if (iconImg) {
 				const icon = document.createElement('img');
-				icon.className = 'task-card__icon';
+				icon.className = 'icon';
 				icon.loading = 'lazy';
 				icon.decoding = 'async';
 				icon.src = iconImg.src;
@@ -209,14 +209,14 @@ export default class Card {
 
 		if (this.config.title) {
 			const title = document.createElement('h3');
-			title.className = 'task-card__title';
+			title.className = 'title';
 			title.textContent = this.config.title;
 			content.appendChild(title);
 		}
 
 		if (this.config.description) {
 			const description = document.createElement('p');
-			description.className = 'task-card__description';
+			description.className = 'description';
 			description.innerHTML = this.config.description.replace(/ Step/g, '<br/>Step');
 			content.appendChild(description);
 		}
@@ -224,13 +224,13 @@ export default class Card {
 		const smallIconUrls = (this.config.smallIcons || []).filter(Boolean);
 		if (smallIconUrls.length > 0) {
 			const smallIcons = document.createElement('div');
-			smallIcons.className = 'task-card__small-icons';
+			smallIcons.className = 'small-icons';
 			smallIconUrls.forEach(url => {
 				const iconImg = this.loadedImages.get(url);
 				if (!iconImg) return;
 
 				const img = document.createElement('img');
-				img.className = 'task-card__small-icon';
+				img.className = 'small-icon';
 				img.loading = 'lazy';
 				img.decoding = 'async';
 				img.src = iconImg.src;
@@ -246,7 +246,7 @@ export default class Card {
 		root.appendChild(content);
 
 		const templateOverlay = document.createElement('img');
-		templateOverlay.className = 'task-card__template';
+		templateOverlay.className = 'template';
 		templateOverlay.loading = 'eager';
 		templateOverlay.decoding = 'async';
 		templateOverlay.src = this.templateImg.src;
@@ -256,7 +256,7 @@ export default class Card {
 
 		if (this.config.category) {
 			const category = document.createElement('div');
-			category.className = 'task-card__category';
+			category.className = 'category';
 			category.textContent = this.config.category;
 			root.appendChild(category);
 		}

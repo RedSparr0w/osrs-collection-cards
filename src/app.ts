@@ -1,4 +1,5 @@
 import TaskManager from "./TaskManager";
+import './styles.scss';
 
 window.addEventListener('DOMContentLoaded', async () => {
 	const taskManager = new TaskManager();
