@@ -24,16 +24,18 @@ window.addEventListener('DOMContentLoaded', async () => {
 	}
 
 	const fragment = document.createDocumentFragment();
+	let renderedTasks = 0;
 	for (const task of tasks) {
 		if (Math.random() > 0.015) continue;
 		const card = await task.getCard();
 		const cardElement = await card.generateElement();
 		fragment.appendChild(cardElement);
+		renderedTasks++;
 	}
 
 	cardGrid.replaceChildren(fragment);
 
 	if (statusText) {
-		statusText.textContent = `Rendered ${tasks.length} cards`;
+		statusText.textContent = `Rendered ${renderedTasks} cards`;
 	}
 });

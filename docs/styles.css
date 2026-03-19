@@ -223,7 +223,7 @@ body {
 }
 
 .task-card__title {
-  margin: 10px 0 8px;
+  margin: 10px 0 0;
   color: var(--card-title-color);
   font-family: var(--card-font-title);
   font-size: var(--card-title-size);

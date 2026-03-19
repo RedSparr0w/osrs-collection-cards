@@ -217,7 +217,7 @@ export default class Card {
 		if (this.config.description) {
 			const description = document.createElement('p');
 			description.className = 'task-card__description';
-			description.textContent = this.config.description;
+			description.innerHTML = this.config.description.replace(/ Step/g, '<br/>Step');
 			content.appendChild(description);
 		}
 
