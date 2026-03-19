@@ -220,10 +220,9 @@ body {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   transform-style: preserve-3d;
   transform-origin: center bottom;
-  transform: rotateX(6deg) rotateZ(var(--fan-rotate, 0deg)) translateY(var(--fan-dip, 0px));
+  transform: rotateX(6deg) rotateZ(var(--fan-rotate, 0deg)) translateY(100vh);
   transition: transform 220ms ease, box-shadow 220ms ease, margin 220ms ease, all 220ms ease;
   will-change: transform;
-  animation: deal-card 2s ease-in-out forwards;
 }
 .task-card:nth-child(1):nth-last-child(1) {
   --fan-rotate: 0deg;
@@ -449,6 +448,10 @@ body {
 .task-card .card-face--back {
   transform: rotateY(180deg);
   background: var(--card-bg);
+  mask-image: url(./images/CardMask_Basic.png);
+  mask-repeat: no-repeat;
+  mask-position: center center;
+  mask-size: 100% 100%;
 }
 .task-card .card-back-image {
   display: block;
