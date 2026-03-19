@@ -259,6 +259,15 @@ body {
   }
 }
 
+// Only apply hover effects when no cards are active, to avoid visual conflicts with the active card's transform
+.card-grid:not(:has(.is-active)) .task-card {
+  &:hover {
+    transform: rotateX(-8deg) rotateZ(var(--fan-rotate, 0deg)) translateY(-16px) translateZ(60px);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.58);
+    margin: 0 40px;
+  }
+}
+
 .task-card {
   --card-base-size: clamp(160px, 20vw, 260px);
   --active-x: 0px;
@@ -307,12 +316,6 @@ body {
     .card-rotator {
       rotate: y 360deg;
     }
-  }
-
-  &:hover:not(.is-active) {
-    transform: rotateX(-8deg) rotateZ(var(--fan-rotate, 0deg)) translateY(-16px) translateZ(60px);
-    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.58);
-    margin: 0 40px;
   }
 
   &:hover {
