@@ -5,13 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OSRS Collection Cards</title>
   <link rel="stylesheet" href="styles.css">
-  <style>
-    body { margin: 0; background: #222; color: #fff; font-family: sans-serif; overflow: hidden; }
-    canvas { background: #111; border: 2px solid #444; width: 100vw; height: 100vh; object-fit: contain; }
-  </style>
 </head>
 <body>
-    <canvas id="main-canvas"></canvas>
+    <main class="app-shell">
+      <header class="app-header">
+        <h1>OSRS Collection Cards</h1>
+        <p id="status-text" class="status-text">Loading...</p>
+      </header>
+      <section id="card-grid" class="card-grid" aria-label="Task cards"></section>
+    </main>
     <script src="bundle.js"></script>
 </body>
 </html>

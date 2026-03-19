@@ -64,7 +64,9 @@ export default class Task implements TaskInformation {
         title: this.name,
         description: this.tip,
         icon: collectionLog.getCollectionLogEntry(this.displayItemId)?.imageUrl || this.imageLink.replace(/(_detail)?\.png$/, '_detail.png')?.replace(/_icon(_detail)?/, '') || '',
-        smallIcons: [this.verification.itemIds ? this.verification.itemIds.map(id => collectionLog.getCollectionLogEntry(id)?.iconUrl || '') : []].flat(),
+        smallIcons: [this.verification.itemIds ? this.verification.itemIds.map(id => collectionLog.getCollectionLogEntry(id)?.iconUrl || '') : []]
+          .flat()
+          .filter(Boolean),
       });
     }
     return this.card;

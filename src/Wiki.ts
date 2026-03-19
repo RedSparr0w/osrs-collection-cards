@@ -3,34 +3,41 @@ const CL_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
 const PLAYER_CL_CACHE_PREFIX = 'player_collection_log';
 const PLAYER_CL_CACHE_TTL = 1000 * 60 * 60; // 1 hour
 
+export type CollectionLogItem = {
+  id: number
+  name: string
+  wikiLink: string
+  iconUrl: string
+  imageUrl: string
+  category: string
+}
+
+
 export default class Wiki {
-    collectionLogMap: Map<number, any>;
+    collectionLogMap: Map<number, CollectionLogItem>;
 
     constructor() {
         this.collectionLogMap = new Map();
     }
 
-    getCollectionLogEntry(itemId: number): any | undefined {
+    getCollectionLogEntry(itemId: number): CollectionLogItem | undefined {
         return this.collectionLogMap.get(itemId);
     }
 
-    buildCollectionLogEntry(name: string, category: string, iconUrl: string) {
-        const encoded = encodeURIComponent(name.replace(/ /g, '_'));
-        return {
-            name,
-            category,
-            wikiLink: `https://oldschool.runescape.wiki/w/${encoded}`,
-            iconUrl,
-            imageUrl: iconUrl?.replace(/(_\d+)?\.png$/, '_detail.png') ?? '',
-        };
-    }
-
-    setCollectionLogItems(items: any[] = []) {
+    setCollectionLogItems(items: Partial<CollectionLogItem>[] = []) {
         this.collectionLogMap.clear();
         items.forEach(item => {
-            const numericId = Number(item.id);
-            const itemId = Number.isFinite(numericId) ? numericId : item.id;
-            this.collectionLogMap.set(itemId, this.buildCollectionLogEntry(item.name, item.category, item.image));
+            const itemId = +(item?.id ?? 0);
+            const encodedName = encodeURIComponent(item?.name?.replace(/ /g, '_') ?? '');
+            const logItem: CollectionLogItem = {
+                id: itemId,
+                name: item?.name ?? '',
+                category: item?.category ?? '',
+                wikiLink: `https://oldschool.runescape.wiki/w/${encodedName}`,
+                iconUrl: item?.iconUrl ?? '',
+                imageUrl: item?.iconUrl?.replace(/(_\d+)?\.png$/, '_detail.png') ?? '',
+            };
+            this.collectionLogMap.set(itemId, logItem);
         });
     }
 
@@ -66,7 +73,7 @@ export default class Wiki {
                 return;
             }
 
-            const cacheData: any[] = [];
+            const cacheData: Partial<CollectionLogItem>[] = [];
 
             const rows = table.querySelectorAll('tr');
             rows.forEach((row, i) => {
@@ -84,13 +91,13 @@ export default class Wiki {
                 const category = cells[1].textContent?.trim() ?? '';
 
                 const img = cells[0].querySelector('img');
-                const image = img ? `https://oldschool.runescape.wiki${img.getAttribute('src')?.replace(/\?.*$/, '')}` : null;
+                const iconUrl = img ? `https://oldschool.runescape.wiki${img.getAttribute('src')?.replace(/\?.*$/, '')}` : '';
 
                 cacheData.push({
                     id: parseInt(id, 10),
                     name,
                     category,
-                    image
+                    iconUrl, 
                 });
             });
 

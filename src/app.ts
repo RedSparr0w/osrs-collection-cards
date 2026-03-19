@@ -1,34 +1,39 @@
-import CanvasManager from "./CanvasManager";
 import TaskManager from "./TaskManager";
 
 window.addEventListener('DOMContentLoaded', async () => {
-	const canvasManager = new CanvasManager('main-canvas');
 	const taskManager = new TaskManager();
+	const cardGrid = document.getElementById('card-grid');
+	const statusText = document.getElementById('status-text');
+
+	if (!cardGrid) {
+		console.error('Missing #card-grid container');
+		return;
+	}
+
+	if (statusText) {
+		statusText.textContent = 'Loading tasks...';
+	}
+
 	await taskManager.initialize();
 	console.log('tasks', taskManager.getTasks());
 
 	const tasks = taskManager.getTasks();
-	
-	// Create cards from tasks and generate canvases
-	console.debug('Generating cards for tasks...');
-	await Promise.all(tasks.map(task => task.getCard()));
 
-	console.debug('All cards generated, setting up animation callbacks...');
-	tasks.forEach(async (task, index) => {
+	if (statusText) {
+		statusText.textContent = `Rendering ${tasks.length} cards...`;
+	}
 
-		if (Math.random() > 0.05) return; // Limit to first 20 tasks for demo purposes
-		const card = task.card;
-		if (!card) return console.debug(`No card for task ${task.id} (${task.name})`);
-		
-		const cardCanvas = await card.generateCanvas();
-		if (!cardCanvas) return console.debug(`No canvas for task ${task.id} (${task.name})`);
+	const fragment = document.createDocumentFragment();
+	for (const task of tasks) {
+		if (Math.random() > 0.015) continue;
+		const card = await task.getCard();
+		const cardElement = await card.generateElement();
+		fragment.appendChild(cardElement);
+	}
 
-		canvasManager.addAnimationCallback((ctx, canvas, frame, deltaTime) => {
-			const cardWidth = 300;
-			const cardHeight = (cardCanvas.height / cardCanvas.width) * cardWidth;
-			const randomX = parseInt(task.id.replace(/\W/g, ''), 36) % (canvas.width - cardWidth);
-			const randomY = parseInt(task.id.replace(/\W/g, ''), 36) % (canvas.height - cardHeight);
-			ctx.drawImage(cardCanvas, randomX, randomY, cardWidth, cardHeight);
-		});
-	});
+	cardGrid.replaceChildren(fragment);
+
+	if (statusText) {
+		statusText.textContent = `Rendered ${tasks.length} cards`;
+	}
 });

@@ -115,3 +115,165 @@
   --taupe-brown:            #736559;
   --kharid-sand:            #b79d7e;
 }
+
+/* ── App Layout ──────────────────────────────────────────────────────────────*/
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: radial-gradient(circle at top center, #272116 0%, #18120c 55%, #0f0a06 100%);
+  color: var(--gallery);
+  font-family: 'Runescape', Arial, sans-serif;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: rgba(16, 11, 7, 0.8);
+  border: 1px solid rgba(151, 130, 94, 0.45);
+  border-radius: 10px;
+  backdrop-filter: blur(4px);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-family: 'Runescape Bold', Arial Black, sans-serif;
+  color: #f0e5cd;
+}
+
+.status-text {
+  margin: 0;
+  color: #d6c8a8;
+  font-size: 14px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+/* ── Card Component ──────────────────────────────────────────────────────────*/
+.task-card {
+  --card-bg: #e2dbc8;
+  --card-title-color: #000;
+  --card-desc-color: #333;
+  --card-category-color: #36281f;
+  --card-title-size: 18px;
+  --card-desc-size: 14px;
+  --card-category-size: 24px;
+  --card-font-title: 'Runescape Bold', Arial Black, sans-serif;
+  --card-font-body: 'Runescape', Arial, sans-serif;
+  --card-icon-size: 30%;
+  --card-small-icon-size: 28px;
+
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  aspect-ratio: 3 / 4;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--card-bg);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.task-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.5);
+}
+
+.task-card__content {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20% 8% 8%;
+  text-align: center;
+}
+
+.task-card__icon {
+  width: var(--card-icon-size);
+  height: 50px;
+  width: auto;
+  margin-top: 2%;
+  /* image-rendering: pixelated; */
+}
+
+.task-card__title {
+  margin: 10px 0 8px;
+  color: var(--card-title-color);
+  font-family: var(--card-font-title);
+  font-size: var(--card-title-size);
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+.task-card__description {
+  margin: 0;
+  color: var(--card-desc-color);
+  font-family: var(--card-font-body);
+  font-size: var(--card-desc-size);
+  line-height: 1.1;
+}
+
+.task-card__small-icons {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+}
+
+.task-card__small-icon {
+  width: var(--card-small-icon-size);
+  height: var(--card-small-icon-size);
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.task-card__template {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.task-card__category {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 5%;
+  transform: translateX(-50%);
+  color: var(--card-category-color);
+  font-family: var(--card-font-title);
+  font-size: var(--card-category-size);
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}

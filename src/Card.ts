@@ -66,10 +66,12 @@ export default class Card {
 	private type: CardTypeDefinition;
 	private templateImg: HTMLImageElement | null = null;
 	private maskImg: HTMLImageElement | null = null;
+	private static sharedLoadedImages: Map<string, HTMLImageElement> = new Map();
 	private loadedImages: Map<string, HTMLImageElement> = new Map();
 	private width: number = 0;
 	private height: number = 0;
 	private cachedCanvas: HTMLCanvasElement | null = null;
+	private cachedElement: HTMLElement | null = null;
 
 	constructor(config: CardConfig) {
 		this.type = config.type ?? CARD_TYPE.BASIC;
@@ -116,282 +118,150 @@ export default class Card {
 	 */
 	private loadImage(url: string): Promise<HTMLImageElement> {
 		return new Promise((resolve, reject) => {
+			if (!url) {
+				reject(new Error('Missing image URL'));
+				return;
+			}
+
 			if (this.loadedImages.has(url)) {
 				resolve(this.loadedImages.get(url)!);
+				return;
+			}
+
+			if (Card.sharedLoadedImages.has(url)) {
+				const cached = Card.sharedLoadedImages.get(url)!;
+				this.loadedImages.set(url, cached);
+				resolve(cached);
 				return;
 			}
 
 			const img = new Image();
 			img.onload = () => {
 				this.loadedImages.set(url, img);
+				Card.sharedLoadedImages.set(url, img);
 				resolve(img);
 			};
 			img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+			img.loading = 'eager';
 			img.src = url;
 		});
 	}
 
 	/**
-	 * Generate and cache a canvas for this card. Returns the cached canvas on subsequent calls.
+	 * Generate and cache an HTML element for this card.
 	 */
-	async generateCanvas(): Promise<HTMLCanvasElement> {
-		if (this.cachedCanvas) {
-			return this.cachedCanvas;
+	async generateElement(): Promise<HTMLElement> {
+		if (this.cachedElement) {
+			return this.cachedElement;
 		}
 
-		const canvas = document.createElement('canvas');
-		await this.render(canvas);
-		this.cachedCanvas = canvas;
-		return canvas;
-	}
-
-	/**
-	 * Render the card onto a canvas
-	 */
-	async render(targetCanvas: HTMLCanvasElement): Promise<void> {
 		await this.loadImages();
 
 		if (!this.templateImg) {
 			throw new Error('Template image failed to load');
 		}
 
-		const ctx = targetCanvas.getContext('2d');
-		if (!ctx) throw new Error('Could not get 2D context');
-
 		const style = this.type.config;
-		const w = this.width;
-		const h = this.height;
+		const root = document.createElement('article');
+		root.className = 'task-card';
+		root.style.setProperty('--card-bg', style.backgroundColor);
+		root.style.setProperty('--card-title-color', style.titleColor);
+		root.style.setProperty('--card-desc-color', style.descriptionColor);
+		root.style.setProperty('--card-category-color', style.categoryColor);
+		root.style.setProperty('--card-title-size', `${style.titleFontSize}px`);
+		root.style.setProperty('--card-desc-size', `${style.descriptionFontSize}px`);
+		root.style.setProperty('--card-category-size', `${style.categoryFontSize}px`);
+		root.style.setProperty('--card-font-title', style.titleFontFamily);
+		root.style.setProperty('--card-font-body', style.descriptionFontFamily);
+		root.style.setProperty('--card-icon-size', `${Math.round(style.iconSize * 100)}%`);
+		root.style.setProperty('--card-small-icon-size', `${Math.max(26, Math.round(this.width * style.smallIconSize * 0.26))}px`);
 
-		targetCanvas.width = w;
-		targetCanvas.height = h;
-
-		// Layer 1: Mask (defines the card shape)
-		if (!this.maskImg) {
-			throw new Error('Mask image failed to load');
-		}
-		ctx.drawImage(this.maskImg, 0, 0, w, h);
-
-		// Set composite mode so background and content only appear where the mask is opaque
-		ctx.globalCompositeOperation = 'source-atop';
-
-		// Layer 2: Background color (only visible within mask)
-		if (style.backgroundColor) {
-			ctx.fillStyle = style.backgroundColor;
-			ctx.fillRect(0, 0, w, h);
+		if (this.width > 0 && this.height > 0) {
+			root.style.aspectRatio = `${this.width} / ${this.height}`;
 		}
 
-		// Layer 3: Icon at top middle
+		if (this.type.mask) {
+			root.style.maskImage = `url(${this.type.mask})`;
+			(root.style as CSSStyleDeclaration & { webkitMaskImage?: string }).webkitMaskImage = `url(${this.type.mask})`;
+			root.style.maskRepeat = 'no-repeat';
+			(root.style as CSSStyleDeclaration & { webkitMaskRepeat?: string }).webkitMaskRepeat = 'no-repeat';
+			root.style.maskPosition = 'center';
+			(root.style as CSSStyleDeclaration & { webkitMaskPosition?: string }).webkitMaskPosition = 'center';
+			root.style.maskSize = '100% 100%';
+			(root.style as CSSStyleDeclaration & { webkitMaskSize?: string }).webkitMaskSize = '100% 100%';
+		}
+
+		const content = document.createElement('div');
+		content.className = 'task-card__content';
+
 		if (this.config.icon) {
 			const iconImg = this.loadedImages.get(this.config.icon);
 			if (iconImg) {
-				const iconSize = w * style.iconSize;
-				const iconCenterX = w / 2;
-				const iconCenterY = h * 0.145 + iconSize / 2;
-				this.drawImageContained(ctx, iconImg, iconCenterX, iconCenterY, iconSize);
+				const icon = document.createElement('img');
+				icon.className = 'task-card__icon';
+				icon.loading = 'lazy';
+				icon.decoding = 'async';
+				icon.src = iconImg.src;
+				icon.alt = this.config.title ? `${this.config.title} icon` : 'Task icon';
+				content.appendChild(icon);
 			}
 		}
 
-		// Calculate text positioning
-		let currentY = h * 0.15; // Start below icon
-
-		// Layer 4: Title text (above or below icon)
 		if (this.config.title) {
-			currentY = h * 0.42; // Below icon
-
-			ctx.font = `${style.titleFontSize}px ${style.titleFontFamily}`;
-			ctx.fillStyle = style.titleColor;
-			ctx.textAlign = 'center';
-
-			// Draw wrapped title and move description start directly after it
-			const titleLineHeight = style.titleFontSize + 2;
-			const titleBottomY = this.drawMultilineText(
-				ctx,
-				this.config.title,
-				w / 2,
-				currentY,
-				w * 0.9,
-				titleLineHeight,
-			);
-			currentY = titleBottomY + 20;
+			const title = document.createElement('h3');
+			title.className = 'task-card__title';
+			title.textContent = this.config.title;
+			content.appendChild(title);
 		}
 
-		// Layer 5: Description text
 		if (this.config.description) {
-			ctx.font = `${style.descriptionFontSize}px ${style.descriptionFontFamily}`;
-			ctx.fillStyle = style.descriptionColor;
-			ctx.textAlign = 'center';
-			const descriptionLineHeight = style.descriptionFontSize + 2;
-			const descriptionBottomY = this.drawMultilineText(
-				ctx,
-				this.config.description,
-				w / 2,
-				currentY,
-				w * 0.85,
-				descriptionLineHeight,
-			);
-			currentY = descriptionBottomY + 15;
+			const description = document.createElement('p');
+			description.className = 'task-card__description';
+			description.textContent = this.config.description;
+			content.appendChild(description);
 		}
 
-		// Layer 6: Small icons array
-		if (this.config.smallIcons && this.config.smallIcons.length > 0) {
-			const smallIconSize = w * style.smallIconSize;
-			const gap = 5;
-			const maxRowWidth = w * 0.85;
-			const iconsPerRow = Math.max(1, Math.floor((maxRowWidth + gap) / (smallIconSize + gap)));
+		const smallIconUrls = (this.config.smallIcons || []).filter(Boolean);
+		if (smallIconUrls.length > 0) {
+			const smallIcons = document.createElement('div');
+			smallIcons.className = 'task-card__small-icons';
+			smallIconUrls.forEach(url => {
+				const iconImg = this.loadedImages.get(url);
+				if (!iconImg) return;
 
-			for (let i = 0; i < this.config.smallIcons.length; i++) {
-				const url = this.config.smallIcons[i];
-				const img = this.loadedImages.get(url);
-				if (!img) continue;
+				const img = document.createElement('img');
+				img.className = 'task-card__small-icon';
+				img.loading = 'lazy';
+				img.decoding = 'async';
+				img.src = iconImg.src;
+				img.alt = 'Requirement item icon';
+				smallIcons.appendChild(img);
+			});
 
-				const row = Math.floor(i / iconsPerRow);
-				const col = i % iconsPerRow;
-
-				// How many icons are on this row (last row may have fewer)
-				const iconsOnThisRow = Math.min(iconsPerRow, this.config.smallIcons.length - row * iconsPerRow);
-				const rowWidth = iconsOnThisRow * smallIconSize + (iconsOnThisRow - 1) * gap;
-				const rowStartX = (w - rowWidth) / 2;
-
-				const slotX = rowStartX + col * (smallIconSize + gap);
-				const slotY = currentY + row * (smallIconSize + gap);
-				this.drawImageContained(ctx, img, slotX + smallIconSize / 2, slotY + smallIconSize / 2, smallIconSize);
+			if (smallIcons.childElementCount > 0) {
+				content.appendChild(smallIcons);
 			}
-
-			const totalRows = Math.ceil(this.config.smallIcons.length / iconsPerRow);
-			currentY += totalRows * (smallIconSize + gap);
 		}
 
-		// Reset composite operation before drawing template
-		ctx.globalCompositeOperation = 'source-over';
+		root.appendChild(content);
 
-		// Layer 7: Card template (front layer)
-		ctx.drawImage(this.templateImg, 0, 0, w, h);
+		const templateOverlay = document.createElement('img');
+		templateOverlay.className = 'task-card__template';
+		templateOverlay.loading = 'eager';
+		templateOverlay.decoding = 'async';
+		templateOverlay.src = this.templateImg.src;
+		templateOverlay.alt = '';
+		templateOverlay.ariaHidden = 'true';
+		root.appendChild(templateOverlay);
 
-		// Layer 8: Optional category text on top of template
 		if (this.config.category) {
-			ctx.font = `${style.categoryFontSize}px ${style.titleFontFamily}`;
-			ctx.fillStyle = style.categoryColor;
-			ctx.textAlign = 'center';
-			this.drawCurvedText(
-				ctx,
-				this.config.category,
-				w / 2,
-				h * 0.155,
-				w,
-				style.categoryBendPercent,
-			);
-		}
-	}
-
-	/**
-	 * Generate a card and return it as an image URL
-	 */
-	async generateImageUrl(): Promise<string> {
-		const canvas = await this.generateCanvas();
-		return canvas.toDataURL('image/png');
-	}
-
-	/**
-	 * Draw an image centered in a square slot, scaled so its largest dimension fills
-	 * the slot size without distorting the aspect ratio.
-	 */
-	private drawImageContained(
-		ctx: CanvasRenderingContext2D,
-		img: HTMLImageElement,
-		centerX: number,
-		centerY: number,
-		slotSize: number,
-		pixelatedThreshold: number = 100,
-	): void {
-		const isPixelated = Math.max(img.naturalWidth, img.naturalHeight) < pixelatedThreshold;
-		const scale = slotSize / Math.max(img.naturalWidth, img.naturalHeight);
-		const drawW = img.naturalWidth * scale;
-		const drawH = img.naturalHeight * scale;
-
-		ctx.save();
-		ctx.imageSmoothingEnabled = !isPixelated;
-		ctx.drawImage(img, centerX - drawW / 2, centerY - drawH / 2, drawW, drawH);
-		ctx.restore();
-	}
-
-	/**
-	 * Draw curved text on canvas
-	 */
-	private drawCurvedText(
-		ctx: CanvasRenderingContext2D,
-		text: string,
-		centerX: number,
-		baselineY: number,
-		fullImageWidth: number,
-		bendPercent: number = 0.01,
-	): void {
-		const bendPixels = Math.max(0, fullImageWidth * bendPercent);
-		const halfImageWidth = Math.max(1, fullImageWidth / 2);
-
-		if (bendPixels <= 0) {
-			ctx.textAlign = 'center';
-			ctx.fillText(text, centerX, baselineY);
-			return;
+			const category = document.createElement('div');
+			category.className = 'task-card__category';
+			category.textContent = this.config.category;
+			root.appendChild(category);
 		}
 
-		ctx.save();
-		ctx.textAlign = 'left';
-		ctx.textBaseline = 'alphabetic';
-
-		const textWidth = ctx.measureText(text).width;
-		const startX = centerX - textWidth / 2;
-
-		let currentX = startX;
-
-		for (let i = 0; i < text.length; i++) {
-			const char = text[i];
-			const charWidth = ctx.measureText(char).width;
-			const charCenterX = currentX + charWidth / 2;
-			const xFromCenter = charCenterX - centerX;
-			const normalized = Math.max(-1, Math.min(1, xFromCenter / halfImageWidth));
-			const yOffset = -bendPixels * (1 - normalized * normalized);
-			const slope = (2 * bendPixels * normalized) / halfImageWidth;
-			const rotation = Math.atan(slope);
-
-			ctx.save();
-			ctx.translate(charCenterX, baselineY + yOffset);
-			ctx.rotate(rotation);
-			ctx.fillText(char, -charWidth / 2, 0);
-			ctx.restore();
-			currentX += charWidth;
-		}
-
-		ctx.restore();
-	}
-
-	/**
-	 * Draw multiline text on canvas
-	 */
-	private drawMultilineText(
-		ctx: CanvasRenderingContext2D,
-		text: string,
-		x: number,
-		y: number,
-		maxWidth: number,
-		lineHeight: number,
-	): number {
-		const words = text.split(' ');
-		let line = '';
-		let currentY = y;
-
-		for (const word of words) {
-			const testLine = line + (line ? ' ' : '') + word;
-			const metrics = ctx.measureText(testLine);
-
-			if (metrics.width > maxWidth && line) {
-				ctx.fillText(line, x, currentY);
-				line = word;
-				currentY += lineHeight;
-			} else {
-				line = testLine;
-			}
-		}
-		ctx.fillText(line, x, currentY);
-		return currentY;
+		this.cachedElement = root;
+		return root;
 	}
 }
