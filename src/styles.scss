@@ -121,6 +121,7 @@
 /* ── App Layout ──────────────────────────────────────────────────────────────*/
 * {
   box-sizing: border-box;
+  user-select: none;
 }
 
 html,
