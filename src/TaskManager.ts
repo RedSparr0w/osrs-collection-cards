@@ -35,16 +35,16 @@ export default class TaskManager {
         return this.tasks.get(id);
     }
 
-    getTasks(): Task[] {
+    getAllTasks(): Task[] {
         return Array.from(this.tasks.values());
     }
 
-    getTasksByTier(tier: TIERS): Task[] {
-        return this.getTasks().filter(task => task.tier === tier);
+    getIncompleteTasks(): Task[] {
+        return this.getAllTasks().filter(task => task.state === TASK_STATES.INCOMPLETE);
     }
 
-    getCompletedCount() {
-        return this.getTasks().filter(task => task.state === TASK_STATES.COMPLETE).length;
+    getCompletedTasks(): Task[] {
+        return this.getAllTasks().filter(task => task.state === TASK_STATES.COMPLETE);
     }
 
     async loadAllTierData(): Promise<TaskRoot[]> {
