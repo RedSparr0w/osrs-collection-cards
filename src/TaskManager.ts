@@ -6,11 +6,29 @@ import Task, { TaskInformation, TaskRoot } from './Task';
 
 export default class TaskManager {
     tasks: Map<Task['id'], Task> = new Map();
+    private isLoaded = false;
+    private loadPromise: Promise<void> | null = null;
 
-    constructor() {
-        this.loadAllTierData().then(data => {
-            this.buildTasksFromTierData(data);
-        });
+    constructor() {}
+
+    async initialize(): Promise<void> {
+        if (this.isLoaded) return;
+        if (this.loadPromise) return this.loadPromise;
+        
+        this.loadPromise = this.loadAllTierData()
+            .then(data => this.buildTasksFromTierData(data))
+            .then(() => { this.isLoaded = true; })
+            .catch(error => {
+                console.error('Failed to load tasks:', error);
+                this.isLoaded = false;
+                throw error;
+            });
+        
+        return this.loadPromise;
+    }
+
+    isReady(): boolean {
+        return this.isLoaded;
     }
 
     getTask(id: string): Task | undefined {

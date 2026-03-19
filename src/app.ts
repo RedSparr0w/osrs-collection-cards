@@ -1,8 +1,11 @@
 import CanvasManager from "./CanvasManager";
 import Card, { CARD_TYPE } from "./Card";
+import TaskManager from "./TaskManager";
 
 window.addEventListener('DOMContentLoaded', async () => {
 	const canvasManager = new CanvasManager('main-canvas');
+	const taskManager = new TaskManager();
+	await taskManager.initialize();
 
 	// Create and generate the card
 	const card = new Card({
