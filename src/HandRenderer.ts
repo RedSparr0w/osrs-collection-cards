@@ -38,6 +38,7 @@ export default class HandRenderer {
 				if (this.cardController.isActive(cardElement)) {
 					this.cardController.deactivate();
 				} else {
+					card.setFlipped(false);
 					this.cardController.activate(card, cardElement);
 				}
 			});
@@ -50,12 +51,23 @@ export default class HandRenderer {
 				card.toggleFlipped();
 			});
 
+			cardElement.addEventListener('mousedown', (e: MouseEvent) => {
+				if (e.button === 1) { // Middle click to discard
+					e.preventDefault();
+					this.discardCard(task.id);
+				}
+			});
+
 			cardElement.addEventListener('mouseenter', () => {
-				this.spreadCardsAwayFrom(cardElement);
+				if (!this.activeCardElement) {
+					this.spreadCardsAwayFrom(cardElement);
+				}
 			});
 
 			cardElement.addEventListener('mouseleave', () => {
-				this.layoutCards();
+				if (!this.activeCardElement) {
+					this.layoutCards();
+				}
 			});
 
 			await delay(delayMs);
