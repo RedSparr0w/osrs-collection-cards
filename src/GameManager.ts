@@ -35,7 +35,11 @@ export default class GameManager {
 		const cardsToDeal = this.getWeightedTasks().splice(0, count);
 		cardsToDeal.forEach(async (task, index) => {
 			this.currentHand.push(task);
-			await this.handRenderer.dealCard(task, index * 200);
+			this.handRenderer.dealCard(task, index * 200);
+
+			setTimeout(() => {
+				this.dispose(task.id);
+			}, 6000 + index * 200);
 		});
 		return cardsToDeal;
 	}
@@ -44,6 +48,7 @@ export default class GameManager {
 		const index = this.currentHand.findIndex(t => t.id === taskId);
 		if (index === -1) return false;
 		this.currentHand.splice(index, 1);
+		this.handRenderer.discardCard(taskId);
 		return true;
 	}
 

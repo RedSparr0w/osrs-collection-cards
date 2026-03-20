@@ -213,7 +213,7 @@ body {
     translate: 0;
   }
 }
-.card-grid:not(:has(.is-active)) .task-card:hover {
+.card-grid:not(:has(.is-active)):not(:has(.discarded)) .task-card:hover {
   transform: rotateX(-8deg) rotateZ(var(--fan-rotate, 0deg)) translateY(-16px) translateZ(60px);
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.58);
   padding: 0 40px;
@@ -436,6 +436,11 @@ body {
   --fan-rotate: 12deg;
   --fan-dip: 36px;
   z-index: 8;
+}
+.task-card.discarded {
+  pointer-events: none;
+  transform: translateY(100vh) rotateX(-180deg);
+  transition: transform 1000ms ease-in;
 }
 .task-card.is-active {
   --active-rotate-x: 0deg;
