@@ -40,7 +40,7 @@ export default class HandRenderer {
 				} else {
 					card.setFlipped(false);
 					this.cardController.activate(card, cardElement);
-					delay(1000).then(() => this.spreadCardsActive(cardElement));
+					this.spreadCardsActive(cardElement);
 				}
 			});
 
@@ -166,8 +166,9 @@ export default class HandRenderer {
 		const containerWidth = this.cardGridEl.clientWidth;
 		const containerHeight = this.cardGridEl.clientHeight;
 		const firstCard = entries[0];
-		const cardWidth = firstCard.offsetWidth || 220;
-		const cardHeight = firstCard.offsetHeight || 320;
+		const secondCard = entries[1];
+		const cardWidth = Math.min(firstCard.offsetWidth, secondCard.offsetWidth) || 220;
+		const cardHeight = Math.min(firstCard.offsetHeight, secondCard.offsetHeight) || 320;
 		const centerIndex = (count - 1) / 2;
 		const maxStep = cardWidth * 0.72;
 		const availableWidth = Math.max(cardWidth, containerWidth - cardWidth - 32);
@@ -223,60 +224,51 @@ export default class HandRenderer {
 
 		const scale = getNumericCssVar(activeElement, '--active-size', 1) || 1;
 
-		const cardWidth =
-			Math.min(firstCard.offsetWidth, secondCard.offsetWidth) || 220;
-		const cardHeight =
-			Math.min(firstCard.offsetHeight, secondCard.offsetHeight) || 320;
+		const cardWidth = Math.min(firstCard.offsetWidth, secondCard.offsetWidth) || 220;
+		const cardHeight = Math.min(firstCard.offsetHeight, secondCard.offsetHeight) || 320;
 
 		const maxStep = cardWidth * 0.72;
+		const maxFirstStep = maxStep * scale * 0.75;
 
 		const availableWidth = Math.max(
 			cardWidth,
 			containerWidth - cardWidth - 32
 		);
 
-		const step =
-			count > 1 ? Math.min(maxStep, availableWidth / (count - 1)) : 0;
+		const step = count > 1 ? Math.min(maxStep, availableWidth / (count - 1)) : 0;
+		const firstStep = count > 1 ? Math.min(maxFirstStep, availableWidth / (count - 1)) : 0;
 
-		const baseTop = Math.max(
-			16,
-			(containerHeight - cardHeight) / 2 - 12
-		);
+		const baseTop = Math.max(16, (containerHeight - cardHeight) / 2 - 12);
 
 		const maxDip = Math.min(36, containerHeight * 0.08);
 		const maxRotation = Math.min(14, 8 + count);
 		const spreadAmount = cardWidth * 0.35;
 
-		const centerX = containerWidth / 2 - (cardWidth) / 2;
+		const centerX = containerWidth / 2 - cardWidth / 2;
 
 		entries.forEach((element, index) => {
 			if (index === activeIndex) return;
 
-			const distance = index - activeIndex; // 🔥 key
+			const distance = index - activeIndex;
 			const direction = Math.sign(distance);
 			const absDistance = Math.abs(distance);
 
-			// --- POSITION ---
 			let left = centerX;
 
-			// even spacing
-			left += distance * step;
+			left += Math.sign(distance) * (firstStep + (Math.abs(distance) - 1) * step)
 
-			// cascade effect (safe, no divide-by-zero)
 			if (absDistance > 0) {
 				left += direction * (spreadAmount / absDistance);
 			}
 
-			// --- NORMALIZATION (safe) ---
 			const maxDistance = Math.max(activeIndex, count - 1 - activeIndex) || 1;
 			const normalized = distance / maxDistance;
 
-			// --- VISUALS ---
 			const dip = Math.abs(normalized) ** 2 * maxDip;
 			const top = baseTop + dip;
 			const rotate = normalized * maxRotation;
 
-			const zIndex = String(100 - absDistance); // closer = higher
+			const zIndex = String(100 - absDistance);
 
 			element.style.left = `${left}px`;
 			element.style.top = `${top}px`;
