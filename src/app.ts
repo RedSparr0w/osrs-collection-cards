@@ -10,5 +10,5 @@ window.addEventListener('DOMContentLoaded', async () => {
 	const gameManager = new GameManager(taskManager);
 
 	const tasksToRender = 5;
-	gameManager.deal(tasksToRender);
+	await gameManager.deal(tasksToRender);
 });

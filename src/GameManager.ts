@@ -2,7 +2,7 @@ import { TIERS } from './Constants';
 import HandRenderer from './HandRenderer';
 import Task from './Task';
 import TaskManager from './TaskManager';
-import { shuffleArray } from './helpers';
+import { delay } from './helpers';
 
 const TIER_WEIGHTS: Record<TIERS, number> = {
 	[TIERS.EASY]: 1.1,
@@ -33,7 +33,7 @@ export default class GameManager {
 
 	async deal(count: number): Promise<Task[]> {
 		const cardsToDeal = this.getWeightedTasks().splice(0, count);
-		cardsToDeal.forEach(async (task, index) => {
+		for (const [index, task] of cardsToDeal.entries()) {
 			this.currentHand.push(task);
 			this.handRenderer.dealCard(task, index * 200);
 

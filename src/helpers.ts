@@ -16,3 +16,5 @@ export const shuffleArray = <T>(array: T[]): T[] => {
 	}
 	return result;
 };
+
+export const delay = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
