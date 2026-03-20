@@ -19,12 +19,8 @@ export default class CardController {
 
 		requestAnimationFrame(() => {
 			if (this.activeCardElement !== element) return;
-			this.updateCenterOffset(element);
-			requestAnimationFrame(() => {
-				if (this.activeCardElement !== element) return;
-				this.updateCenterOffset(element);
-				this.apply3dTransforms(element);
-			});
+			this.moveToCenter(element);
+			this.apply3dTransforms(element);
 		});
 	}
 
@@ -48,7 +44,7 @@ export default class CardController {
 		window.addEventListener('resize', () => {
 			if (this.activeCardElement) {
 				this.setActiveSizeForViewport(this.activeCardElement);
-				this.updateCenterOffset(this.activeCardElement);
+				this.moveToCenter(this.activeCardElement);
 			}
 		});
 	}
@@ -77,21 +73,15 @@ export default class CardController {
 		element.style.setProperty('--active-size', `${nextSize}`);
 	}
 
-	private updateCenterOffset(element: HTMLElement): void {
-		let centerX = element.offsetLeft + element.offsetWidth / 2;
-		let centerY = element.offsetTop + element.offsetHeight / 2;
-		let parent = element.offsetParent as HTMLElement | null;
-
-		while (parent) {
-			centerX += parent.offsetLeft - parent.scrollLeft;
-			centerY += parent.offsetTop - parent.scrollTop;
-			parent = parent.offsetParent as HTMLElement | null;
-		}
-
-		const targetX = window.innerWidth / 2 - centerX;
-		const targetY = window.innerHeight / 2 - centerY;
-		element.style.setProperty('--active-x', `${targetX}px`);
-		element.style.setProperty('--active-y', `${targetY}px`);
+	private moveToCenter(element: HTMLElement): void {
+		const scale = this.getNumericCssVar(element, '--active-size', 1)
+		const rect = element.getBoundingClientRect();
+		const parentRect = (element.offsetParent as HTMLElement).getBoundingClientRect()
+		const targetX = parentRect.width / 2 - (rect.width * scale) / 2;
+		const targetY = parentRect.height / 2 - (rect.height * scale) / 2;
+		element.style.left = `${targetX}px`;
+		element.style.top = `${targetY}px`;
+		console.log('Moving card to center:', { targetX, targetY }, element);
 	}
 
 	private apply3dTransforms(element: HTMLElement): void {
