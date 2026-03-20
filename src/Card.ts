@@ -300,6 +300,13 @@ export default class Card {
 			category.textContent = this.config.category;
 			frontFace.appendChild(category);
 		}
+		const watermark = document.createElement('div');
+		watermark.className = 'watermark';
+		frontFace.appendChild(watermark);
+		const refraction = document.createElement('div');
+		refraction.className = 'refraction';
+		watermark.appendChild(refraction.cloneNode() as HTMLElement);
+		watermark.appendChild(refraction.cloneNode() as HTMLElement);
 
 		const backFace = document.createElement('div');
 		backFace.className = 'card-face card-face--back';
