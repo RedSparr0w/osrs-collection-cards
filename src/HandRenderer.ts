@@ -60,6 +60,11 @@ export default class HandRenderer {
 			});
 
 			cardElement.addEventListener('mouseenter', () => {
+				const face = cardElement.querySelector('.card-face');
+				if (face && !face.classList.contains('shine')) {
+					face.classList.add('shine');
+					delay(2000).then(() => face.classList.remove('shine'));
+				}
 				if (!this.cardController.activeCardElement) {
 					this.spreadCardsAwayFrom(cardElement);
 				}
