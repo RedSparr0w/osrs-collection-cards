@@ -310,7 +310,7 @@ body {
   inset: 0;
   z-index: 21;
   pointer-events: none;
-  background: url("./images/cosmos-middle-trans.png") center/cover;
+  background: url("./images/CardShineMask_Basic2.png") center/cover;
   mix-blend-mode: color-dodge;
   mask-image: linear-gradient(110deg, transparent 5%, black 30%, transparent 45%);
   mask-size: 200% 100%;
