@@ -234,16 +234,6 @@ body {
   --card-icon-size: 30%;
   --card-small-icon-size: 28px;
 
-  --pointer-y: 0;
-  --pointer-x: 0;
-  &:hover {
-    rotate: 
-      var(--pointer-y)
-      var(--pointer-x)
-      0
-      5deg;
-  }
-
   position: absolute;
   top: 0;
   left: 0;
@@ -270,10 +260,17 @@ body {
     transition: transform 1000ms ease-in, opacity 300ms ease-out;
   }
 
+  --pointer-y: 0;
+  --pointer-x: 0;
   &.is-active {
     --active-rotate-x: 0deg;
     --active-rotate-z: 0deg;
     --active-dip: 0px;
+    rotate: 
+      var(--pointer-y)
+      var(--pointer-x)
+      0
+      5deg;
     z-index: 100 !important;
     transform-origin: center center;
     .card-rotator {
@@ -318,7 +315,7 @@ body {
         circle at var(--shine-x) var(--shine-y),
         rgba(255, 255, 255, 1) 0%,      /* full white */
         rgba(255, 255, 255, 0.5) 25%,
-        transparent 45%
+        transparent 50%
       );
 
       // Masked area that will shine

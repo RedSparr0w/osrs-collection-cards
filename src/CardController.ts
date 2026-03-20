@@ -59,8 +59,6 @@ export default class CardController {
 		element.style.setProperty('--active-x', '0px');
 		element.style.setProperty('--active-y', '0px');
 		element.style.removeProperty('--active-size');
-		element.style.removeProperty('--active-rotate-x');
-		element.style.removeProperty('--active-rotate-z');
 		element.style.removeProperty('--brightness');
 	}
 
@@ -88,8 +86,6 @@ export default class CardController {
 		const onPointerMove = (e: PointerEvent) => {
 			if (this.activeCardElement !== element) {
 				document.body.removeEventListener('pointermove', onPointerMove);
-				element.style.removeProperty('--active-rotate-x');
-				element.style.removeProperty('--active-rotate-z');
 				element.style.removeProperty('--brightness');
 				return;
 			}
@@ -99,12 +95,12 @@ export default class CardController {
 			const deltaY = e.clientY - rect.top;
 			const ratioX = deltaX / rect.width - 0.5;
 			const ratioY = deltaY / rect.height - 0.5;
-			const pointerX = Math.max(-1, Math.min(1, ratioX * 2));
-			const pointerY = Math.max(-1, Math.min(1, ratioY * 2));
+			const pointerX = mapRange(ratioX, -0.5, 0.5, 1, -1);
+			const pointerY = mapRange(ratioY, -0.5, 0.5, -1, 1);
+			console.log('Pointer move:', { pointerX, pointerY }, element);
 			element.style.setProperty('--pointer-x', `${pointerX}`);
 			element.style.setProperty('--pointer-y', `${pointerY}`);
-			const localY = Math.max(0, Math.min(rect.height, deltaY));
-			const brightness = mapRange(localY, 0, rect.height, 1.1, 0.9);
+			const brightness = mapRange(ratioY, 0.5, -0.5, 1.1, 0.9);
 			element.style.setProperty('--brightness', `${brightness}`);
 		};
 
