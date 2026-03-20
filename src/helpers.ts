@@ -18,3 +18,9 @@ export const shuffleArray = <T>(array: T[]): T[] => {
 };
 
 export const delay = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
+
+export const getNumericCssVar = (element: HTMLElement, name: string, fallback = 0): number => {
+  const raw = getComputedStyle(element).getPropertyValue(name).trim();
+  const value = Number.parseFloat(raw);
+  return Number.isFinite(value) ? value : fallback;
+}

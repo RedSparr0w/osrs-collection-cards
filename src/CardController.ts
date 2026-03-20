@@ -1,5 +1,5 @@
 import Card from './Card';
-import { mapRange } from './helpers';
+import { getNumericCssVar, mapRange } from './helpers';
 
 export default class CardController {
 	activeCard: Card | null = null;
@@ -49,12 +49,6 @@ export default class CardController {
 		});
 	}
 
-	private getNumericCssVar(element: HTMLElement, name: string, fallback = 0): number {
-		const raw = getComputedStyle(element).getPropertyValue(name).trim();
-		const value = Number.parseFloat(raw);
-		return Number.isFinite(value) ? value : fallback;
-	}
-
 	private clearTransforms(element: HTMLElement): void {
 		element.style.setProperty('--active-x', '0px');
 		element.style.setProperty('--active-y', '0px');
@@ -65,7 +59,7 @@ export default class CardController {
 	}
 
 	private setActiveSizeForViewport(element: HTMLElement): void {
-		const currentSize = this.getNumericCssVar(element, '--active-size', 1) || 1;
+		const currentSize = getNumericCssVar(element, '--active-size', 1) || 1;
 		const baseHeight = element.offsetHeight / currentSize;
 		if (!baseHeight) return;
 		const targetHeight = window.innerHeight * 0.8;
@@ -74,7 +68,7 @@ export default class CardController {
 	}
 
 	private moveToCenter(element: HTMLElement): void {
-		const scale = this.getNumericCssVar(element, '--active-size', 1)
+		const scale = getNumericCssVar(element, '--active-size', 1)
 		const rect = element.getBoundingClientRect();
 		const parentRect = (element.offsetParent as HTMLElement).getBoundingClientRect()
 		const targetX = parentRect.width / 2 - (rect.width * scale) / 2;
