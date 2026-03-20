@@ -168,34 +168,6 @@ body {
   overflow: visible;
 }
 
-@keyframes card-shine-sweep {
-  0% {
-    transform: translateX(-100%) skewX(-22deg);
-    opacity: 0;
-  }
-  18% {
-    opacity: 0.42;
-  }
-  36% {
-    transform: translateX(100%) skewX(-22deg);
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(100%) skewX(-22deg);
-    opacity: 0;
-  }
-}
-@keyframes cosmos-reveal {
-  0% {
-    mask-position: 200% 0;
-  }
-  36% {
-    mask-position: -200% 0;
-  }
-  100% {
-    mask-position: -200% 0;
-  }
-}
 /* ── Card Component ──────────────────────────────────────────────────────────*/
 @keyframes deal-card {
   0% {
@@ -225,6 +197,9 @@ body {
   --active-rotate-x: 6deg;
   --active-rotate-z: var(--fan-rotate, 0deg);
   --active-dip: var(--fan-dip, 0px);
+  --shine-x: 50%;
+  --shine-y: 50%;
+  --shine-opacity: 0;
   --card-bg: #e2dbc8;
   --card-title-color: #000;
   --card-desc-color: #333;
@@ -236,6 +211,13 @@ body {
   --card-font-body: 'Runescape', Arial, sans-serif;
   --card-icon-size: 30%;
   --card-small-icon-size: 28px;
+  --pointer-y: 0;
+  --pointer-x: 0;
+}
+.task-card:hover {
+  rotate: var(--pointer-y) var(--pointer-x) 0 5deg;
+}
+.task-card {
   position: absolute;
   top: 0;
   left: 0;
@@ -246,9 +228,9 @@ body {
   overflow: hidden;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   transform-style: preserve-3d;
-  transform-origin: center bottom;
+  transform-origin: center center;
   transform: translate(var(--active-x), calc(var(--active-y) + var(--hover-lift))) rotateX(var(--active-rotate-x)) rotateZ(var(--active-rotate-z)) translateY(var(--active-dip));
-  transition: left 500ms ease, top 500ms ease, width 500ms ease, transform 500ms ease, box-shadow 220ms ease, filter 200ms ease, opacity 300ms ease;
+  transition: all 200ms ease, left 500ms ease, top 500ms ease, width 500ms ease, transform 500ms ease, box-shadow 220ms ease, filter 200ms ease, opacity 300ms ease;
   will-change: transform;
   filter: brightness(var(--brightness, 1));
 }
@@ -287,38 +269,30 @@ body {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
-.task-card .card-face.shine::before {
-  animation: cosmos-reveal 4s ease-in-out forwards;
+.task-card .card-face--front {
+  transform: rotateY(0deg);
 }
-.task-card .card-face.shine::after {
-  animation: card-shine-sweep 4s ease-in-out forwards;
-}
-.task-card .card-face::after {
-  content: "";
-  position: absolute;
-  inset: -20% -40%;
-  z-index: 20;
-  pointer-events: none;
-  background: linear-gradient(110deg, rgba(255, 255, 255, 0) 20%, rgba(255, 255, 255, 0.07) 35%, var(--golden) 50%, rgba(255, 255, 255, 0.07) 55%, rgba(255, 255, 255, 0) 70%);
-  transform: translateX(-100%) skewX(-22deg);
-  opacity: 0;
-  mix-blend-mode: screen;
-}
-.task-card .card-face::before {
+.task-card .card-face--front::before {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: 21;
+  z-index: 20;
   pointer-events: none;
-  background: url("./images/CardShineMask_Basic2.png") center/cover;
-  mix-blend-mode: color-dodge;
-  mask-image: linear-gradient(110deg, transparent 5%, black 30%, transparent 45%);
-  mask-size: 200% 100%;
-  mask-position: 200% 0;
+  background: radial-gradient(circle at var(--shine-x) var(--shine-y), rgb(255, 255, 255) 0%, rgba(255, 255, 255, 0.5) 25%, transparent 45%);
+  -webkit-mask-image: url("./images/CardShineMask_Basic4.png");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: cover;
+  -webkit-mask-composite: destination-in;
+  mask-image: url("./images/CardShineMask_Basic4.png");
   mask-repeat: no-repeat;
-}
-.task-card .card-face--front {
-  transform: rotateY(0deg);
+  mask-position: center;
+  mask-size: cover;
+  mask-composite: intersect;
+  mix-blend-mode: difference;
+  filter: blur(16px);
+  opacity: var(--shine-opacity);
+  transition: opacity 160ms ease-out;
 }
 .task-card .card-face--back {
   transform: rotateY(180deg);
@@ -352,13 +326,13 @@ body {
   height: 50px;
   width: auto;
   margin-top: 2%;
-  /* image-rendering: pixelated; */
 }
 .task-card .title {
   margin: 10px 0 0;
   color: var(--card-title-color);
   font-family: var(--card-font-title);
-  font-size: var(--card-title-size);
+  font-size: calc(var(--card-title-size) * var(--active-size, 1));
+  transition: all 200ms ease;
   line-height: 1.1;
   text-wrap: balance;
 }
@@ -366,7 +340,8 @@ body {
   margin: 0;
   color: var(--card-desc-color);
   font-family: var(--card-font-body);
-  font-size: var(--card-desc-size);
+  font-size: calc(var(--card-desc-size) * var(--active-size, 1));
+  transition: all 200ms ease;
   line-height: 1.1;
 }
 .task-card .small-icons {
@@ -386,10 +361,11 @@ body {
   width: 0px;
 }
 .task-card .small-icon {
-  width: var(--card-small-icon-size);
-  height: var(--card-small-icon-size);
+  width: calc(var(--card-small-icon-size) * (1 + (var(--scale) - 1) * 0.5));
+  height: calc(var(--card-small-icon-size) * (1 + (var(--scale) - 1) * 0.5));
   object-fit: contain;
   image-rendering: pixelated;
+  transition: all 200ms ease;
 }
 .task-card .template {
   position: absolute;
@@ -407,7 +383,8 @@ body {
   transform: translateX(-50%);
   color: var(--card-category-color);
   font-family: var(--card-font-title);
-  font-size: var(--card-category-size);
+  font-size: calc(var(--card-category-size) * var(--active-size, 1));
+  transition: all 200ms ease;
   letter-spacing: 0.02em;
   pointer-events: none;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);

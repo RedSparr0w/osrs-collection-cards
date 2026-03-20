@@ -94,16 +94,16 @@ export default class CardController {
 				return;
 			}
 
-			const maxRotation = 5;
 			const rect = element.getBoundingClientRect();
 			const deltaX = e.clientX - rect.left;
 			const deltaY = e.clientY - rect.top;
-			const localX = Math.max(0, Math.min(rect.width, deltaX));
+			const ratioX = deltaX / rect.width - 0.5;
+			const ratioY = deltaY / rect.height - 0.5;
+			const pointerX = Math.max(-1, Math.min(1, ratioX * 2));
+			const pointerY = Math.max(-1, Math.min(1, ratioY * 2));
+			element.style.setProperty('--pointer-x', `${pointerX}`);
+			element.style.setProperty('--pointer-y', `${pointerY}`);
 			const localY = Math.max(0, Math.min(rect.height, deltaY));
-			const rotateX = mapRange(localY, 0, rect.height, maxRotation / 2, -maxRotation / 2);
-			const rotateZ = mapRange(localX, 0, rect.width, -maxRotation / 2, maxRotation / 2);
-			element.style.setProperty('--active-rotate-x', `${rotateX}deg`);
-			element.style.setProperty('--active-rotate-z', `${rotateZ}deg`);
 			const brightness = mapRange(localY, 0, rect.height, 1.1, 0.9);
 			element.style.setProperty('--brightness', `${brightness}`);
 		};

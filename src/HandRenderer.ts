@@ -59,18 +59,19 @@ export default class HandRenderer {
 				}
 			});
 
+			cardElement.addEventListener('pointermove', (e: PointerEvent) => {
+				this.updateCardGlowPosition(cardElement, e);
+			});
+
 			cardElement.addEventListener('mouseenter', () => {
-				const face = cardElement.querySelector('.card-face');
-				if (face && !face.classList.contains('shine')) {
-					face.classList.add('shine');
-					delay(2000).then(() => face.classList.remove('shine'));
-				}
+				this.setCardGlowVisibility(cardElement, true);
 				if (!this.cardController.activeCardElement) {
 					this.spreadCardsAwayFrom(cardElement);
 				}
 			});
 
 			cardElement.addEventListener('mouseleave', () => {
+				this.setCardGlowVisibility(cardElement, false);
 				if (!this.cardController.activeCardElement) {
 					this.layoutCards();
 				}
@@ -112,6 +113,31 @@ export default class HandRenderer {
 		setTimeout(() => {
 			element.remove();
 		}, 1000);
+	}
+
+	private setCardGlowVisibility(cardElement: HTMLElement, isVisible: boolean): void {
+		cardElement.style.setProperty('--shine-opacity', isVisible ? '1' : '0');
+
+		if (!isVisible) {
+			cardElement.style.setProperty('--shine-x', '50%');
+			cardElement.style.setProperty('--shine-y', '50%');
+		}
+	}
+
+	private updateCardGlowPosition(cardElement: HTMLElement, event: PointerEvent): void {
+		const rect = cardElement.getBoundingClientRect();
+		if (!rect.width || !rect.height) {
+			return;
+		}
+
+		const x = ((event.clientX - rect.left) / rect.width) * 100;
+		const y = ((event.clientY - rect.top) / rect.height) * 100;
+		const clampedX = Math.max(0, Math.min(100, x));
+		const clampedY = Math.max(0, Math.min(100, y));
+
+		cardElement.style.setProperty('--shine-x', `${clampedX}%`);
+		cardElement.style.setProperty('--shine-y', `${clampedY}%`);
+		cardElement.style.setProperty('--shine-opacity', '1');
 	}
 
 	private placeCardOffscreen(cardElement: HTMLElement): void {
