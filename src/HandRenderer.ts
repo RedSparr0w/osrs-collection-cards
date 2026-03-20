@@ -59,13 +59,13 @@ export default class HandRenderer {
 			});
 
 			cardElement.addEventListener('mouseenter', () => {
-				if (!this.activeCardElement) {
+				if (!this.cardController.activeCardElement) {
 					this.spreadCardsAwayFrom(cardElement);
 				}
 			});
 
 			cardElement.addEventListener('mouseleave', () => {
-				if (!this.activeCardElement) {
+				if (!this.cardController.activeCardElement) {
 					this.layoutCards();
 				}
 			});
