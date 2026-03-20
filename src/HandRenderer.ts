@@ -129,8 +129,9 @@ export default class HandRenderer {
 		const containerWidth = this.cardGridEl.clientWidth;
 		const containerHeight = this.cardGridEl.clientHeight;
 		const firstCard = entries[0];
-		const cardWidth = firstCard.offsetWidth || 220;
-		const cardHeight = firstCard.offsetHeight || 320;
+		const secondCard = entries[1];
+		const cardWidth = Math.min(firstCard.offsetWidth, secondCard.offsetWidth) || 220;
+		const cardHeight = Math.min(firstCard.offsetHeight, secondCard.offsetHeight) || 320;
 		const centerIndex = (count - 1) / 2;
 		const maxStep = cardWidth * 0.72;
 		const availableWidth = Math.max(cardWidth, containerWidth - cardWidth - 32);
