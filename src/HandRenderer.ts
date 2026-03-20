@@ -130,8 +130,8 @@ export default class HandRenderer {
 		const containerHeight = this.cardGridEl.clientHeight;
 		const firstCard = entries[0];
 		const secondCard = entries[1];
-		const cardWidth = Math.min(firstCard.offsetWidth, secondCard.offsetWidth) || 220;
-		const cardHeight = Math.min(firstCard.offsetHeight, secondCard.offsetHeight) || 320;
+		const cardWidth = Math.min(firstCard?.offsetWidth, secondCard?.offsetWidth) || 220;
+		const cardHeight = Math.min(firstCard?.offsetHeight, secondCard?.offsetHeight) || 320;
 		const centerIndex = (count - 1) / 2;
 		const maxStep = cardWidth * 0.72;
 		const availableWidth = Math.max(cardWidth, containerWidth - cardWidth - 32);
@@ -168,8 +168,8 @@ export default class HandRenderer {
 		const containerHeight = this.cardGridEl.clientHeight;
 		const firstCard = entries[0];
 		const secondCard = entries[1];
-		const cardWidth = Math.min(firstCard.offsetWidth, secondCard.offsetWidth) || 220;
-		const cardHeight = Math.min(firstCard.offsetHeight, secondCard.offsetHeight) || 320;
+		const cardWidth = Math.min(firstCard?.offsetWidth, secondCard?.offsetWidth) || 220;
+		const cardHeight = Math.min(firstCard?.offsetHeight, secondCard?.offsetHeight) || 320;
 		const centerIndex = (count - 1) / 2;
 		const maxStep = cardWidth * 0.72;
 		const availableWidth = Math.max(cardWidth, containerWidth - cardWidth - 32);
@@ -224,8 +224,8 @@ export default class HandRenderer {
 
 		const scale = getNumericCssVar(activeElement, '--active-size', 1) || 1;
 
-		const cardWidth = Math.min(firstCard.offsetWidth, secondCard.offsetWidth) || 220;
-		const cardHeight = Math.min(firstCard.offsetHeight, secondCard.offsetHeight) || 320;
+		const cardWidth = Math.min(firstCard?.offsetWidth, secondCard?.offsetWidth) || 220;
+		const cardHeight = Math.min(firstCard?.offsetHeight, secondCard?.offsetHeight) || 320;
 
 		const maxStep = cardWidth * 0.72;
 
