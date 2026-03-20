@@ -178,7 +178,7 @@ export default class Card {
 	/**
 	 * Generate and cache an HTML element for this card.
 	 */
-	async generateElement(): Promise<HTMLElement> {
+	async getElement(): Promise<HTMLElement> {
 		if (this.cachedElement) {
 			return this.cachedElement;
 		}

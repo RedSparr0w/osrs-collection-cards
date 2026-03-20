@@ -8,8 +8,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 	await taskManager.initialize();
 
 	const gameManager = new GameManager(taskManager);
-	gameManager.reset();
-	gameManager.shuffle();
 
 	const tasksToRender = 5;
 	gameManager.deal(tasksToRender);

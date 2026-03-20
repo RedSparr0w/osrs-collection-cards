@@ -1,23 +1,31 @@
 import Task from './Task';
 import CardController from './CardController';
+import Card from './Card';
 
-const cardGrid: HTMLElement = document.getElementById('card-grid') as HTMLElement;
-const statusText: HTMLElement = document.getElementById('status-text') as HTMLElement;
+const cardGridEl: HTMLElement = document.getElementById('card-grid') as HTMLElement;
+const statusTextEl: HTMLElement = document.getElementById('status-text') as HTMLElement;
 
 const delay = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
 export default class HandRenderer {
-	private cardController: CardController;
+	cardController: CardController;
+	cardsInHand: Card[] = [];
 
 	constructor() {
 		this.cardController = new CardController();
 		this.cardController.bindResize();
     
-    if (!cardGrid) {
+    if (!cardGridEl) {
       throw new Error('Missing #card-grid container');
     }
     
-    if (statusText) statusText.textContent = 'Loading tasks...';
+    if (statusTextEl) statusTextEl.textContent = 'Loading tasks...';
+	}
+
+	async dealCard(task: Task, delay: number): Promise<void> {
+		setTimeout(async () => {
+			return await this.render([task]);
+		}, delay);
 	}
 
 	async render(tasks: Task[], options: { flipDelayMs?: number; staggerMs?: number } = {}): Promise<void> {
@@ -26,16 +34,13 @@ export default class HandRenderer {
 		const total = tasks.length;
 		let renderedCount = 0;
 
-		this.setStatus(`Rendering ${total} cards...`);
-
 		for (const task of tasks) {
 			try {
 				const card = await task.getCard();
-				const cardElement = await card.generateElement();
+				this.cardsInHand.push(card);
+				const cardElement = await card.getElement();
 				card.setFlipped(true);
 				cardElement.tabIndex = 0;
-				cardElement.setAttribute('role', 'button');
-				cardElement.setAttribute('aria-label', `Flip ${task.name}`);
 
 				cardElement.addEventListener('click', () => {
 					if (this.cardController.isActive(cardElement)) {
@@ -53,10 +58,9 @@ export default class HandRenderer {
 					card.toggleFlipped();
 				});
 
-				cardGrid.appendChild(cardElement);
+				cardGridEl.appendChild(cardElement);
 				setTimeout(() => card.setFlipped(false), flipDelayMs);
 				renderedCount++;
-				this.setStatus(`Rendered ${renderedCount} of ${total} cards...`);
 
 				if (staggerMs > 0) {
 					await delay(staggerMs);
@@ -65,13 +69,11 @@ export default class HandRenderer {
 				console.warn(`Failed to render card for task ${task.id}:`, error);
 			}
 		}
-
-		this.setStatus(`Rendered ${renderedCount} cards`);
 	}
 
 	private setStatus(message: string): void {
-		if (statusText) {
-			statusText.textContent = message;
+		if (statusTextEl) {
+			statusTextEl.textContent = message;
 		}
 	}
 }

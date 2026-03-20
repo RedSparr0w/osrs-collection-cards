@@ -1,37 +1,43 @@
+import { TIERS } from './Constants';
 import HandRenderer from './HandRenderer';
 import Task from './Task';
 import TaskManager from './TaskManager';
 import { shuffleArray } from './helpers';
 
+const TIER_WEIGHTS: Record<TIERS, number> = {
+	[TIERS.EASY]: 1.1,
+	[TIERS.MEDIUM]: 0.7,
+	[TIERS.HARD]: 0.4,
+	[TIERS.ELITE]: 0.2,
+	[TIERS.MASTER]: 0.1,
+};
+
 export default class GameManager {
 	private taskManager: TaskManager;
 	private currentHand: Task[] = [];
-	private availableTasks: Task[] = [];
 	handRenderer: HandRenderer;
 
 
 	constructor(taskManager: TaskManager) {
 		this.taskManager = taskManager;
-    this.reset();
 		this.handRenderer = new HandRenderer();
 	}
 
-	reset(): void {
-		this.availableTasks = this.taskManager.getIncompleteTasks();
-	}
-
-	shuffle(): void {
-		this.availableTasks = shuffleArray(this.availableTasks);
+	getWeightedTasks(): Task[] {
+		return this.taskManager.getIncompleteTasks().sort((a, b) => {
+			const weightA = TIER_WEIGHTS[a.tier] || 0;
+			const weightB = TIER_WEIGHTS[b.tier] || 0;
+			return (Math.random() * weightB) - (Math.random() * weightA);
+		});
 	}
 
 	async deal(count: number): Promise<Task[]> {
-		const dealt = this.availableTasks.splice(0, count);
-		this.currentHand.push(...dealt);
-		await this.handRenderer.render(this.currentHand, {
-			staggerMs: 200,
-			flipDelayMs: 3000,
+		const cardsToDeal = this.getWeightedTasks().splice(0, count);
+		cardsToDeal.forEach(async (task, index) => {
+			this.currentHand.push(task);
+			await this.handRenderer.dealCard(task, index * 200);
 		});
-		return dealt;
+		return cardsToDeal;
 	}
 
 	dispose(taskId: string): boolean {

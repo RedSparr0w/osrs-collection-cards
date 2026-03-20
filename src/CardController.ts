@@ -2,8 +2,8 @@ import Card from './Card';
 import { mapRange } from './helpers';
 
 export default class CardController {
-	private activeCard: Card | null = null;
-	private activeCardElement: HTMLElement | null = null;
+	activeCard: Card | null = null;
+	activeCardElement: HTMLElement | null = null;
 
   // When selecting a card, it will be the active card
 	activate(card: Card, element: HTMLElement): void {
