@@ -6,6 +6,10 @@
   - [ ] Add tooltips to items in card
   - [ ] Add wiki link in card
   - [ ] Add button on active card for selecting it
+  - [ ] More styles?
+    - [ ] Different style per tier?
+    - [ ] Slight difference per tier?
+    - [ ] Dark mode?
 - [ ] Figure out gameplay loop
   - [ ] Add more cards as you complete more tasks?
   - [ ] Add re-roll feature?
@@ -15,6 +19,7 @@
     - [ ] Different style shinies (Holo, Reverse Holo, Different colors)?
     - [ ] Unlock themes?
 - [ ] Implement player data
+  - [ ] Handle if old tasks are removed from the remote repo
   - [ ] Save/load our current incomplete/selected/completed/in hand tasks
     - [ ] Store started/completed date for tasks
     - [ ] Notification when your current tasks is completable
@@ -27,6 +32,15 @@
 - [ ] User Interface
   - [ ] Show total completed/incomplete tasks
   - [ ] Show tasks by tier and completion status
+  - [ ] Keyboard controls?
+  - [ ] Themes
+- [ ] Download wiki data locally on build
+  - [ ] Images (HQ + Icon)
+  - [ ] JSON
+  - [ ] Setup job to run automatically
+    - [ ] Weekly?
+    - [ ] Each time tasks change
+- [ ] PR to remote task list updating main image links?
 
 ### Completed
 - [x] Import tasks
