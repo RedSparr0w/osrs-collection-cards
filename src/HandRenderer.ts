@@ -1,7 +1,7 @@
 import Task from './Task';
 import CardController from './CardController';
 import Card from './Card';
-import { delay } from './helpers';
+import { delay, getNumericCssVar } from './helpers';
 
 export default class HandRenderer {
 	private cardController: CardController;
@@ -40,6 +40,7 @@ export default class HandRenderer {
 				} else {
 					card.setFlipped(false);
 					this.cardController.activate(card, cardElement);
+					delay(1000).then(() => this.spreadCardsActive(cardElement));
 				}
 			});
 
@@ -177,6 +178,9 @@ export default class HandRenderer {
 		const spreadAmount = cardWidth * 0.35;
 
 		entries.forEach((element, index) => {
+			if (index === hoveredIndex) {
+				return;
+			}
 			const offsetFromCenter = index - centerIndex;
 			const normalized = count > 1 ? offsetFromCenter / centerIndex : 0;
 			let left = containerWidth / 2 - cardWidth / 2 + offsetFromCenter * step;
@@ -184,13 +188,95 @@ export default class HandRenderer {
 			const top = baseTop + dip;
 			const rotate = normalized * maxRotation;
 			const zIndex = String(10 + index);
+			const distanceToMove = spreadAmount / (Math.abs(hoveredIndex - index));
 
 			// Spread immediate neighbors, and cascade the movement to cards beyond them
 			if (index < hoveredIndex) {
-				left -= spreadAmount / (Math.abs(hoveredIndex - index));
+				left -= distanceToMove;
 			} else if (index > hoveredIndex) {
-				left += spreadAmount / (Math.abs(hoveredIndex - index));
+				left += distanceToMove;
 			}
+
+			element.style.left = `${left}px`;
+			element.style.top = `${top}px`;
+			element.style.zIndex = zIndex;
+			element.style.setProperty('--fan-rotate', `${rotate}deg`);
+			element.style.setProperty('--fan-dip', `${dip}px`);
+		});
+	}
+	
+	private spreadCardsActive(activeElement: HTMLElement): void {
+		const entries = Array.from(this.cardElements.values()).filter(
+			(el) => !el.classList.contains('discarded')
+		);
+
+		const count = entries.length;
+		const activeIndex = entries.indexOf(activeElement);
+
+		if (activeIndex === -1 || count < 2) return;
+
+		const containerWidth = this.cardGridEl.clientWidth;
+		const containerHeight = this.cardGridEl.clientHeight;
+
+		const firstCard = entries[0];
+		const secondCard = entries[1];
+
+		const scale = getNumericCssVar(activeElement, '--active-size', 1) || 1;
+
+		const cardWidth =
+			Math.min(firstCard.offsetWidth, secondCard.offsetWidth) || 220;
+		const cardHeight =
+			Math.min(firstCard.offsetHeight, secondCard.offsetHeight) || 320;
+
+		const maxStep = cardWidth * 0.72;
+
+		const availableWidth = Math.max(
+			cardWidth,
+			containerWidth - cardWidth - 32
+		);
+
+		const step =
+			count > 1 ? Math.min(maxStep, availableWidth / (count - 1)) : 0;
+
+		const baseTop = Math.max(
+			16,
+			(containerHeight - cardHeight) / 2 - 12
+		);
+
+		const maxDip = Math.min(36, containerHeight * 0.08);
+		const maxRotation = Math.min(14, 8 + count);
+		const spreadAmount = cardWidth * 0.35;
+
+		const centerX = containerWidth / 2 - (cardWidth) / 2;
+
+		entries.forEach((element, index) => {
+			if (index === activeIndex) return;
+
+			const distance = index - activeIndex; // 🔥 key
+			const direction = Math.sign(distance);
+			const absDistance = Math.abs(distance);
+
+			// --- POSITION ---
+			let left = centerX;
+
+			// even spacing
+			left += distance * step;
+
+			// cascade effect (safe, no divide-by-zero)
+			if (absDistance > 0) {
+				left += direction * (spreadAmount / absDistance);
+			}
+
+			// --- NORMALIZATION (safe) ---
+			const maxDistance = Math.max(activeIndex, count - 1 - activeIndex) || 1;
+			const normalized = distance / maxDistance;
+
+			// --- VISUALS ---
+			const dip = Math.abs(normalized) ** 2 * maxDip;
+			const top = baseTop + dip;
+			const rotate = normalized * maxRotation;
+
+			const zIndex = String(100 - absDistance); // closer = higher
 
 			element.style.left = `${left}px`;
 			element.style.top = `${top}px`;
