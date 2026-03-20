@@ -50,6 +50,14 @@ export default class HandRenderer {
 				card.toggleFlipped();
 			});
 
+			cardElement.addEventListener('mouseenter', () => {
+				this.spreadCardsAwayFrom(cardElement);
+			});
+
+			cardElement.addEventListener('mouseleave', () => {
+				this.layoutCards();
+			});
+
 			await delay(delayMs);
 			this.cardGridEl.appendChild(cardElement);
 			cardElement.classList.add('is-entering');
@@ -125,7 +133,52 @@ export default class HandRenderer {
 			const dip = Math.abs(normalized) ** 2 * maxDip;
 			const top = baseTop + dip;
 			const rotate = normalized * maxRotation;
-			const zIndex = String(10 + (count - Math.round(Math.abs(offsetFromCenter))));
+			const zIndex = String(10 + index);
+
+			element.style.left = `${left}px`;
+			element.style.top = `${top}px`;
+			element.style.zIndex = zIndex;
+			element.style.setProperty('--fan-rotate', `${rotate}deg`);
+			element.style.setProperty('--fan-dip', `${dip}px`);
+		});
+	}
+
+	private spreadCardsAwayFrom(hoveredElement: HTMLElement): void {
+		const entries = Array.from(this.cardElements.values()).filter((element) => !element.classList.contains('discarded'));
+		const count = entries.length;
+		const hoveredIndex = entries.indexOf(hoveredElement);
+
+		if (hoveredIndex === -1 || count === 0) return;
+
+		const containerWidth = this.cardGridEl.clientWidth;
+		const containerHeight = this.cardGridEl.clientHeight;
+		const firstCard = entries[0];
+		const cardWidth = firstCard.offsetWidth || 220;
+		const cardHeight = firstCard.offsetHeight || 320;
+		const centerIndex = (count - 1) / 2;
+		const maxStep = cardWidth * 0.72;
+		const availableWidth = Math.max(cardWidth, containerWidth - cardWidth - 32);
+		const step = count > 1 ? Math.min(maxStep, availableWidth / (count - 1)) : 0;
+		const baseTop = Math.max(16, (containerHeight - cardHeight) / 2 - 12);
+		const maxDip = Math.min(36, containerHeight * 0.08);
+		const maxRotation = Math.min(14, 8 + count);
+		const spreadAmount = cardWidth * 0.35;
+
+		entries.forEach((element, index) => {
+			const offsetFromCenter = index - centerIndex;
+			const normalized = count > 1 ? offsetFromCenter / centerIndex : 0;
+			let left = containerWidth / 2 - cardWidth / 2 + offsetFromCenter * step;
+			const dip = Math.abs(normalized) ** 2 * maxDip;
+			const top = baseTop + dip;
+			const rotate = normalized * maxRotation;
+			const zIndex = String(10 + index);
+
+			// Spread immediate neighbors, and cascade the movement to cards beyond them
+			if (index < hoveredIndex) {
+				left -= spreadAmount;
+			} else if (index > hoveredIndex) {
+				left += spreadAmount;
+			}
 
 			element.style.left = `${left}px`;
 			element.style.top = `${top}px`;

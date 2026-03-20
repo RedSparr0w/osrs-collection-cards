@@ -268,7 +268,7 @@ body {
 // Only apply hover effects when no cards are active, to avoid visual conflicts with the active card's transform
 .card-grid:not(:has(.is-active)):not(:has(.discarded)) .task-card {
   &:hover {
-    --hover-lift: -16px;
+    transform: rotateX(-8deg) rotateZ(var(--fan-rotate, 0deg)) translateY(-16px) translateZ(60px);
     box-shadow: 0 16px 32px rgba(0, 0, 0, 0.58);
   }
 }
