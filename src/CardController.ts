@@ -1,5 +1,5 @@
 import Card from './Card';
-import { getNumericCssVar, mapRange } from './helpers';
+import { delay, getNumericCssVar, mapRange } from './helpers';
 
 export default class CardController {
 	activeCard: Card | null = null;
@@ -28,6 +28,12 @@ export default class CardController {
 	deactivate(): void {
 		if (this.activeCardElement) {
 			this.clearTransforms(this.activeCardElement);
+			const oldActiveEl = this.activeCardElement;
+			// Temporarily disable pointer events to prevent hover bugs during the transform reset
+			oldActiveEl.style.pointerEvents = 'none';
+			delay(300).then(() => {
+				oldActiveEl.style.pointerEvents = '';
+			});
 		}
 		if (this.activeCard) {
 			this.activeCard.setActive(false);
