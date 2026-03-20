@@ -161,13 +161,11 @@ body {
 
 .card-grid {
   flex: 1 1 0;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
+  position: relative;
   padding: 0 40px;
   perspective: 1400px;
   perspective-origin: 50% 60%;
+  overflow: visible;
 }
 
 @keyframes card-shine-sweep {
@@ -214,14 +212,13 @@ body {
   }
 }
 .card-grid:not(:has(.is-active)):not(:has(.discarded)) .task-card:hover {
-  transform: rotateX(-8deg) rotateZ(var(--fan-rotate, 0deg)) translateY(-16px) translateZ(60px);
+  --hover-lift: -16px;
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.58);
-  padding: 0 40px;
-  margin: 0 40px;
 }
 
 .task-card {
   --card-base-size: clamp(160px, 20vw, 260px);
+  --hover-lift: 0px;
   --active-x: 0px;
   --active-y: 0px;
   --active-size: 1;
@@ -239,208 +236,29 @@ body {
   --card-font-body: 'Runescape', Arial, sans-serif;
   --card-icon-size: 30%;
   --card-small-icon-size: 28px;
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
   z-index: 1;
-  flex-grow: 0;
-  flex-shrink: 0;
-  flex-basis: calc(var(--card-base-size) * var(--active-size));
-  margin: 0 calc(var(--card-base-size) * (1 - var(--active-size)) * 0.5 - 25px);
+  width: calc(var(--card-base-size) * var(--active-size));
   aspect-ratio: 3/4;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   transform-style: preserve-3d;
   transform-origin: center bottom;
-  transform: translate(var(--active-x), var(--active-y)) rotateX(var(--active-rotate-x)) rotateZ(var(--active-rotate-z)) translateY(var(--active-dip));
-  transition: all 200ms ease, transform 500ms ease, flex-basis 500ms ease, margin 500ms ease, box-shadow 220ms ease;
+  transform: translate(var(--active-x), calc(var(--active-y) + var(--hover-lift))) rotateX(var(--active-rotate-x)) rotateZ(var(--active-rotate-z)) translateY(var(--active-dip));
+  transition: left 500ms ease, top 500ms ease, width 500ms ease, transform 500ms ease, box-shadow 220ms ease, filter 200ms ease, opacity 300ms ease;
   will-change: transform;
-  animation: deal-card 2s ease-in-out forwards;
   filter: brightness(var(--brightness, 1));
 }
-.task-card:nth-child(1):nth-last-child(1) {
-  --fan-rotate: 0deg;
-  --fan-dip: 0px;
-  z-index: 1;
-}
-.task-card:nth-child(1):nth-last-child(2) {
-  --fan-rotate: -12deg;
-  --fan-dip: 36px;
-  z-index: 1;
-}
-.task-card:nth-child(2):nth-last-child(1) {
-  --fan-rotate: 12deg;
-  --fan-dip: 36px;
-  z-index: 2;
-}
-.task-card:nth-child(1):nth-last-child(3) {
-  --fan-rotate: -12deg;
-  --fan-dip: 36px;
-  z-index: 1;
-}
-.task-card:nth-child(2):nth-last-child(2) {
-  --fan-rotate: 0deg;
-  --fan-dip: 0px;
-  z-index: 2;
-}
-.task-card:nth-child(3):nth-last-child(1) {
-  --fan-rotate: 12deg;
-  --fan-dip: 36px;
-  z-index: 3;
-}
-.task-card:nth-child(1):nth-last-child(4) {
-  --fan-rotate: -12deg;
-  --fan-dip: 36px;
-  z-index: 1;
-}
-.task-card:nth-child(2):nth-last-child(3) {
-  --fan-rotate: -4deg;
-  --fan-dip: 4px;
-  z-index: 2;
-}
-.task-card:nth-child(3):nth-last-child(2) {
-  --fan-rotate: 4deg;
-  --fan-dip: 4px;
-  z-index: 3;
-}
-.task-card:nth-child(4):nth-last-child(1) {
-  --fan-rotate: 12deg;
-  --fan-dip: 36px;
-  z-index: 4;
-}
-.task-card:nth-child(1):nth-last-child(5) {
-  --fan-rotate: -12deg;
-  --fan-dip: 36px;
-  z-index: 1;
-}
-.task-card:nth-child(2):nth-last-child(4) {
-  --fan-rotate: -6deg;
-  --fan-dip: 9px;
-  z-index: 2;
-}
-.task-card:nth-child(3):nth-last-child(3) {
-  --fan-rotate: 0deg;
-  --fan-dip: 0px;
-  z-index: 3;
-}
-.task-card:nth-child(4):nth-last-child(2) {
-  --fan-rotate: 6deg;
-  --fan-dip: 9px;
-  z-index: 4;
-}
-.task-card:nth-child(5):nth-last-child(1) {
-  --fan-rotate: 12deg;
-  --fan-dip: 36px;
-  z-index: 5;
-}
-.task-card:nth-child(1):nth-last-child(6) {
-  --fan-rotate: -12deg;
-  --fan-dip: 36px;
-  z-index: 1;
-}
-.task-card:nth-child(2):nth-last-child(5) {
-  --fan-rotate: -7.2deg;
-  --fan-dip: 12.96px;
-  z-index: 2;
-}
-.task-card:nth-child(3):nth-last-child(4) {
-  --fan-rotate: -2.4deg;
-  --fan-dip: 1.44px;
-  z-index: 3;
-}
-.task-card:nth-child(4):nth-last-child(3) {
-  --fan-rotate: 2.4deg;
-  --fan-dip: 1.44px;
-  z-index: 4;
-}
-.task-card:nth-child(5):nth-last-child(2) {
-  --fan-rotate: 7.2deg;
-  --fan-dip: 12.96px;
-  z-index: 5;
-}
-.task-card:nth-child(6):nth-last-child(1) {
-  --fan-rotate: 12deg;
-  --fan-dip: 36px;
-  z-index: 6;
-}
-.task-card:nth-child(1):nth-last-child(7) {
-  --fan-rotate: -12deg;
-  --fan-dip: 36px;
-  z-index: 1;
-}
-.task-card:nth-child(2):nth-last-child(6) {
-  --fan-rotate: -8deg;
-  --fan-dip: 16px;
-  z-index: 2;
-}
-.task-card:nth-child(3):nth-last-child(5) {
-  --fan-rotate: -4deg;
-  --fan-dip: 4px;
-  z-index: 3;
-}
-.task-card:nth-child(4):nth-last-child(4) {
-  --fan-rotate: 0deg;
-  --fan-dip: 0px;
-  z-index: 4;
-}
-.task-card:nth-child(5):nth-last-child(3) {
-  --fan-rotate: 4deg;
-  --fan-dip: 4px;
-  z-index: 5;
-}
-.task-card:nth-child(6):nth-last-child(2) {
-  --fan-rotate: 8deg;
-  --fan-dip: 16px;
-  z-index: 6;
-}
-.task-card:nth-child(7):nth-last-child(1) {
-  --fan-rotate: 12deg;
-  --fan-dip: 36px;
-  z-index: 7;
-}
-.task-card:nth-child(1):nth-last-child(8) {
-  --fan-rotate: -12deg;
-  --fan-dip: 36px;
-  z-index: 1;
-}
-.task-card:nth-child(2):nth-last-child(7) {
-  --fan-rotate: -8.5714285714deg;
-  --fan-dip: 18.3673469388px;
-  z-index: 2;
-}
-.task-card:nth-child(3):nth-last-child(6) {
-  --fan-rotate: -5.1428571429deg;
-  --fan-dip: 6.612244898px;
-  z-index: 3;
-}
-.task-card:nth-child(4):nth-last-child(5) {
-  --fan-rotate: -1.7142857143deg;
-  --fan-dip: 0.7346938776px;
-  z-index: 4;
-}
-.task-card:nth-child(5):nth-last-child(4) {
-  --fan-rotate: 1.7142857143deg;
-  --fan-dip: 0.7346938776px;
-  z-index: 5;
-}
-.task-card:nth-child(6):nth-last-child(3) {
-  --fan-rotate: 5.1428571429deg;
-  --fan-dip: 6.612244898px;
-  z-index: 6;
-}
-.task-card:nth-child(7):nth-last-child(2) {
-  --fan-rotate: 8.5714285714deg;
-  --fan-dip: 18.3673469388px;
-  z-index: 7;
-}
-.task-card:nth-child(8):nth-last-child(1) {
-  --fan-rotate: 12deg;
-  --fan-dip: 36px;
-  z-index: 8;
+.task-card.is-entering {
+  pointer-events: none;
 }
 .task-card.discarded {
   pointer-events: none;
-  transform: translateY(100vh) rotateX(-180deg);
-  transition: transform 1000ms ease-in;
+  transform: translate(var(--active-x), calc(var(--active-y) + 100vh)) rotateX(-180deg) rotateZ(var(--active-rotate-z));
+  transition: transform 1000ms ease-in, opacity 300ms ease-out;
 }
 .task-card.is-active {
   --active-rotate-x: 0deg;

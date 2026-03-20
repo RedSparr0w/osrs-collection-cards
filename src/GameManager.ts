@@ -35,12 +35,16 @@ export default class GameManager {
 		const cardsToDeal = this.getWeightedTasks().splice(0, count);
 		for (const [index, task] of cardsToDeal.entries()) {
 			this.currentHand.push(task);
-			this.handRenderer.dealCard(task, index * 200);
+			await this.handRenderer.dealCard(task);
 
-			setTimeout(() => {
-				this.dispose(task.id);
-			}, 6000 + index * 200);
-		});
+			// delay(6000).then(() => {
+			// 	this.dispose(task.id);
+			// });
+
+			if (index < cardsToDeal.length - 1) {
+				await delay(200);
+			}
+		}
 		return cardsToDeal;
 	}
 
