@@ -206,7 +206,6 @@ export default class HandRenderer {
 			element.style.setProperty('--fan-dip', `${dip}px`);
 		});
 	}
-	
 	private spreadCardsActive(activeElement: HTMLElement): void {
 		const entries = Array.from(this.cardElements.values()).filter(
 			(el) => !el.classList.contains('discarded')
@@ -229,24 +228,15 @@ export default class HandRenderer {
 		const cardHeight = Math.min(firstCard.offsetHeight, secondCard.offsetHeight) || 320;
 
 		const maxStep = cardWidth * 0.72;
-		const maxFirstStep = maxStep * scale * 0.75;
 
-		const availableWidth = Math.max(
-			cardWidth,
-			containerWidth - cardWidth - 32
-		);
-
+		const availableWidth = Math.max(cardWidth, containerWidth - (cardWidth * scale) - 32);
 		const step = count > 1 ? Math.min(maxStep, availableWidth / (count - 1)) : 0;
-		const firstStep = count > 1 ? Math.min(maxFirstStep, availableWidth / (count - 1)) : 0;
-
 		const baseTop = Math.max(16, (containerHeight - cardHeight) / 2 - 12);
-
 		const maxDip = Math.min(36, containerHeight * 0.08);
 		const maxRotation = Math.min(14, 8 + count);
 		const spreadAmount = cardWidth * 0.35;
 
 		const centerX = containerWidth / 2 - cardWidth / 2;
-
 		entries.forEach((element, index) => {
 			if (index === activeIndex) return;
 
@@ -256,7 +246,7 @@ export default class HandRenderer {
 
 			let left = centerX;
 
-			left += Math.sign(distance) * (firstStep + (Math.abs(distance) - 1) * step)
+			left += distance * step;
 
 			if (absDistance > 0) {
 				left += direction * (spreadAmount / absDistance);
