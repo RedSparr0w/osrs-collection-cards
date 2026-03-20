@@ -277,18 +277,11 @@ body {
   z-index: 20;
   pointer-events: none;
   background: radial-gradient(circle at var(--shine-x) var(--shine-y), rgb(255, 255, 255) 0%, rgba(255, 255, 255, 0.5) 25%, transparent 50%);
-  -webkit-mask-image: url("./images/CardShineMask_Basic4.png");
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  -webkit-mask-size: cover;
-  -webkit-mask-composite: destination-in;
+  mix-blend-mode: difference;
   mask-image: url("./images/CardShineMask_Basic4.png");
   mask-repeat: no-repeat;
   mask-position: center;
   mask-size: cover;
-  mask-composite: intersect;
-  mix-blend-mode: difference;
-  filter: blur(16px);
   opacity: var(--shine-opacity);
   transition: opacity 500ms ease-in-out;
 }
