@@ -9,8 +9,9 @@ const delay = (ms: number): Promise<void> => new Promise(resolve => setTimeout(r
 export default class HandRenderer {
 	private cardController: CardController;
 
-	constructor(cardController: CardController) {
-		this.cardController = cardController;
+	constructor() {
+		this.cardController = new CardController();
+		this.cardController.bindResize();
     
     if (!cardGrid) {
       throw new Error('Missing #card-grid container');

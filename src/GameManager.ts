@@ -1,3 +1,4 @@
+import HandRenderer from './HandRenderer';
 import Task from './Task';
 import TaskManager from './TaskManager';
 import { shuffleArray } from './helpers';
@@ -6,10 +7,13 @@ export default class GameManager {
 	private taskManager: TaskManager;
 	private currentHand: Task[] = [];
 	private availableTasks: Task[] = [];
+	handRenderer: HandRenderer;
+
 
 	constructor(taskManager: TaskManager) {
 		this.taskManager = taskManager;
     this.reset();
+		this.handRenderer = new HandRenderer();
 	}
 
 	reset(): void {
@@ -20,9 +24,13 @@ export default class GameManager {
 		this.availableTasks = shuffleArray(this.availableTasks);
 	}
 
-	deal(count: number): Task[] {
+	async deal(count: number): Promise<Task[]> {
 		const dealt = this.availableTasks.splice(0, count);
 		this.currentHand.push(...dealt);
+		await this.handRenderer.render(this.currentHand, {
+			staggerMs: 200,
+			flipDelayMs: 3000,
+		});
 		return dealt;
 	}
 
