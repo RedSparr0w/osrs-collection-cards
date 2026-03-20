@@ -175,9 +175,9 @@ export default class HandRenderer {
 
 			// Spread immediate neighbors, and cascade the movement to cards beyond them
 			if (index < hoveredIndex) {
-				left -= spreadAmount;
+				left -= spreadAmount / (Math.abs(hoveredIndex - index));
 			} else if (index > hoveredIndex) {
-				left += spreadAmount;
+				left += spreadAmount / (Math.abs(hoveredIndex - index));
 			}
 
 			element.style.left = `${left}px`;
