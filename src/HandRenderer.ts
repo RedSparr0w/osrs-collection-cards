@@ -117,11 +117,6 @@ export default class HandRenderer {
 
 	private setCardGlowVisibility(cardElement: HTMLElement, isVisible: boolean): void {
 		cardElement.style.setProperty('--shine-opacity', isVisible ? '1' : '0');
-
-		if (!isVisible) {
-			cardElement.style.setProperty('--shine-x', '50%');
-			cardElement.style.setProperty('--shine-y', '50%');
-		}
 	}
 
 	private updateCardGlowPosition(cardElement: HTMLElement, event: PointerEvent): void {

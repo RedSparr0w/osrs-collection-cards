@@ -102,6 +102,12 @@ export default class CardController {
 			element.style.setProperty('--pointer-y', `${pointerY}`);
 			const brightness = mapRange(ratioY, 0.5, -0.5, 1.1, 0.9);
 			element.style.setProperty('--brightness', `${brightness}`);
+
+			const clampedX = Math.max(0, Math.min(100, deltaX / rect.width * 100));
+			const clampedY = Math.max(0, Math.min(100, deltaY / rect.height * 100));
+			element.style.setProperty('--shine-x', `${clampedX}%`);
+			element.style.setProperty('--shine-y', `${clampedY}%`);
+			element.style.setProperty('--shine-opacity', '1');
 		};
 
 		document.body.addEventListener('pointermove', onPointerMove);

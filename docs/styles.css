@@ -290,7 +290,7 @@ body {
   mix-blend-mode: difference;
   filter: blur(16px);
   opacity: var(--shine-opacity);
-  transition: opacity 160ms ease-out;
+  transition: opacity 500ms ease-in-out;
 }
 .task-card .card-face--back {
   transform: rotateY(180deg);

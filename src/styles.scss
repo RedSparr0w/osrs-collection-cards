@@ -334,7 +334,7 @@ body {
       filter: blur(16px);
 
       opacity: var(--shine-opacity);
-      transition: opacity 160ms ease-out;
+      transition: opacity 500ms ease-in-out;
     }
   }
 
