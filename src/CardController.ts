@@ -73,13 +73,13 @@ export default class CardController {
 
 	private moveToCenter(element: HTMLElement): void {
 		const scale = getNumericCssVar(element, '--active-size', 1)
-		const rect = element.getBoundingClientRect();
 		const parentRect = (element.offsetParent as HTMLElement).getBoundingClientRect()
-		const targetX = parentRect.width / 2 - (rect.width * scale) / 2;
-		const targetY = parentRect.height / 2 - (rect.height * scale) / 2;
+		const width = Math.min(Math.max(window.innerWidth * 0.2, 160), 260);
+		const height = width * (1.41); // asepct ratio of the card
+		const targetX = (parentRect.width - (width * scale)) / 2;
+		const targetY = (parentRect.height - (height * scale)) / 2;
 		element.style.left = `${targetX}px`;
 		element.style.top = `${targetY}px`;
-		console.log('Moving card to center:', { targetX, targetY }, element);
 	}
 
 	private apply3dTransforms(element: HTMLElement): void {
@@ -95,9 +95,8 @@ export default class CardController {
 			const deltaY = e.clientY - rect.top;
 			const ratioX = deltaX / rect.width - 0.5;
 			const ratioY = deltaY / rect.height - 0.5;
-			const pointerX = mapRange(ratioX, -0.5, 0.5, 1, -1);
+			const pointerX = mapRange(ratioX, -0.5, 0.5, -1, 1);
 			const pointerY = mapRange(ratioY, -0.5, 0.5, -1, 1);
-			console.log('Pointer move:', { pointerX, pointerY }, element);
 			element.style.setProperty('--pointer-x', `${pointerX}`);
 			element.style.setProperty('--pointer-y', `${pointerY}`);
 			const brightness = mapRange(ratioY, 0.5, -0.5, 1.1, 0.9);

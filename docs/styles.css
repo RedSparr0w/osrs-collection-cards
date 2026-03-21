@@ -223,7 +223,7 @@ body {
   transform-style: preserve-3d;
   transform-origin: center center;
   transform: translate(var(--active-x), calc(var(--active-y) + var(--hover-lift))) rotateX(var(--active-rotate-x)) rotateZ(var(--active-rotate-z)) translateY(var(--active-dip));
-  transition: all 200ms ease, left 500ms ease, top 500ms ease, width 500ms ease, transform 500ms ease, box-shadow 220ms ease, filter 200ms ease, opacity 300ms ease;
+  transition: rotate 10ms ease, left 500ms ease, top 500ms ease, width 500ms ease, transform 500ms ease, box-shadow 220ms ease, filter 200ms ease, opacity 300ms ease;
   will-change: transform;
   filter: brightness(var(--brightness, 1));
 }
@@ -243,7 +243,7 @@ body {
   --active-rotate-x: 0deg;
   --active-rotate-z: 0deg;
   --active-dip: 0px;
-  rotate: var(--pointer-y) var(--pointer-x) 0 5deg;
+  rotate: var(--pointer-y) calc(-1 * var(--pointer-x)) 0 min(15deg, sqrt(var(--pointer-x) * var(--pointer-x) + var(--pointer-y) * var(--pointer-y)) / 1.4142135624 * 15deg);
   z-index: 100 !important;
   transform-origin: center center;
 }
