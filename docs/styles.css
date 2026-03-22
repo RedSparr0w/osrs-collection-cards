@@ -436,6 +436,12 @@ button:disabled {
   image-rendering: pixelated;
   transition: all 200ms ease;
 }
+.task-card .small-icon.obtained {
+  filter: drop-shadow(2px 2px 2px rgba(107, 199, 31, 0.8));
+}
+.task-card .small-icon.missing {
+  opacity: 0.5;
+}
 .task-card .template {
   position: absolute;
   inset: 0;

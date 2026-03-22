@@ -223,20 +223,24 @@ export default class Card {
 			content.appendChild(description);
 		}
 
+		// If we have a required count, show the obtained count vs required count
 		if (this.config.requiredCount) {
+			const obtainedCount = Array.from(this.gameManager.playerData?.obtainedItemIds ?? []).filter(id => this.config.smallIcons?.includes(Number(id))).length;
 			const requiredCount = document.createElement('p');
 			requiredCount.className = 'description';
-			requiredCount.textContent = `Required Count: ${this.config.requiredCount}`;
+			requiredCount.textContent = `Obtained Count: ${obtainedCount}/${this.config.requiredCount}`;
 			content.appendChild(requiredCount);
 		}
 
-		const smallIconUrls = (this.config.smallIcons ?? []).map(id => this.gameManager.wiki.getCollectionLogEntry(id)?.iconUrl || '').filter(Boolean);
-		if (smallIconUrls.length > 0) {
+		// TODO: Other tasks such as level 99s
+
+		if (this.config.smallIcons?.length ?? 0 > 0) {
 			const smallIcons = document.createElement('div');
 			smallIcons.className = 'small-icons';
-			smallIconUrls.forEach(url => {
+			this.config.smallIcons?.forEach(id => {
+				const url = this.gameManager.wiki.getCollectionLogEntry(id)?.iconUrl || '';
 				const img = document.createElement('img');
-				img.className = 'small-icon';
+				img.className = `small-icon ${this.gameManager.playerData?.obtainedItemIds.has(id) ? 'obtained' : 'missing'}`;
 				img.loading = 'eager';
 				img.decoding = 'async';
 				img.onerror = () => {

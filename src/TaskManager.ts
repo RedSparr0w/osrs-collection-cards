@@ -15,6 +15,7 @@ export default class TaskManager {
         this.gameManager = gameManager;
     }
 
+    // TODO: Store our tasks locally in the repo and auto update every now and then
     async initialize(): Promise<void> {
         if (this.isLoaded) return;
         if (this.loadPromise) return this.loadPromise;

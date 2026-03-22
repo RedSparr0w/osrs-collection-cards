@@ -503,6 +503,14 @@ button {
     object-fit: contain;
     image-rendering: pixelated;
     transition: all 200ms ease;
+
+    &.obtained {
+      filter: drop-shadow(2px 2px 2px rgba(107, 199, 31, 0.8));
+    }
+
+    &.missing {
+      opacity: 0.5;
+    }
   }
   .template {
     position: absolute;

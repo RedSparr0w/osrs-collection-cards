@@ -6,7 +6,7 @@ import Task from './Task';
 import TaskManager from './TaskManager';
 import UIController, { Sections } from './UIController';
 import { delay } from './helpers';
-import Wiki from './Wiki';
+import Wiki, { PlayerData } from './Wiki';
 
 const TIER_WEIGHTS: Record<TIERS, number> = {
 	[TIERS.EASY]: 1.1,
@@ -23,18 +23,19 @@ export default class GameManager {
 	handRenderer: HandRenderer;
 	ui: UIController;
 	saveController: SaveController;
+	playerData: PlayerData | null = null;
 
 	constructor() {
-		this.taskManager = new TaskManager(this);
 		this.wiki = new Wiki(this);
+		this.taskManager = new TaskManager(this);
 		this.handRenderer = new HandRenderer(this);
 		this.saveController = new SaveController(this);
 		this.ui = new UIController(this);
 	}
 
 	async start(): Promise<void> {
-		await this.taskManager.initialize();
 		await this.wiki.initialize();
+		await this.taskManager.initialize();
 
 		// This will control our basic gameplay flow - login, load data, then play
 		await this.login();
@@ -71,7 +72,7 @@ export default class GameManager {
 			}
 		}
 		const currentUsername = this.saveController.getCurrentUsername() as string;
-		await this.wiki.loadPlayerData(currentUsername);
+		this.playerData = await this.wiki.loadPlayerData(currentUsername);
 	}
 
 	saveData(): void {

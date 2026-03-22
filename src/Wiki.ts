@@ -17,6 +17,12 @@ export type CollectionLogItem = {
   category: string
 }
 
+export type PlayerData = {
+  obtainedItemIds: Set<number>;
+  achievementDiaries: Object;
+  skills: Object;
+} | null;
+
 
 export default class Wiki {
     collectionLogMap: Map<number, CollectionLogItem> = new Map();
@@ -142,7 +148,7 @@ export default class Wiki {
         return input;
     }
 
-    async loadPlayerData(username: string, options: { forceRefresh?: boolean } = {}) {
+    async loadPlayerData(username: string, options: { forceRefresh?: boolean } = {}): Promise<PlayerData> {
         // Replace multiple spaces with a single underscore and trim whitespace
         username = username.trim().replace(/\s+/g, '_');
         // Get our default/specified options
@@ -152,7 +158,6 @@ export default class Wiki {
 
         if (!username) {
             return {
-                ts: 0,
                 obtainedItemIds: new Set(),
                 achievementDiaries: new Set(),
                 skills: new Map(),
@@ -167,10 +172,9 @@ export default class Wiki {
                 const raw = localStorage.getItem(cacheKey);
                 if (raw) {
                     const { ts, obtainedItemIds, achievementDiaries, skills } = JSON.parse(raw);
-                    if (Date.now() - ts < PLAYER_CACHE_TTL && Array.isArray(obtainedItemIds)) {
-
+                    if (Date.now() - ts < PLAYER_CACHE_TTL) {
                         return {
-                            obtainedItemIds: new Set(obtainedItemIds.map(id => Number(id)).filter(id => Number.isInteger(id) && id > 0)),
+                            obtainedItemIds: new Set(obtainedItemIds),
                             achievementDiaries: achievementDiaries,
                             skills: skills,
                         };
@@ -205,7 +209,7 @@ export default class Wiki {
             }
 
             return {
-                obtainedItemIds: new Set(...obtainedItemIds),
+                obtainedItemIds: new Set(obtainedItemIds),
                 achievementDiaries,
                 skills
             };
