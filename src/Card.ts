@@ -118,6 +118,12 @@ export default class Card {
 		this.templateImg = await this.loadImage(this.type.template);
 		this.backImg = await this.loadImage(this.type.back);
 		this.maskImg = await this.loadImage(this.type.mask);
+
+		if (!this.width || !this.height) {
+			const aspectRatio = this.templateImg.width / this.templateImg.height;
+			this.height = this.type.config.defaultHeight;
+			this.width = this.height * aspectRatio;
+		}
 	}
 
 	/**
@@ -174,13 +180,9 @@ export default class Card {
 
 		if (this.type.mask) {
 			root.style.maskImage = `url(${this.type.mask})`;
-			(root.style as CSSStyleDeclaration & { webkitMaskImage?: string }).webkitMaskImage = `url(${this.type.mask})`;
 			root.style.maskRepeat = 'no-repeat';
-			(root.style as CSSStyleDeclaration & { webkitMaskRepeat?: string }).webkitMaskRepeat = 'no-repeat';
 			root.style.maskPosition = 'center';
-			(root.style as CSSStyleDeclaration & { webkitMaskPosition?: string }).webkitMaskPosition = 'center';
 			root.style.maskSize = '100% 100%';
-			(root.style as CSSStyleDeclaration & { webkitMaskSize?: string }).webkitMaskSize = '100% 100%';
 		}
 
 		const rotator = document.createElement('div');
@@ -260,13 +262,15 @@ export default class Card {
 			category.textContent = this.config.category;
 			frontFace.appendChild(category);
 		}
-		const watermark = document.createElement('div');
-		watermark.className = 'watermark';
-		frontFace.appendChild(watermark);
-		const refraction = document.createElement('div');
-		refraction.className = 'refraction';
-		watermark.appendChild(refraction.cloneNode() as HTMLElement);
-		watermark.appendChild(refraction.cloneNode() as HTMLElement);
+
+		// TODO: this is our "shiny" effect, lets fix/implement this later
+		// const watermark = document.createElement('div');
+		// watermark.className = 'watermark';
+		// frontFace.appendChild(watermark);
+		// const refraction = document.createElement('div');
+		// refraction.className = 'refraction';
+		// watermark.appendChild(refraction.cloneNode() as HTMLElement);
+		// watermark.appendChild(refraction.cloneNode() as HTMLElement);
 
 		const backFace = document.createElement('div');
 		backFace.className = 'card-face card-face--back';

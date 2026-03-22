@@ -345,7 +345,7 @@ section.visible {
   mask-image: url("./images/CardShineMask_Basic4.png");
   mask-repeat: no-repeat;
   mask-position: center;
-  mask-size: cover;
+  mask-size: 100% 100%;
   opacity: var(--shine-opacity);
   transition: opacity 500ms ease-in-out;
 }
