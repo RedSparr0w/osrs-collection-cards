@@ -1,14 +1,10 @@
 import TaskManager from './TaskManager';
 import GameManager from './GameManager';
 import './styles.scss';
+import { Sections } from './UIController';
+import { delay } from './helpers';
 
 window.addEventListener('DOMContentLoaded', async () => {
-
-	const taskManager = new TaskManager();
-	await taskManager.initialize();
-
-	const gameManager = new GameManager(taskManager);
-
-	const tasksToRender = 5;
-	await gameManager.deal(tasksToRender);
+	const gameManager = new GameManager();
+	await gameManager.start();
 });

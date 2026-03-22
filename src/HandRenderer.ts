@@ -23,7 +23,7 @@ export default class HandRenderer {
 	}
 
 	async dealCard(task: Task, delayMs: number = 0): Promise<void> {
-		const flipDelayMs = 3000;
+		const flipDelayMs = 50;
 
 		try {
 			const card = await task.getCard();
@@ -145,6 +145,10 @@ export default class HandRenderer {
 	}
 
 	private layoutCards(): void {
+		if (this.cardController.activeCardElement) {
+			this.spreadCardsActive(this.cardController.activeCardElement);
+			return;
+		}
 		const entries = Array.from(this.cardElements.values()).filter((element) => !element.classList.contains('discarded'));
 		const count = entries.length;
 

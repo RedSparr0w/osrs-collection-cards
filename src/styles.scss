@@ -173,13 +173,76 @@ body {
   font-size: 14px;
 }
 
-.card-grid {
-  flex: 1 1 0;
-  position: relative;
-  padding: 0 40px;
-  perspective: 1400px;
-  perspective-origin: 50% 60%;
-  overflow: visible;
+section {
+  display: none;
+  opacity: 0;
+  transition: opacity 500ms ease;
+  &.visible {
+    display: flex;
+    opacity: 1;
+  }
+}
+
+/* ── Login Screen ────────────────────────────────────────────────────────────*/
+#login {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 40px;
+  background: rgba(16, 11, 7, 0.8);
+  border: 1px solid rgba(151, 130, 94, 0.45);
+  border-radius: 10px;
+  backdrop-filter: blur(4px);
+  height: stretch;
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 300px;
+
+    label {
+      font-size: 24px;
+      color: #d6c8a8;
+    }
+
+    input {
+      padding: 10px;
+      border: 1px solid rgba(151, 130, 94, 0.45);
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #f0e5cd;
+      font-size: 16px;
+
+      &:focus {
+        outline: none;
+        border-color: rgba(151, 130, 94, 0.75);
+        box-shadow: 0 0 8px rgba(151, 130, 94, 0.75);
+      }
+    }
+
+    button {
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background: var(--osrsw-brown);
+      color: #f0e5cd;
+      font-size: 16px;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--button-light);
+        box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2), inset 0 -4px 0 rgba(0,0,0,0.15);
+      }
+
+      &:active {
+        background: var(--button-dark);
+        box-shadow: inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 -2px 0 rgba(0,0,0,0.25);
+      }
+    }
+  }
 }
 
 /* ── Card Component ──────────────────────────────────────────────────────────*/
@@ -201,11 +264,21 @@ body {
   }
 }
 
-// Only apply hover effects when no cards are active, to avoid visual conflicts with the active card's transform
-.card-grid:not(:has(.is-active)):not(:has(.discarded)) .task-card {
-  &:hover {
-    transform: rotateX(-8deg) rotateZ(var(--fan-rotate, 0deg)) translateY(-16px) translateZ(60px);
-    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.58);
+
+.card-grid {
+  flex: 1 1 0;
+  position: relative;
+  padding: 0 40px;
+  perspective: 1400px;
+  perspective-origin: 50% 60%;
+  overflow: visible;
+
+  // Only apply hover effects when no cards are active, to avoid visual conflicts with the active card's transform
+  &:not(:has(.is-active)):not(:has(.discarded)) {
+    .task-card:hover {
+      transform: rotateX(-8deg) rotateZ(var(--fan-rotate, 0deg)) translateY(-16px) translateZ(60px);
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.58);
+    }
   }
 }
 

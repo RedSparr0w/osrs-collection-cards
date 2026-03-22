@@ -46,11 +46,17 @@ export default class CardController {
 		return this.activeCardElement === element;
 	}
 
+	resizeTimeout: number = 0;
 	bindResize(): void {
 		window.addEventListener('resize', () => {
 			if (this.activeCardElement) {
-				this.setActiveSizeForViewport(this.activeCardElement);
-				this.moveToCenter(this.activeCardElement);
+				clearTimeout(this.resizeTimeout);
+				this.resizeTimeout = window.setTimeout(() => {
+					if (this.activeCardElement) {
+						this.setActiveSizeForViewport(this.activeCardElement);
+						this.moveToCenter(this.activeCardElement);
+					}
+				}, 100);
 			}
 		});
 	}

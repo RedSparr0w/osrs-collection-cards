@@ -10,8 +10,16 @@
     <main class="app-shell">
       <header class="app-header">
         <h1>OSRS Collection Log | Card Locked</h1>
-        <p id="status-text" class="status-text">Loading...</p>
+        <p id="status-text" class="status-text">TODO: Settings menu here</p>
       </header>
+      <section id="login" class="login-section" aria-label="Login form">
+        <h1>Login</h2>
+        <form id="login-form" class="login-form">
+          <label for="username">Username:</label>
+          <input type="text" id="username" name="username" required>
+          <button type="submit">Login</button>
+        </form>
+      </section>
       <section id="card-grid" class="card-grid" aria-label="Task cards"></section>
     </main>
     <script src="bundle.js"></script>
