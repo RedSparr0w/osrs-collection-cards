@@ -36,6 +36,7 @@
   - [ ] Settings menu
     - [ ] Themes
     - [ ] User profiles/login/logout
+    - [ ] Background - https://oldschool.runescape.wiki/w/Main_Menu/Login_screens
 - [ ] Download wiki data locally on build
   - [ ] Images (HQ + Icon)
   - [ ] JSON

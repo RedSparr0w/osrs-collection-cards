@@ -129,6 +129,9 @@ body {
   margin: 0;
   padding: 0;
   background: radial-gradient(circle at top center, #272116 0%, #18120c 55%, #0f0a06 100%);
+  background-image: url(https://oldschool.runescape.wiki/images/Login_background_%28Yama%29.png);
+  background-size: contain;
+  background-position: center center;
   color: var(--gallery);
   font-family: 'Runescape', Arial, sans-serif;
   height: 100vh;
@@ -155,8 +158,8 @@ body {
   margin-bottom: 16px;
   padding: 10px 14px;
   background: rgba(16, 11, 7, 0.8);
-  border: 1px solid rgba(151, 130, 94, 0.45);
-  border-radius: 10px;
+  border: 12px solid transparent;
+  border-image: url("./images/Interface_border.png") 12 fill round;
   backdrop-filter: blur(4px);
 }
 
@@ -190,10 +193,6 @@ section {
   justify-content: center;
   gap: 20px;
   padding: 40px;
-  background: rgba(16, 11, 7, 0.8);
-  border: 1px solid rgba(151, 130, 94, 0.45);
-  border-radius: 10px;
-  backdrop-filter: blur(4px);
   height: stretch;
 
   form {
@@ -202,6 +201,9 @@ section {
     gap: 12px;
     width: 100%;
     max-width: 300px;
+    padding: 18px 24px;
+    border: 12px solid transparent;
+    border-image: url("./images/Interface_border.png") 12 fill round;
 
     label {
       font-size: 24px;
@@ -223,28 +225,40 @@ section {
       }
     }
 
-    button {
-      padding: 10px;
-      border: none;
-      border-radius: 5px;
-      background: var(--osrsw-brown);
-      color: #f0e5cd;
-      font-size: 16px;
-      cursor: pointer;
-
-      &:hover {
-        background: var(--button-light);
-        box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2), inset 0 -4px 0 rgba(0,0,0,0.15);
-      }
-
-      &:active {
-        background: var(--button-dark);
-        box-shadow: inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 -2px 0 rgba(0,0,0,0.25);
-      }
-    }
   }
 }
 
+button {
+  padding: 5px;
+  border: none;
+  border-radius: 5px;
+  background: var(--osrsw-brown);
+  color: #f0e5cd;
+  font-size: 16px;
+  cursor: pointer;
+  border: 10px solid transparent;
+  border-image: url("./images/button.png") 10 fill round;
+
+  &:hover {
+    background: var(--button-light);
+    border-image: url("./images/button_hover.png") 10 fill round;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2), inset 0 -4px 0 rgba(0,0,0,0.15);
+  }
+
+  &:active {
+    background: var(--button-dark);
+    border-image: url("./images/button_hover.png") 10 fill round;
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 -2px 0 rgba(0,0,0,0.25);
+  }
+
+  &:disabled {
+    background: var(--button-dark);
+    border-image: url("./images/button_disabled.png") 10 fill round;
+    color: rgba(240, 229, 205, 0.5);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
 /* ── Card Component ──────────────────────────────────────────────────────────*/
 @keyframes deal-card {
   0% {
