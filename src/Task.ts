@@ -58,6 +58,7 @@ export default class Task implements TaskInformation {
         description: this.tip,
         icon: this.gameManager.wiki.getCollectionLogEntry(this.displayItemId)?.imageUrl || this.imageLink.replace(/(_detail|_\d+)?\.png$/, '_detail.png')?.replace(/_icon(_detail)?/, '') || '',
         smallIcons: this.verification?.itemIds ?? [],
+        requiredCount: this.verification?.count || 0,
       }, this.gameManager);
     }
     return this.card;

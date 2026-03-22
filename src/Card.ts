@@ -66,6 +66,7 @@ export interface CardConfig {
 	category?: string;
 	flipped?: boolean;
 	active?: boolean;
+	requiredCount?: number;
 }
 
 export default class Card {
@@ -220,6 +221,13 @@ export default class Card {
 			description.className = 'description';
 			description.innerHTML = this.config.description.replace(/ Step/g, '<br/>Step');
 			content.appendChild(description);
+		}
+
+		if (this.config.requiredCount) {
+			const requiredCount = document.createElement('p');
+			requiredCount.className = 'description';
+			requiredCount.textContent = `Required Count: ${this.config.requiredCount}`;
+			content.appendChild(requiredCount);
 		}
 
 		const smallIconUrls = (this.config.smallIcons ?? []).map(id => this.gameManager.wiki.getCollectionLogEntry(id)?.iconUrl || '').filter(Boolean);
