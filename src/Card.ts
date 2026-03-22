@@ -1,8 +1,11 @@
+import { url } from "inspector";
+import GameManager from "./GameManager";
+
+
 /**
  * Card type definitions and defaults.
  * Each type owns its template, mask, and style preset.
  */
-
 interface CardTypeConfig {
 	fontFamily: string;
 	titleFontFamily: string;
@@ -59,7 +62,7 @@ export interface CardConfig {
 	title?: string;
 	description?: string;
 	icon?: string;
-	smallIcons?: string[];
+	smallIcons?: number[];
 	category?: string;
 	flipped?: boolean;
 	active?: boolean;
@@ -71,52 +74,18 @@ export default class Card {
 	private templateImg: HTMLImageElement | null = null;
 	private backImg: HTMLImageElement | null = null;
 	private maskImg: HTMLImageElement | null = null;
-	private static sharedLoadedImages: Map<string, HTMLImageElement> = new Map();
-	private loadedImages: Map<string, HTMLImageElement> = new Map();
 	private width: number = 0;
 	private height: number = 0;
-	private cachedCanvas: HTMLCanvasElement | null = null;
 	private cachedElement: HTMLElement | null = null;
+	private gameManager: GameManager;
 
-	constructor(config: CardConfig) {
+	constructor(config: CardConfig, gameManager: GameManager) {
+		this.gameManager = gameManager;
 		this.type = config.type ?? CARD_TYPE.BASIC;
 		this.config = {
 			...config,
 			type: this.type,
 		};
-	}
-
-	/**
-	 * Pre-load all images used in the card
-	 */
-	async loadImages(): Promise<void> {
-		this.templateImg = await this.loadImage(this.type.template);
-		this.backImg = await this.loadImage(this.type.back);
-		this.maskImg = await this.loadImage(this.type.mask);
-
-		if (!this.width || !this.height) {
-			const aspectRatio = this.templateImg.width / this.templateImg.height;
-			this.height = this.type.config.defaultHeight;
-			this.width = this.height * aspectRatio;
-		}
-
-		// Load other images (gracefully skip if they fail)
-		const urlsToLoad = [
-			...(this.config.icon ? [this.config.icon] : []),
-			...(this.config.smallIcons || []),
-		];
-
-		// Use allSettled to continue rendering even if optional images fail to load
-		const results = await Promise.allSettled(
-			urlsToLoad.map((url) => this.loadImage(url)),
-		);
-
-		// Log failed image loads for debugging
-		results.forEach((result, index) => {
-			if (result.status === 'rejected') {
-				console.warn(`Optional image failed to load: ${urlsToLoad[index]}`);
-			}
-		});
 	}
 
 	setFlipped(flipped: boolean): void {
@@ -141,34 +110,23 @@ export default class Card {
 		this.setActive(!this.config.active);
 	}
 
+
+	/**
+	 * Pre-load all images used in the card
+	 */
+	async loadImages(): Promise<void> {
+		this.templateImg = await this.loadImage(this.type.template);
+		this.backImg = await this.loadImage(this.type.back);
+		this.maskImg = await this.loadImage(this.type.mask);
+	}
+
 	/**
 	 * Load a single image by URL
 	 */
 	private loadImage(url: string): Promise<HTMLImageElement> {
 		return new Promise((resolve, reject) => {
-			if (!url) {
-				reject(new Error('Missing image URL'));
-				return;
-			}
-
-			if (this.loadedImages.has(url)) {
-				resolve(this.loadedImages.get(url)!);
-				return;
-			}
-
-			if (Card.sharedLoadedImages.has(url)) {
-				const cached = Card.sharedLoadedImages.get(url)!;
-				this.loadedImages.set(url, cached);
-				resolve(cached);
-				return;
-			}
-
 			const img = new Image();
-			img.onload = () => {
-				this.loadedImages.set(url, img);
-				Card.sharedLoadedImages.set(url, img);
-				resolve(img);
-			};
+			img.onload = () => resolve(img);
 			img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
 			img.loading = 'eager';
 			img.src = url;
@@ -235,16 +193,17 @@ export default class Card {
 		content.className = 'content';
 
 		if (this.config.icon) {
-			const iconImg = this.loadedImages.get(this.config.icon);
-			if (iconImg) {
-				const icon = document.createElement('img');
-				icon.className = 'icon';
-				icon.loading = 'lazy';
-				icon.decoding = 'async';
-				icon.src = iconImg.src;
-				icon.alt = this.config.title ? `${this.config.title} icon` : 'Task icon';
-				content.appendChild(icon);
+			const icon = document.createElement('img');
+			icon.className = 'icon';
+			icon.loading = 'eager';
+			icon.decoding = 'async';
+			icon.onerror = () => {
+				icon.src = 'https://oldschool.runescape.wiki/images/Cake_of_guidance.png';
+				icon.alt = 'Task icon failed to load';
 			}
+			icon.src = this.config.icon;
+			icon.alt = this.config.title ? `${this.config.title} icon` : 'Task icon';
+			content.appendChild(icon);
 		}
 
 		if (this.config.title) {
@@ -261,19 +220,20 @@ export default class Card {
 			content.appendChild(description);
 		}
 
-		const smallIconUrls = (this.config.smallIcons || []).filter(Boolean);
+		const smallIconUrls = (this.config.smallIcons ?? []).map(id => this.gameManager.wiki.getCollectionLogEntry(id)?.iconUrl || '').filter(Boolean);
 		if (smallIconUrls.length > 0) {
 			const smallIcons = document.createElement('div');
 			smallIcons.className = 'small-icons';
 			smallIconUrls.forEach(url => {
-				const iconImg = this.loadedImages.get(url);
-				if (!iconImg) return;
-
 				const img = document.createElement('img');
 				img.className = 'small-icon';
-				img.loading = 'lazy';
+				img.loading = 'eager';
 				img.decoding = 'async';
-				img.src = iconImg.src;
+				img.onerror = () => {
+					img.src = 'https://oldschool.runescape.wiki/images/Cake_of_guidance.png';
+					img.alt = 'Requirement item icon failed to load';
+				}
+				img.src = url;
 				img.alt = 'Requirement item icon';
 				smallIcons.appendChild(img);
 			});

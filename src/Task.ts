@@ -1,6 +1,6 @@
 import { TASK_STATES, TIERS } from "./Constants"
 import GameManager from "./GameManager"
-import Wiki from "./Wiki"
+import Card, { CARD_TYPE } from './Card'
 
 export interface TaskRoot {
   name: TIERS,
@@ -51,18 +51,14 @@ export default class Task implements TaskInformation {
    */
   async getCard() {
     if (!this.card) {
-      const Card = (await import('./Card')).default;
-      const { CARD_TYPE } = await import('./Card');
       this.card = new Card({
         type: CARD_TYPE.BASIC,
         category: this.tier.toUpperCase(),
         title: this.name,
         description: this.tip,
         icon: this.gameManager.wiki.getCollectionLogEntry(this.displayItemId)?.imageUrl || this.imageLink.replace(/(_detail|_\d+)?\.png$/, '_detail.png')?.replace(/_icon(_detail)?/, '') || '',
-        smallIcons: [this.verification.itemIds ? this.verification.itemIds.map(id => this.gameManager.wiki.getCollectionLogEntry(id)?.iconUrl || '') : []]
-          .flat()
-          .filter(Boolean),
-      });
+        smallIcons: this.verification?.itemIds ?? [],
+      }, this.gameManager);
     }
     return this.card;
   }

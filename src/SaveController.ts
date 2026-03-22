@@ -27,7 +27,6 @@ export default class SaveController {
     if (!this.username) return;
     try {
       this.state.hand = this.gameManager.getHand().map(task => task.id);
-      console.debug('Saving state:', this.state);
       const serializedState = JSON.stringify(this.state);
       localStorage.setItem(`${SaveController.SAVESTATE_KEY}:${formatUsername(this.username)}`, serializedState);
     } catch (error) {

@@ -65,17 +65,16 @@ export default class GameManager {
 
 	async loadData(): Promise<void> {
 		const savedState = this.saveController.loadState();
-		console.debug('Loaded saved state:', savedState);
 		if (savedState) {
 			if (savedState.hand) {
 				this.currentHand = savedState.hand.map((taskID: string) => this.taskManager.getTask(taskID) ?? null).filter((t: Task | null): t is Task => !!t);
 			}
 		}
-		await this.wiki.loadPlayerData('Zamoraky V');
+		const currentUsername = this.saveController.getCurrentUsername() as string;
+		await this.wiki.loadPlayerData(currentUsername);
 	}
 
 	saveData(): void {
-		console.debug('Saving state:', { hand: this.getHand().map(t => t.id) });
 		this.saveController.saveState();
 	}
 
