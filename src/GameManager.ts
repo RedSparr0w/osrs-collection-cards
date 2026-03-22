@@ -87,11 +87,41 @@ export default class GameManager {
 	}
 
 	getWeightedTasks(count: number = 3): Task[] {
-		return this.taskManager.getIncompleteTasks().sort((a, b) => {
-			const weightA = TIER_WEIGHTS[a.tier] || 0;
-			const weightB = TIER_WEIGHTS[b.tier] || 0;
-			return (Math.random() * weightB) - (Math.random() * weightA);
-		}).slice(0, count);
+		let verifiedTasks: Task[] = [];
+		let rolls = 0
+		while (verifiedTasks.length < count) {
+			if (rolls >= 10) {
+				console.warn('Max rolls reached while trying to get weighted tasks, returning current selection.', { verifiedTasks, rolls });
+				// Only allow x rerolls to prevent infinite loops, can adjust as needed
+				break;
+			}
+			let weightedTasks = this.taskManager.getIncompleteTasks().sort((a, b) => {
+				const weightA = TIER_WEIGHTS[a.tier] || 0;
+				const weightB = TIER_WEIGHTS[b.tier] || 0;
+				return (Math.random() * weightB) - (Math.random() * weightA);
+			}).slice(0, count - verifiedTasks.length);
+
+			weightedTasks = weightedTasks.map(task => {
+				if (task.verification) {
+					if (task.verification.itemIds) {
+						let relatedTasks = this.taskManager.getIncompleteTasks().filter(t => t.verification?.itemIds?.every(id => task.verification.itemIds?.includes(id)));
+						if (relatedTasks.length) {
+							relatedTasks = relatedTasks.sort((a, b) => {
+								return (a.verification?.count || 1e9) - (b.verification?.count || 1e9);
+							});
+						}
+						return relatedTasks[0] || task;
+					}
+				}
+				return task;
+			});
+
+			// Remove duplicates while preserving order
+			weightedTasks = Array.from(new Set(weightedTasks));
+			verifiedTasks.push(...weightedTasks);
+			rolls++;
+		}
+		return verifiedTasks.slice(0, count);
 	}
 
 	async deal(cardsToDeal: Task[]): Promise<Task[]> {
