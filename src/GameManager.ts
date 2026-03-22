@@ -59,7 +59,7 @@ export default class GameManager {
 		return Promise.resolve(currentUsername);
 	}
 
-	async loadData(): Promise<void> {
+	loadData(): void {
 		const savedState = this.saveController.loadState();
 		if (savedState) {
 			if (savedState.hand) {
@@ -68,11 +68,17 @@ export default class GameManager {
 		}
 	}
 
+	saveData(): void {
+		this.saveController.state.hand = this.currentHand.map(task => task.id);
+		this.saveController.saveState();
+	}
+
 	async play(): Promise<void> {
 		await this.ui.showSection(Sections.CardGrid);
 		await delay(500);
 		this.currentHand = this.currentHand.length ? this.currentHand : this.getWeightedTasks(5);
 		await this.deal(this.currentHand);
+		this.saveData();
 	}
 
 	getWeightedTasks(count: number = 3): Task[] {
@@ -99,6 +105,7 @@ export default class GameManager {
 		if (index === -1) return false;
 		this.currentHand.splice(index, 1);
 		this.handRenderer.discardCard(taskId);
+		this.saveData();
 		return true;
 	}
 
