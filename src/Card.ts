@@ -243,12 +243,14 @@ export default class Card {
 				img.className = `small-icon ${this.gameManager.playerData?.obtainedItemIds.has(id) ? 'obtained' : 'missing'}`;
 				img.loading = 'eager';
 				img.decoding = 'async';
+				img.dataset.itemName = this.gameManager.wiki.getCollectionLogEntry(id)?.name || '';
+				img.dataset.itemId = String(id);
 				img.onerror = () => {
 					img.src = 'https://oldschool.runescape.wiki/images/Cake_of_guidance.png';
 					img.alt = 'Requirement item icon failed to load';
 				}
 				img.src = url;
-				img.alt = 'Requirement item icon';
+				img.alt = this.gameManager.wiki.getCollectionLogEntry(id)?.name || 'Requirement item icon';
 				smallIcons.appendChild(img);
 			});
 

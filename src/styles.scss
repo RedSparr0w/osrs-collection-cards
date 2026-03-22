@@ -259,6 +259,31 @@ button {
     box-shadow: none;
   }
 }
+
+.item-tooltip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  max-width: min(240px, calc(100vw - 24px));
+  padding: 6px 10px;
+  // border: 8px solid transparent;
+  // border-image: url("./images/Interface_border.png") 10 fill round;
+  background: rgba(24, 18, 12, 0.7);
+  color: #f0e5cd;
+  font-family: 'Runescape Small', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.2;
+  pointer-events: none;
+  white-space: normal;
+  text-align: center;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+}
+
+.item-tooltip[hidden] {
+  display: none;
+}
+
 /* ── Card Component ──────────────────────────────────────────────────────────*/
 @keyframes deal-card {
   0% {

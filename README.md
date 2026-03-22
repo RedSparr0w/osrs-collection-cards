@@ -2,8 +2,8 @@
 
 ### Upcoming
 - [ ] Cards
-  - [ ] Show obtained/unobtained items in the cards
-  - [ ] Add tooltips to items in card
+  - [x] Show obtained/unobtained items in the cards
+  - [x] Add tooltips to items in card
   - [ ] Add wiki link in card
   - [ ] Add button on active card for selecting it
   - [ ] More styles?
