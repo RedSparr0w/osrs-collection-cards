@@ -25,7 +25,7 @@ export default class GameManager {
 	constructor() {
 		this.taskManager = new TaskManager();
 		this.handRenderer = new HandRenderer();
-		this.saveController = new SaveController();
+		this.saveController = new SaveController(this);
 		this.ui = new UIController();
 	}
 
@@ -61,6 +61,7 @@ export default class GameManager {
 
 	loadData(): void {
 		const savedState = this.saveController.loadState();
+		console.debug('Loaded saved state:', savedState);
 		if (savedState) {
 			if (savedState.hand) {
 				this.currentHand = savedState.hand.map((taskID: string) => this.taskManager.getTask(taskID) ?? null).filter((t: Task | null): t is Task => !!t);
@@ -69,7 +70,7 @@ export default class GameManager {
 	}
 
 	saveData(): void {
-		this.saveController.state.hand = this.currentHand.map(task => task.id);
+		console.debug('Saving state:', { hand: this.getHand().map(t => t.id) });
 		this.saveController.saveState();
 	}
 
@@ -77,8 +78,8 @@ export default class GameManager {
 		await this.ui.showSection(Sections.CardGrid);
 		await delay(500);
 		this.currentHand = this.currentHand.length ? this.currentHand : this.getWeightedTasks(5);
-		await this.deal(this.currentHand);
 		this.saveData();
+		await this.deal(this.currentHand);
 	}
 
 	getWeightedTasks(count: number = 3): Task[] {

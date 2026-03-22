@@ -24,3 +24,7 @@ export const getNumericCssVar = (element: HTMLElement, name: string, fallback = 
   const value = Number.parseFloat(raw);
   return Number.isFinite(value) ? value : fallback;
 }
+
+export const formatUsername = (input: string): string => {
+	return input.trim().replace(/\s+/g, '_').toLowerCase();
+};

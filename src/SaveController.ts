@@ -1,4 +1,6 @@
 import { LOCAL_STORAGE_BASE_KEY } from "./Constants";
+import GameManager from "./GameManager";
+import { formatUsername } from "./helpers";
 
 export type SaveState = {
   hand: string[]; // Array of task IDs in the player's hand
@@ -9,6 +11,7 @@ export default class SaveController {
   private static SAVESTATE_KEY = `${LOCAL_STORAGE_BASE_KEY}:game_state`;
   private static SETTINGS_KEY = `${LOCAL_STORAGE_BASE_KEY}:game_settings`;
   private static CURRENT_USERNAME_KEY = `${LOCAL_STORAGE_BASE_KEY}:current_username`;
+  private gameManager: GameManager;
   private defaultState: SaveState = {
     hand: [],
     // Initialize other default state properties as needed
@@ -16,13 +19,17 @@ export default class SaveController {
   username: string | null = null;
   state: SaveState = this.defaultState;
 
-  constructor() {}
+  constructor(gameManager: GameManager) {
+    this.gameManager = gameManager;
+  }
 
   saveState(): void {
     if (!this.username) return;
     try {
+      this.state.hand = this.gameManager.getHand().map(task => task.id);
+      console.debug('Saving state:', this.state);
       const serializedState = JSON.stringify(this.state);
-      localStorage.setItem(`${SaveController.SAVESTATE_KEY}:${this.username}`, serializedState);
+      localStorage.setItem(`${SaveController.SAVESTATE_KEY}:${formatUsername(this.username)}`, serializedState);
     } catch (error) {
       console.error('Error saving state:', error);
     }
@@ -31,7 +38,7 @@ export default class SaveController {
   loadState(): SaveState {
     if (!this.username) return this.defaultState;
     try {
-      const serializedState = localStorage.getItem(`${SaveController.SAVESTATE_KEY}:${this.username}`);
+      const serializedState = localStorage.getItem(`${SaveController.SAVESTATE_KEY}:${formatUsername(this.username)}`);
       if (serializedState === null) return this.defaultState;
       this.state = { ...this.defaultState, ...JSON.parse(serializedState) as SaveState };
       return this.state;
@@ -41,19 +48,21 @@ export default class SaveController {
     }
   }
   
-  clearState(): void {
+  deleteProfile(): void {
     if (!this.username) return;
     try {
-      localStorage.removeItem(`${SaveController.SAVESTATE_KEY}:${this.username}`);
+      localStorage.removeItem(`${SaveController.SAVESTATE_KEY}:${formatUsername(this.username)}`);
+      localStorage.removeItem(`${SaveController.SETTINGS_KEY}:${formatUsername(this.username)}`);
+      localStorage.removeItem(`${SaveController.CURRENT_USERNAME_KEY}`);
     } catch (error) {
-      console.error('Error clearing state:', error);
+      console.error('Error deleting profile:', error);
     }
   }
 
   getSettings(): any | null {
     if (!this.username) return null;
     try {
-      const serializedSettings = localStorage.getItem(`${SaveController.SETTINGS_KEY}:${this.username}`);
+      const serializedSettings = localStorage.getItem(`${SaveController.SETTINGS_KEY}:${formatUsername(this.username)}`);
       if (serializedSettings === null) return null;
       return JSON.parse(serializedSettings);
     } catch (error) {
@@ -66,7 +75,7 @@ export default class SaveController {
     if (!this.username) return;
     try {
       const serializedSettings = JSON.stringify(settings);
-      localStorage.setItem(`${SaveController.SETTINGS_KEY}:${this.username}`, serializedSettings);
+      localStorage.setItem(`${SaveController.SETTINGS_KEY}:${formatUsername(this.username)}`, serializedSettings);
     } catch (error) {
       console.error('Error saving settings:', error);
     }
