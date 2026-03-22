@@ -1,8 +1,6 @@
 import { TASK_STATES, TIERS } from "./Constants"
+import GameManager from "./GameManager"
 import Wiki from "./Wiki"
-const wikiData = new Wiki();
-wikiData.loadCollectionLogItems();
-wikiData.loadPlayerData('Zamoraky V');
 
 export interface TaskRoot {
   name: TIERS,
@@ -17,6 +15,8 @@ export interface TaskInformation {
   imageLink: string
   displayItemId: number
   verification: Verification
+  tier?: TIERS
+  state?: TASK_STATES
 }
 
 export interface Verification {
@@ -26,8 +26,6 @@ export interface Verification {
   region?: string
   difficulty?: string
 }
-
-TIERS
 
 export default class Task implements TaskInformation {
   tier: TIERS  = TIERS.EASY
@@ -40,13 +38,11 @@ export default class Task implements TaskInformation {
   verification = { method: '' } as Verification
   state: TASK_STATES = TASK_STATES.INCOMPLETE
   card: any | null = null  // Card instance, lazily generated
+  gameManager: GameManager;
 
-  constructor(taskData: Partial<TaskInformation> = {}) {
+  constructor(taskData: TaskInformation, gameManager: GameManager) {
     Object.assign(this, taskData);
-  }
-
-  static from(taskData: TaskInformation | Task = {} as TaskInformation) {
-    return taskData instanceof Task ? taskData : new Task(taskData);
+    this.gameManager = gameManager;
   }
 
   /**
@@ -54,9 +50,6 @@ export default class Task implements TaskInformation {
    * The Card is cached for subsequent calls.
    */
   async getCard() {
-    await wikiData.loadCollectionLogItems(); // Ensure collection log data is loaded
-    await wikiData.loadPlayerData('Zamoraky V');
-
     if (!this.card) {
       const Card = (await import('./Card')).default;
       const { CARD_TYPE } = await import('./Card');
@@ -65,8 +58,8 @@ export default class Task implements TaskInformation {
         category: this.tier.toUpperCase(),
         title: this.name,
         description: this.tip,
-        icon: wikiData.getCollectionLogEntry(this.displayItemId)?.imageUrl || this.imageLink.replace(/(_detail|_\d+)?\.png$/, '_detail.png')?.replace(/_icon(_detail)?/, '') || '',
-        smallIcons: [this.verification.itemIds ? this.verification.itemIds.map(id => wikiData.getCollectionLogEntry(id)?.iconUrl || '') : []]
+        icon: this.gameManager.wiki.getCollectionLogEntry(this.displayItemId)?.imageUrl || this.imageLink.replace(/(_detail|_\d+)?\.png$/, '_detail.png')?.replace(/_icon(_detail)?/, '') || '',
+        smallIcons: [this.verification.itemIds ? this.verification.itemIds.map(id => this.gameManager.wiki.getCollectionLogEntry(id)?.iconUrl || '') : []]
           .flat()
           .filter(Boolean),
       });

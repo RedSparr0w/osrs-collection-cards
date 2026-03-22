@@ -1,3 +1,4 @@
+import GameManager from "./GameManager";
 import { delay } from "./helpers";
 
 export const enum Sections {
@@ -6,8 +7,11 @@ export const enum Sections {
 }
 
 export default class UIController {
+  gameManager: GameManager;
 
-  constructor() {}
+  constructor(gameManager: GameManager) {
+    this.gameManager = gameManager;
+  }
 
   async showSection(sectionId: Sections): Promise<void> {
     const visibleSection = document.querySelector<HTMLElement>(`main > section.visible`);

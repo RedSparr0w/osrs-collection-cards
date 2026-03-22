@@ -1,6 +1,7 @@
 import { resolve } from "path";
 import { LOCAL_STORAGE_BASE_KEY } from "./Constants";
 import { formatUsername } from "./helpers";
+import GameManager from "./GameManager";
 
 const CL_CACHE_KEY = `${LOCAL_STORAGE_BASE_KEY}:collection_log_items`;
 const CL_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
@@ -19,28 +20,14 @@ export type CollectionLogItem = {
 
 export default class Wiki {
     collectionLogMap: Map<number, CollectionLogItem> = new Map();
+    gameManager: GameManager;
 
-    constructor() {}
-
-    getCollectionLogEntry(itemId: number): CollectionLogItem | undefined {
-        return this.collectionLogMap.get(itemId);
+    constructor(gameManager: GameManager) {
+        this.gameManager = gameManager;
     }
 
-    setCollectionLogItems(items: Partial<CollectionLogItem>[] = []): void {
-        this.collectionLogMap.clear();
-        items.forEach(item => {
-            const itemId = +(item?.id ?? 0);
-            const encodedName = encodeURIComponent(item?.name?.replace(/ /g, '_') ?? '');
-            const logItem: CollectionLogItem = {
-                id: itemId,
-                name: item?.name ?? '',
-                category: item?.category ?? '',
-                wikiLink: `https://oldschool.runescape.wiki/w/${encodedName}`,
-                iconUrl: item?.iconUrl ?? '',
-                imageUrl: item?.iconUrl?.replace(/(_\d+)?\.png$/, '_detail.png') ?? '',
-            };
-            this.collectionLogMap.set(itemId, logItem);
-        });
+    async initialize() {
+        await this.loadCollectionLogItems();
     }
 
     async loadCollectionLogItems(forceRefresh: boolean = false): Promise<Map<number, CollectionLogItem>> {
@@ -115,6 +102,27 @@ export default class Wiki {
         }
 
         return Promise.resolve(this.collectionLogMap);
+    }
+
+    getCollectionLogEntry(itemId: number): CollectionLogItem | undefined {
+        return this.collectionLogMap.get(itemId);
+    }
+
+    setCollectionLogItems(items: Partial<CollectionLogItem>[] = []): void {
+        this.collectionLogMap.clear();
+        items.forEach(item => {
+            const itemId = +(item?.id ?? 0);
+            const encodedName = encodeURIComponent(item?.name?.replace(/ /g, '_') ?? '');
+            const logItem: CollectionLogItem = {
+                id: itemId,
+                name: item?.name ?? '',
+                category: item?.category ?? '',
+                wikiLink: `https://oldschool.runescape.wiki/w/${encodedName}`,
+                iconUrl: item?.iconUrl ?? '',
+                imageUrl: item?.iconUrl?.replace(/(_\d+)?\.png$/, '_detail.png') ?? '',
+            };
+            this.collectionLogMap.set(itemId, logItem);
+        });
     }
 
     keysToLowerCaseDeep(input: Object): Object {

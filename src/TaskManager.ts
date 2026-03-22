@@ -1,4 +1,5 @@
 import { TASK_STATES, TIERS } from './Constants';
+import GameManager from './GameManager';
 import Task, { TaskInformation, TaskRoot } from './Task';
 
 // TODO: Refactor TaskManager to use a Map for faster lookups and to handle state persistence (local storage or backend)
@@ -8,8 +9,11 @@ export default class TaskManager {
     tasks: Map<Task['id'], Task> = new Map();
     private isLoaded = false;
     private loadPromise: Promise<void> | null = null;
+    gameManager: GameManager;
 
-    constructor() {}
+    constructor(gameManager: GameManager) {
+        this.gameManager = gameManager;
+    }
 
     async initialize(): Promise<void> {
         if (this.isLoaded) return;
@@ -55,7 +59,7 @@ export default class TaskManager {
     buildTasksFromTierData(data: TaskRoot[]): void {
         data.forEach((tierObj: TaskRoot) => {
             tierObj.tasks.forEach((task: TaskInformation) => {
-                const taskInstance = Task.from({ ...task, tier: tierObj.name, state: TASK_STATES.INCOMPLETE });
+                const taskInstance = new Task({ ...task, tier: tierObj.name, state: TASK_STATES.INCOMPLETE }, this.gameManager);
                 this.tasks.set(taskInstance.id, taskInstance);
             });
         });

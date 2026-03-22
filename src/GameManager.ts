@@ -6,6 +6,7 @@ import Task from './Task';
 import TaskManager from './TaskManager';
 import UIController, { Sections } from './UIController';
 import { delay } from './helpers';
+import Wiki from './Wiki';
 
 const TIER_WEIGHTS: Record<TIERS, number> = {
 	[TIERS.EASY]: 1.1,
@@ -17,20 +18,23 @@ const TIER_WEIGHTS: Record<TIERS, number> = {
 
 export default class GameManager {
 	taskManager: TaskManager;
+	wiki: Wiki;
 	private currentHand: Task[] = [];
 	handRenderer: HandRenderer;
 	ui: UIController;
 	saveController: SaveController;
 
 	constructor() {
-		this.taskManager = new TaskManager();
-		this.handRenderer = new HandRenderer();
+		this.taskManager = new TaskManager(this);
+		this.wiki = new Wiki(this);
+		this.handRenderer = new HandRenderer(this);
 		this.saveController = new SaveController(this);
-		this.ui = new UIController();
+		this.ui = new UIController(this);
 	}
 
 	async start(): Promise<void> {
 		await this.taskManager.initialize();
+		await this.wiki.initialize();
 
 		// This will control our basic gameplay flow - login, load data, then play
 		await this.login();
@@ -59,7 +63,7 @@ export default class GameManager {
 		return Promise.resolve(currentUsername);
 	}
 
-	loadData(): void {
+	async loadData(): Promise<void> {
 		const savedState = this.saveController.loadState();
 		console.debug('Loaded saved state:', savedState);
 		if (savedState) {
@@ -67,6 +71,7 @@ export default class GameManager {
 				this.currentHand = savedState.hand.map((taskID: string) => this.taskManager.getTask(taskID) ?? null).filter((t: Task | null): t is Task => !!t);
 			}
 		}
+		await this.wiki.loadPlayerData('Zamoraky V');
 	}
 
 	saveData(): void {

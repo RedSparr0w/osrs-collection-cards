@@ -2,22 +2,25 @@ import Task from './Task';
 import CardController from './CardController';
 import Card from './Card';
 import { delay, getNumericCssVar } from './helpers';
+import GameManager from './GameManager';
 
 export default class HandRenderer {
 	private cardController: CardController;
 	private cardsInHand: Map<string, Card> = new Map();
 	private cardElements: Map<string, HTMLElement> = new Map();
 	private cardGridEl: HTMLElement;
+	gameManager: GameManager;
 
-	constructor() {
-		const cardGridEl = document.getElementById('card-grid');
+	constructor(gameManager: GameManager) {
+		this.gameManager = gameManager;
+		const cardGridEl: HTMLElement | null = document.getElementById('card-grid');
 
 		if (!cardGridEl) {
 			throw new Error('Missing #card-grid container');
 		}
 
 		this.cardGridEl = cardGridEl as HTMLElement;
-		this.cardController = new CardController();
+		this.cardController = new CardController(this.gameManager);
 		this.cardController.bindResize();
 		window.addEventListener('resize', () => this.layoutCards());
 	}

@@ -1,9 +1,15 @@
 import Card from './Card';
+import GameManager from './GameManager';
 import { delay, getNumericCssVar, mapRange } from './helpers';
 
 export default class CardController {
 	activeCard: Card | null = null;
 	activeCardElement: HTMLElement | null = null;
+	gameManager: GameManager;
+
+	constructor(gameManager: GameManager) {
+		this.gameManager = gameManager;
+	}
 
   // When selecting a card, it will be the active card
 	activate(card: Card, element: HTMLElement): void {
