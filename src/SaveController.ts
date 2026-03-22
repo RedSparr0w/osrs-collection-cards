@@ -1,41 +1,59 @@
+import { LOCAL_STORAGE_BASE_KEY } from "./Constants";
+
+export type SaveState = {
+  hand: string[]; // Array of task IDs in the player's hand
+  // Add other game state properties as needed
+};
+
 export default class SaveController {
-  private static SAVESTATE_STORAGE_KEY = 'game-state';
-  private static SETTINGS_STORAGE_KEY = 'game-settings';
-  private static CURRENT_USERNAME_KEY = 'current-username';
+  private static SAVESTATE_KEY = `${LOCAL_STORAGE_BASE_KEY}:game_state`;
+  private static SETTINGS_KEY = `${LOCAL_STORAGE_BASE_KEY}:game_settings`;
+  private static CURRENT_USERNAME_KEY = `${LOCAL_STORAGE_BASE_KEY}:current_username`;
+  private defaultState: SaveState = {
+    hand: [],
+    // Initialize other default state properties as needed
+  }
+  username: string | null = null;
+  state: SaveState = this.defaultState;
 
   constructor() {}
 
-  saveState(username: string, state: any): void {
+  saveState(): void {
+    if (!this.username) return;
     try {
-      const serializedState = JSON.stringify(state);
-      localStorage.setItem(`${SaveController.SAVESTATE_STORAGE_KEY}:${username}`, serializedState);
+      const serializedState = JSON.stringify(this.state);
+      localStorage.setItem(`${SaveController.SAVESTATE_KEY}:${this.username}`, serializedState);
     } catch (error) {
       console.error('Error saving state:', error);
     }
   }
 
-  loadState(username: string): any | null {
+  loadState(): SaveState {
+    if (!this.username) return this.defaultState;
     try {
-      const serializedState = localStorage.getItem(`${SaveController.SAVESTATE_STORAGE_KEY}:${username}`);
-      if (serializedState === null) return null;
-      return JSON.parse(serializedState);
+      const serializedState = localStorage.getItem(`${SaveController.SAVESTATE_KEY}:${this.username}`);
+      if (serializedState === null) return this.defaultState;
+      this.state = { ...this.defaultState, ...JSON.parse(serializedState) as SaveState };
+      return this.state;
     } catch (error) {
       console.error('Error loading state:', error);
-      return null;
+      return this.state;
     }
   }
   
-  clearState(username: string): void {
+  clearState(): void {
+    if (!this.username) return;
     try {
-      localStorage.removeItem(`${SaveController.SAVESTATE_STORAGE_KEY}:${username}`);
+      localStorage.removeItem(`${SaveController.SAVESTATE_KEY}:${this.username}`);
     } catch (error) {
       console.error('Error clearing state:', error);
     }
   }
 
-  getSettings(username: string): any | null {
+  getSettings(): any | null {
+    if (!this.username) return null;
     try {
-      const serializedSettings = localStorage.getItem(`${SaveController.SETTINGS_STORAGE_KEY}:${username}`);
+      const serializedSettings = localStorage.getItem(`${SaveController.SETTINGS_KEY}:${this.username}`);
       if (serializedSettings === null) return null;
       return JSON.parse(serializedSettings);
     } catch (error) {
@@ -44,10 +62,11 @@ export default class SaveController {
     }
   }
 
-  saveSettings(username: string, settings: any): void {
+  saveSettings(settings: any): void {
+    if (!this.username) return;
     try {
       const serializedSettings = JSON.stringify(settings);
-      localStorage.setItem(`${SaveController.SETTINGS_STORAGE_KEY}:${username}`, serializedSettings);
+      localStorage.setItem(`${SaveController.SETTINGS_KEY}:${this.username}`, serializedSettings);
     } catch (error) {
       console.error('Error saving settings:', error);
     }
@@ -55,6 +74,7 @@ export default class SaveController {
 
   setCurrentUsername(username: string): void {
     try {
+      this.username = username;
       localStorage.setItem(SaveController.CURRENT_USERNAME_KEY, username);
     } catch (error) {
       console.error('Error setting current username:', error);
@@ -62,8 +82,10 @@ export default class SaveController {
   }
 
   getCurrentUsername(): string | null {
+    if (this.username) return this.username;
     try {
-      return localStorage.getItem(SaveController.CURRENT_USERNAME_KEY);
+      this.username = localStorage.getItem(SaveController.CURRENT_USERNAME_KEY);
+      return this.username;
     } catch (error) {
       console.error('Error getting current username:', error);
       return null;

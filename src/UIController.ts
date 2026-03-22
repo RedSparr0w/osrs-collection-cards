@@ -27,4 +27,17 @@ export default class UIController {
     targetSection.classList.add('visible');
     targetSection.style.opacity = '1';
   }
+
+  async hideSection(sectionId: Sections): Promise<void> {
+    const targetSection = document.getElementById(sectionId);
+    if (!targetSection) {
+      console.warn(`Section with ID "${sectionId}" not found.`);
+      return;
+    } else {
+      targetSection.style.opacity = '0';
+      await delay(500).then(() => {
+        targetSection.classList.remove('visible');
+      });
+    }
+  }
 }

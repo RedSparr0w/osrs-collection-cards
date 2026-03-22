@@ -22,8 +22,6 @@ export default class GameManager {
 	ui: UIController;
 	saveController: SaveController;
 
-	username: string | null = null;
-
 	constructor() {
 		this.taskManager = new TaskManager();
 		this.handRenderer = new HandRenderer();
@@ -34,55 +32,60 @@ export default class GameManager {
 	async start(): Promise<void> {
 		await this.taskManager.initialize();
 
+		// This will control our basic gameplay flow - login, load data, then play
 		await this.login();
+		await this.loadData();
 		await this.play();
 	}
 
 	async login(): Promise<string> {
-		this.username = this.saveController.getCurrentUsername();
-		if (!this.username) {
+		const currentUsername = this.saveController.getCurrentUsername();
+		if (!currentUsername) {
 			await this.ui.showSection(Sections.Login);
 			return new Promise((resolve) => {
 				const form = document.getElementById('login-form') as HTMLFormElement;
-				form.addEventListener('submit', (e) => {
+				form.addEventListener('submit', async (e) => {
 					e.preventDefault();
 					const input = document.getElementById('username') as HTMLInputElement;
-					this.username = input.value.trim();
-					if (this.username) {
-						this.saveController.setCurrentUsername(this.username);
-						resolve(this.username);
+					const username = input.value.trim();
+					if (username) {
+						this.saveController.setCurrentUsername(username);
+						await this.ui.hideSection(Sections.Login);
+						resolve(username);
 					}
 				});
 			});
 		}
-		return Promise.resolve(this.username);
+		return Promise.resolve(currentUsername);
+	}
+
+	async loadData(): Promise<void> {
+		const savedState = this.saveController.loadState();
+		if (savedState) {
+			if (savedState.hand) {
+				this.currentHand = savedState.hand.map((taskID: string) => this.taskManager.getTask(taskID) ?? null).filter((t: Task | null): t is Task => !!t);
+			}
+		}
 	}
 
 	async play(): Promise<void> {
 		await this.ui.showSection(Sections.CardGrid);
 		await delay(500);
-		const tasksToRender = 5;
-		await this.deal(tasksToRender);
+		this.currentHand = this.currentHand.length ? this.currentHand : this.getWeightedTasks(5);
+		await this.deal(this.currentHand);
 	}
 
-
-	getWeightedTasks(): Task[] {
+	getWeightedTasks(count: number = 3): Task[] {
 		return this.taskManager.getIncompleteTasks().sort((a, b) => {
 			const weightA = TIER_WEIGHTS[a.tier] || 0;
 			const weightB = TIER_WEIGHTS[b.tier] || 0;
 			return (Math.random() * weightB) - (Math.random() * weightA);
-		});
+		}).slice(0, count);
 	}
 
-	async deal(count: number): Promise<Task[]> {
-		const cardsToDeal = this.getWeightedTasks().splice(0, count);
+	async deal(cardsToDeal: Task[]): Promise<Task[]> {
 		for (const [index, task] of cardsToDeal.entries()) {
-			this.currentHand.push(task);
 			await this.handRenderer.dealCard(task);
-
-			// delay(6000).then(() => {
-			// 	this.dispose(task.id);
-			// });
 
 			if (index < cardsToDeal.length - 1) {
 				await delay(200);

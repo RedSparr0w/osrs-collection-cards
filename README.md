@@ -26,14 +26,16 @@
     - [ ] Notification when a different task not currently active has been completed
       - [ ] Auto complete?
       - [ ] Penalty?
-- [ ] Add login screen for selecting character and or entering username
+- [x] Add login screen for selecting character and or entering username
   - [ ] Multiple save profiles?
   - [ ] Option to clear data
 - [ ] User Interface
   - [ ] Show total completed/incomplete tasks
   - [ ] Show tasks by tier and completion status
   - [ ] Keyboard controls?
-  - [ ] Themes
+  - [ ] Settings menu
+    - [ ] Themes
+    - [ ] User profiles/login/logout
 - [ ] Download wiki data locally on build
   - [ ] Images (HQ + Icon)
   - [ ] JSON

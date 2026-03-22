@@ -1,8 +1,9 @@
 import { resolve } from "path";
+import { LOCAL_STORAGE_BASE_KEY } from "./Constants";
 
-const CL_CACHE_KEY = 'collection_log_items';
+const CL_CACHE_KEY = `${LOCAL_STORAGE_BASE_KEY}:collection_log_items`;
 const CL_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
-const PLAYER_CACHE_PREFIX = 'player_data';
+const PLAYER_CACHE_KEY = `${LOCAL_STORAGE_BASE_KEY}:player_data`;
 const PLAYER_CACHE_TTL = 1000 * 60 * 60; // 1 hour
 
 export type CollectionLogItem = {
@@ -133,7 +134,7 @@ export default class Wiki {
         }
 
         // Load from cache if available and not expired
-        const cacheKey = `${PLAYER_CACHE_PREFIX}:${username.toLowerCase()}`;
+        const cacheKey = `${PLAYER_CACHE_KEY}:${username.toLowerCase()}`;
         if (!forceRefresh) {
             try {
                 const raw = localStorage.getItem(cacheKey);

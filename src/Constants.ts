@@ -11,3 +11,5 @@ export enum TASK_STATES {
     COMPLETE = 'complete',
     IN_PROGRESS = 'in_progress',
 }
+
+export const LOCAL_STORAGE_BASE_KEY = 'osrs_card_log';
