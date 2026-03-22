@@ -75,7 +75,7 @@ export default class CardController {
 		const scale = getNumericCssVar(element, '--active-size', 1)
 		const parentRect = (element.offsetParent as HTMLElement).getBoundingClientRect()
 		const width = Math.min(Math.max(window.innerWidth * 0.2, 160), 260);
-		const height = width * (1.41); // asepct ratio of the card
+		const height = width * (1.41); // aspect ratio of the card
 		const targetX = (parentRect.width - (width * scale)) / 2;
 		const targetY = (parentRect.height - (height * scale)) / 2;
 		element.style.left = `${targetX}px`;
@@ -99,7 +99,7 @@ export default class CardController {
 			const pointerY = mapRange(ratioY, -0.5, 0.5, -1, 1);
 			element.style.setProperty('--pointer-x', `${pointerX}`);
 			element.style.setProperty('--pointer-y', `${pointerY}`);
-			const brightness = mapRange(ratioY, 0.5, -0.5, 1.1, 0.9);
+			const brightness = mapRange(ratioY, -0.5, 0.5, 0.95, 1.05);
 			element.style.setProperty('--brightness', `${brightness}`);
 
 			const clampedX = Math.max(0, Math.min(100, deltaX / rect.width * 100));
