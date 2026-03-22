@@ -1,5 +1,6 @@
 import { resolve } from "path";
 import { LOCAL_STORAGE_BASE_KEY } from "./Constants";
+import { formatUsername } from "./helpers";
 
 const CL_CACHE_KEY = `${LOCAL_STORAGE_BASE_KEY}:collection_log_items`;
 const CL_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
@@ -116,6 +117,23 @@ export default class Wiki {
         return Promise.resolve(this.collectionLogMap);
     }
 
+    keysToLowerCaseDeep(input: Object): Object {
+        if (Array.isArray(input)) {
+            return input.map(this.keysToLowerCaseDeep.bind(this));
+        }
+
+        if (input !== null && typeof input === 'object') {
+            return Object.fromEntries(
+                Object.entries(input).map(([key, value]) => [
+                    key.toLowerCase(),
+                    this.keysToLowerCaseDeep(value),
+                ])
+            );
+        }
+
+        return input;
+    }
+
     async loadPlayerData(username: string, options: { forceRefresh?: boolean } = {}) {
         // Replace multiple spaces with a single underscore and trim whitespace
         username = username.trim().replace(/\s+/g, '_');
@@ -134,9 +152,10 @@ export default class Wiki {
         }
 
         // Load from cache if available and not expired
-        const cacheKey = `${PLAYER_CACHE_KEY}:${username.toLowerCase()}`;
+        const cacheKey = `${PLAYER_CACHE_KEY}:${formatUsername(username)}`;
         if (!forceRefresh) {
             try {
+                // TODO: Simplify this, maybe make achievement diaries a Map with a Map of tiers.
                 const raw = localStorage.getItem(cacheKey);
                 if (raw) {
                     const { ts, obtainedItemIds, achievementDiaries, skills } = JSON.parse(raw);
@@ -144,14 +163,8 @@ export default class Wiki {
 
                         return {
                             obtainedItemIds: new Set(obtainedItemIds.map(id => Number(id)).filter(id => Number.isInteger(id) && id > 0)),
-                            achievementDiaries: new Set(
-                                Array.isArray(achievementDiaries)
-                                    ? achievementDiaries.map(value => String(value))
-                                    : []
-                            ),
-                            skills: new Map(
-                                Object.entries(skills ?? {}).map(([skill, exp]) => [skill, Number(exp)])
-                            )
+                            achievementDiaries: achievementDiaries,
+                            skills: skills,
                         };
                     }
                 }
@@ -161,8 +174,7 @@ export default class Wiki {
         }
 
         try {
-            const syncName = encodeURIComponent(username.replace(/ /g, '_'));
-            const url = `https://sync.runescape.wiki/runelite/player/${syncName}/STANDARD`;
+            const url = `https://sync.runescape.wiki/runelite/player/${formatUsername(username)}/STANDARD`;
             const response = await fetch(url, { cache: forceRefresh ? 'no-store' : 'default' });
             if (!response.ok) {
                 throw new Error(`sync request failed (${response.status})`);
@@ -170,27 +182,22 @@ export default class Wiki {
 
             const payload = await response.json();
             const obtainedItemIds = payload.collection_log;
-            const achievementDiaries = payload.achievement_diaries;
-            const skills = new Map();
-            Object.entries(payload.levels).forEach(([name, level]) => {
-                skills.set(name, level);
-            });
-
-    
+            const achievementDiaries = this.keysToLowerCaseDeep(payload.achievement_diaries);
+            const skills = this.keysToLowerCaseDeep(payload.levels);
 
             try {
                 localStorage.setItem(cacheKey, JSON.stringify({
                     ts: Date.now(),
                     obtainedItemIds,
-                    achievementDiaries: Array.from(achievementDiaries),
-                    skills: Array.from(skills),
+                    achievementDiaries,
+                    skills,
                 }));
             } catch {
                 // ignore localStorage failures
             }
 
             return {
-                obtainedItemIds: new Set(obtainedItemIds),
+                obtainedItemIds: new Set(...obtainedItemIds),
                 achievementDiaries,
                 skills
             };
