@@ -20,6 +20,7 @@ export default class GameManager {
 	taskManager: TaskManager;
 	wiki: Wiki;
 	private currentHand: Task[] = [];
+	private selectedTaskId: string | null = null;
 	handRenderer: HandRenderer;
 	ui: UIController;
 	saveController: SaveController;
@@ -85,6 +86,9 @@ export default class GameManager {
 		this.currentHand = this.currentHand.length ? this.currentHand : this.getWeightedTasks(5);
 		this.saveData();
 		await this.deal(this.currentHand);
+		if (this.currentHand.length === 1) {
+			this.selectCard(this.currentHand[0].id);
+		}
 	}
 
 	getWeightedTasks(count: number = 3): Task[] {
@@ -142,18 +146,35 @@ export default class GameManager {
 			console.warn(`Tried to select task with ID ${taskId} but it was not found in the current hand.`);
 			return;
 		}
-		this.currentHand.filter(t => t.id !== taskId).forEach(async t => {
-			await delay(150);
-			this.dispose(t.id);
-		});
-		// TODO: differentiate between selected and active cards
-		// this.handRenderer.setActiveCard(taskId);
+
+		this.selectedTaskId = taskId;
+		this.handRenderer.selectCard(taskId);
+
+		this.currentHand
+			.filter(t => t.id !== taskId)
+			.reverse()
+			.forEach((t, index) => {
+				window.setTimeout(() => {
+					void this.dispose(t.id);
+				}, 150 * (index + 1));
+			});
+	}
+
+	completeSelectedTask(taskId: string): void {
+		console.debug(`Complete clicked for task: ${taskId}`);
+	}
+
+	isTaskSelected(taskId: string): boolean {
+		return this.selectedTaskId === taskId;
 	}
 
 	async dispose(taskId: string): Promise<boolean> {
 		const index = this.currentHand.findIndex(t => t.id === taskId);
 		if (index === -1) return false;
 		this.currentHand.splice(index, 1);
+		if (this.selectedTaskId === taskId) {
+			this.selectedTaskId = null;
+		}
 		this.handRenderer.discardCard(taskId);
 		this.saveData();
 		if (this.currentHand.length === 0) {

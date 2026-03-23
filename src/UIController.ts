@@ -45,7 +45,7 @@ export default class UIController {
     }
   }
   
-  setButtonLinks(wikiLink: string, chooseCardHandler: () => void, discardHandler: () => void): void {
+  setButtonLinks(wikiLink: string, chooseCardHandler: () => void, discardHandler: () => void, isSelected: boolean = false): void {
     const wikiButton = document.getElementById('wiki-button') as HTMLButtonElement;
     const chooseCardButton = document.getElementById('choose-card-button') as HTMLButtonElement;
     const discardButton = document.getElementById('discard-button') as HTMLButtonElement;
@@ -58,6 +58,7 @@ export default class UIController {
     const newWikiButton = document.getElementById('wiki-button') as HTMLButtonElement;
     const newChooseCardButton = document.getElementById('choose-card-button') as HTMLButtonElement;
     const newDiscardButton = document.getElementById('discard-button') as HTMLButtonElement;
+    newChooseCardButton.textContent = isSelected ? 'Complete' : 'Choose card';
 
     newWikiButton.addEventListener('click', () => {
       window.open(wikiLink, '_blank');

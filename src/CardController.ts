@@ -14,6 +14,31 @@ export default class CardController {
 
   // When selecting a card, it will be the active card
 	activate(card: Card, element: HTMLElement): void {
+		if (this.activeCard === card && this.activeCardElement === element) {
+			this.setActiveSizeForViewport(element);
+			card.setActive(true);
+			const isSelected = this.gameManager.isTaskSelected(card.config.taskId);
+			this.gameManager.ui.setButtonLinks(
+				this.gameManager.taskManager.getTask(card.config.taskId)?.wikiLink || '',
+				() => {
+					if (isSelected) {
+						this.gameManager.completeSelectedTask(card.config.taskId);
+						return;
+					}
+					this.gameManager.selectCard(card.config.taskId);
+				},
+				() => this.gameManager.dispose(card.config.taskId),
+				isSelected,
+			);
+
+			requestAnimationFrame(() => {
+				if (this.activeCardElement !== element) return;
+				this.moveToCenter(element);
+				this.apply3dTransforms(element);
+			});
+			return;
+		}
+
 		if (this.activeCard && this.activeCardElement) {
 			this.clearTransforms(this.activeCardElement);
 			this.activeCard.setActive(false);
@@ -25,10 +50,18 @@ export default class CardController {
 		this.activeCardElement = element;
 
 		console.debug(`Activated card: ${card.config.title}, wiki: ${this.gameManager.taskManager.getTask(card.config.taskId)?.wikiLink || 'N/A'}	`);
+		const isSelected = this.gameManager.isTaskSelected(card.config.taskId);
 		this.gameManager.ui.setButtonLinks(
 			this.gameManager.taskManager.getTask(card.config.taskId)?.wikiLink || '',
-			() => this.gameManager.selectCard(card.config.taskId),
+			() => {
+				if (isSelected) {
+					this.gameManager.completeSelectedTask(card.config.taskId);
+					return;
+				}
+				this.gameManager.selectCard(card.config.taskId);
+			},
 			() => this.gameManager.dispose(card.config.taskId),
+			isSelected,
 		);
 
 		requestAnimationFrame(() => {
@@ -40,6 +73,10 @@ export default class CardController {
 
   // Remove our active state from the currently active card, if it exists
 	deactivate(): void {
+		if (this.activeCard && this.gameManager.isTaskSelected(this.activeCard.config.taskId)) {
+			return;
+		}
+
 		if (this.activePointerMoveHandler) {
 			document.body.removeEventListener('pointermove', this.activePointerMoveHandler);
 			this.activePointerMoveHandler = null;

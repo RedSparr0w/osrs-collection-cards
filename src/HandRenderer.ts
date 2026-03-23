@@ -64,15 +64,6 @@ export default class HandRenderer {
 			listeners.set('contextmenu', onContextMenuListener as EventListener);
 			cardElement.addEventListener('contextmenu', onContextMenuListener);
 
-			const onMouseDownListener = (e: MouseEvent) => {
-				if (e.button === 1) { // Middle click to discard
-					e.preventDefault();
-					this.discardCard(task.id);
-				}
-			};
-			listeners.set('mousedown', onMouseDownListener as EventListener);
-			cardElement.addEventListener('mousedown', onMouseDownListener);
-
 			const onPointerMoveListener = (e: PointerEvent) => {
 				this.updateCardGlowPosition(cardElement, e);
 			};
@@ -120,6 +111,19 @@ export default class HandRenderer {
 		return this.cardsInHand.get(taskId);
 	}
 
+	selectCard(taskId: string): void {
+		const card = this.cardsInHand.get(taskId);
+		const cardElement = this.cardElements.get(taskId);
+		if (!card || !cardElement) return;
+
+		card.setFlipped(false);
+		this.cardController.activate(card, cardElement);
+		this.spreadCardsActive(cardElement);
+
+		// Keep only the active pointer tracking managed by CardController.
+		this.removeCardEventListeners(taskId, cardElement);
+	}
+
 	discardCard(taskId: string): void {
 		const card = this.cardsInHand.get(taskId);
 		const element = this.cardElements.get(taskId);
@@ -129,14 +133,7 @@ export default class HandRenderer {
 			this.cardController.deactivate();
 		}
 
-		// Remove all event listeners
-		const listeners = this.cardEventListeners.get(taskId);
-		if (listeners) {
-			listeners.forEach((listener, eventType) => {
-				element.removeEventListener(eventType, listener);
-			});
-			this.cardEventListeners.delete(taskId);
-		}
+		this.removeCardEventListeners(taskId, element);
 
 		this.cardsInHand.delete(taskId);
 		this.cardElements.delete(taskId);
@@ -148,6 +145,17 @@ export default class HandRenderer {
 			card.cleanup();
 			this.gameManager.taskManager.getTask(taskId)?.clearCard();
 		}, 1000);
+	}
+
+	private removeCardEventListeners(taskId: string, cardElement: HTMLElement): void {
+		const listeners = this.cardEventListeners.get(taskId);
+		if (!listeners) return;
+
+		listeners.forEach((listener, eventType) => {
+			cardElement.removeEventListener(eventType, listener);
+		});
+
+		this.cardEventListeners.delete(taskId);
 	}
 
 	private setCardGlowVisibility(cardElement: HTMLElement, isVisible: boolean): void {
