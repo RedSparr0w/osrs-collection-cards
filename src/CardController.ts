@@ -89,7 +89,7 @@ export default class CardController {
 		const width = Math.min(Math.max(window.innerWidth * 0.2, 160), 260);
 		const height = width * (1.41); // aspect ratio of the card
 		const targetX = (parentRect.width - (width * scale)) / 2;
-		const targetY = (parentRect.height - (height * scale)) / 2;
+		const targetY = (parentRect.height - (height * scale)) / 2 - 50; // lift it up a bit to fit the buttons below
 		element.style.left = `${targetX}px`;
 		element.style.top = `${targetY}px`;
 	}

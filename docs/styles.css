@@ -283,6 +283,23 @@ button:disabled {
   perspective-origin: 50% 60%;
   overflow: visible;
 }
+.card-grid .active-buttons {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: -150px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  transition: bottom 300ms ease-in-out;
+}
+.card-grid .active-buttons button {
+  tab-index: -1;
+  width: 150px;
+}
+.card-grid:has(.is-active) .active-buttons {
+  bottom: 12px;
+}
 .card-grid:not(:has(.is-active)):not(:has(.discarded)) .task-card:hover {
   transform: rotateX(-8deg) rotateZ(var(--fan-rotate, 0deg)) translateY(-16px) translateZ(60px);
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.58);

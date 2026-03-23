@@ -258,6 +258,7 @@ export default class Card {
 				content.appendChild(smallIcons);
 			}
 		}
+		
 
 		frontFace.appendChild(content);
 

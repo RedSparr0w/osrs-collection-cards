@@ -312,6 +312,28 @@ button {
   perspective-origin: 50% 60%;
   overflow: visible;
 
+  .active-buttons {
+    position: absolute;
+    z-index: 5;
+    left: 50%;
+    bottom:-150px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    transition: bottom 300ms ease-in-out;
+
+    button {
+      tab-index: -1;
+      width: 150px
+    }
+  }
+  
+  &:has(.is-active) {
+    .active-buttons {
+      bottom: 12px;
+    }
+  }
+
   // Only apply hover effects when no cards are active, to avoid visual conflicts with the active card's transform
   &:not(:has(.is-active)):not(:has(.discarded)) {
     .task-card:hover {
