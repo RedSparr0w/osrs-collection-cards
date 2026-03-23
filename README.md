@@ -33,7 +33,7 @@
   - [x] Show tasks by tier and completion status
   - [ ] Keyboard controls?
   - [x] Settings menu
-    - [ ] Themes
+    - [ ] Themes?
     - [x] Logout
     - [x] Background
 - [ ] Download wiki data locally on build
