@@ -90,6 +90,23 @@ export default class Card {
 		};
 	}
 
+	/**
+	 * Clean up all references to allow garbage collection.
+	 * Call this when the card is being discarded.
+	 */
+	cleanup(): void {
+		// Clear cached element
+		this.cachedElement = null;
+
+		// Clear image references
+		this.templateImg = null;
+		this.backImg = null;
+		this.maskImg = null;
+
+		// Clear gameManager reference to break circular dependencies
+		(this.gameManager as any) = null;
+	}
+
 	setFlipped(flipped: boolean): void {
 		this.config.flipped = flipped;
 		if (this.cachedElement) {

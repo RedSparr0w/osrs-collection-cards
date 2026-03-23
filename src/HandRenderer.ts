@@ -8,6 +8,7 @@ export default class HandRenderer {
 	private cardController: CardController;
 	private cardsInHand: Map<string, Card> = new Map();
 	private cardElements: Map<string, HTMLElement> = new Map();
+	private cardEventListeners: Map<string, Map<string, EventListener>> = new Map();
 	private cardGridEl: HTMLElement;
 	gameManager: GameManager;
 
@@ -38,7 +39,10 @@ export default class HandRenderer {
 			cardElement.tabIndex = 0;
 			cardElement.dataset.taskId = task.id;
 
-			cardElement.addEventListener('click', () => {
+			// Store event listeners so we can remove them later
+			const listeners: Map<string, EventListener> = new Map();
+
+			const onClickListener = () => {
 				if (this.cardController.isActive(cardElement)) {
 					this.cardController.deactivate();
 				} else {
@@ -46,40 +50,55 @@ export default class HandRenderer {
 					this.cardController.activate(card, cardElement);
 					this.spreadCardsActive(cardElement);
 				}
-			});
+			};
+			listeners.set('click', onClickListener as EventListener);
+			cardElement.addEventListener('click', onClickListener);
 
-			cardElement.addEventListener('contextmenu', (e: MouseEvent) => {
+			const onContextMenuListener = (e: MouseEvent) => {
 				e.preventDefault();
 				if (this.cardController.isActive(cardElement)) {
 					this.cardController.deactivate();
 				}
 				card.toggleFlipped();
-			});
+			};
+			listeners.set('contextmenu', onContextMenuListener as EventListener);
+			cardElement.addEventListener('contextmenu', onContextMenuListener);
 
-			cardElement.addEventListener('mousedown', (e: MouseEvent) => {
+			const onMouseDownListener = (e: MouseEvent) => {
 				if (e.button === 1) { // Middle click to discard
 					e.preventDefault();
 					this.discardCard(task.id);
 				}
-			});
+			};
+			listeners.set('mousedown', onMouseDownListener as EventListener);
+			cardElement.addEventListener('mousedown', onMouseDownListener);
 
-			cardElement.addEventListener('pointermove', (e: PointerEvent) => {
+			const onPointerMoveListener = (e: PointerEvent) => {
 				this.updateCardGlowPosition(cardElement, e);
-			});
+			};
+			listeners.set('pointermove', onPointerMoveListener as EventListener);
+			cardElement.addEventListener('pointermove', onPointerMoveListener);
 
-			cardElement.addEventListener('mouseenter', () => {
+			const onMouseEnterListener = () => {
 				this.setCardGlowVisibility(cardElement, true);
 				if (!this.cardController.activeCardElement) {
 					this.spreadCardsAwayFrom(cardElement);
 				}
-			});
+			};
+			listeners.set('mouseenter', onMouseEnterListener as EventListener);
+			cardElement.addEventListener('mouseenter', onMouseEnterListener);
 
-			cardElement.addEventListener('mouseleave', () => {
+			const onMouseLeaveListener = () => {
 				this.setCardGlowVisibility(cardElement, false);
 				if (!this.cardController.activeCardElement) {
 					this.layoutCards();
 				}
-			});
+			};
+			listeners.set('mouseleave', onMouseLeaveListener as EventListener);
+			cardElement.addEventListener('mouseleave', onMouseLeaveListener);
+
+			// Store the listeners for later cleanup
+			this.cardEventListeners.set(task.id, listeners);
 
 			await delay(delayMs);
 			this.cardGridEl.appendChild(cardElement);
@@ -110,12 +129,23 @@ export default class HandRenderer {
 			this.cardController.deactivate();
 		}
 
+		// Remove all event listeners
+		const listeners = this.cardEventListeners.get(taskId);
+		if (listeners) {
+			listeners.forEach((listener, eventType) => {
+				element.removeEventListener(eventType, listener);
+			});
+			this.cardEventListeners.delete(taskId);
+		}
+
 		this.cardsInHand.delete(taskId);
 		this.cardElements.delete(taskId);
 		element.classList.add('discarded');
 		this.layoutCards();
 		setTimeout(() => {
 			element.remove();
+			// Clean up card references for garbage collection
+			card.cleanup();
 			this.gameManager.taskManager.getTask(taskId)?.clearCard();
 		}, 1000);
 	}
