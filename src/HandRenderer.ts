@@ -134,6 +134,7 @@ export default class HandRenderer {
 		}
 
 		this.removeCardEventListeners(taskId, element);
+		this.setDiscardAnimation(element);
 
 		this.cardsInHand.delete(taskId);
 		this.cardElements.delete(taskId);
@@ -145,6 +146,34 @@ export default class HandRenderer {
 			card.cleanup();
 			this.gameManager.taskManager.getTask(taskId)?.clearCard();
 		}, 1000);
+	}
+
+	private setDiscardAnimation(cardElement: HTMLElement): void {
+		// Generate random offset for X travel based on card's current X position
+		const rect = cardElement.getBoundingClientRect();
+		const containerWidth = this.cardGridEl.clientWidth;
+		
+		// Normalize card position: -1 = far left, 0 = center, 1 = far right
+		const normalizedPos = ((rect.left + rect.width / 2) - (this.cardGridEl.offsetLeft + containerWidth / 2)) / (containerWidth / 2);
+		const clampedPos = Math.max(-1, Math.min(1, normalizedPos));
+
+		// Random movement: influence by position but also randomize
+		const randomOffsetX = (Math.random() * 400) - 200;
+		const positionOffsetX = clampedPos * 200;
+		const travelX = positionOffsetX + randomOffsetX;
+
+		// Random vertical travel (move offscreen down with randomness)
+		const randomOffsetY = (Math.random() * 200) - 100;
+		const travelY = window.innerHeight * 1.2 + randomOffsetY;
+
+		// Random rotations
+		const randomRotateX = -120 - Math.random() * 120;
+		const randomRotateZ = (Math.random() * 360) - 180;
+
+		cardElement.style.setProperty('--discard-x', `${travelX}px`);
+		cardElement.style.setProperty('--discard-y', `${travelY}px`);
+		cardElement.style.setProperty('--discard-rotate-x', `${randomRotateX}deg`);
+		cardElement.style.setProperty('--discard-rotate-z', `${randomRotateZ}deg`);
 	}
 
 	private removeCardEventListeners(taskId: string, cardElement: HTMLElement): void {

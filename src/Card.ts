@@ -191,7 +191,6 @@ export default class Card {
 		root.style.setProperty('--card-font-title', style.titleFontFamily);
 		root.style.setProperty('--card-font-body', style.descriptionFontFamily);
 		root.style.setProperty('--card-icon-size', `${Math.round(style.iconSize * 100)}%`);
-		root.style.setProperty('--card-small-icon-size', `${Math.max(26, Math.round(this.width * style.smallIconSize * 0.26))}px`);
 
 		if (this.width > 0 && this.height > 0) {
 			root.style.aspectRatio = `${this.width} / ${this.height}`;

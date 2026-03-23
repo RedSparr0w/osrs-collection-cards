@@ -326,7 +326,7 @@ button:disabled {
   --card-font-title: 'Runescape Bold', Arial Black, sans-serif;
   --card-font-body: 'Runescape', Arial, sans-serif;
   --card-icon-size: 30%;
-  --card-small-icon-size: 28px;
+  --card-small-icon-size: 32px;
   position: absolute;
   top: 0;
   left: 0;
@@ -348,8 +348,12 @@ button:disabled {
 }
 .task-card.discarded {
   pointer-events: none;
-  transform: translate(var(--active-x), calc(var(--active-y) + 100vh)) rotateX(-180deg) rotateZ(var(--active-rotate-z));
-  transition: transform 1000ms ease-in, opacity 300ms ease-out;
+  --discard-x: 0px;
+  --discard-y: 100vh;
+  --discard-rotate-x: -180deg;
+  --discard-rotate-z: 0deg;
+  transform: translate(var(--discard-x), var(--discard-y)) rotateX(var(--discard-rotate-x)) rotateZ(var(--discard-rotate-z));
+  transition: transform 1000ms ease-in, opacity 1000ms ease-in;
 }
 .task-card {
   --pointer-y: 0;
@@ -470,10 +474,9 @@ button:disabled {
   width: 0px;
 }
 .task-card .small-icon {
-  --icon-frame-size: calc(var(--card-small-icon-size) * var(--scale, 1));
-  flex: 0 0 var(--icon-frame-size);
-  width: var(--icon-frame-size);
-  height: var(--icon-frame-size);
+  flex: 0 0 var(--card-small-icon-size);
+  width: var(--card-small-icon-size);
+  height: var(--card-small-icon-size);
   display: block;
   object-fit: contain;
   object-position: center;
