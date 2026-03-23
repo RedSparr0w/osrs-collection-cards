@@ -7,6 +7,10 @@ export type SaveState = {
   // Add other game state properties as needed
 };
 
+export type Settings = {
+  background: string;
+};
+
 export default class SaveController {
   private static SAVESTATE_KEY = `${LOCAL_STORAGE_BASE_KEY}:game_state`;
   private static SETTINGS_KEY = `${LOCAL_STORAGE_BASE_KEY}:game_settings`;
@@ -58,22 +62,27 @@ export default class SaveController {
     }
   }
 
-  getSettings(): any | null {
-    if (!this.username) return null;
+  getSettings(): Settings {
+    const defaultSettings: Settings = {
+      background: './images/backgrounds/Yama.png',
+    };
+    if (!this.username) return defaultSettings;
     try {
       const serializedSettings = localStorage.getItem(`${SaveController.SETTINGS_KEY}:${formatUsername(this.username)}`);
-      if (serializedSettings === null) return null;
-      return JSON.parse(serializedSettings);
+      if (serializedSettings === null) return defaultSettings;
+      return JSON.parse(serializedSettings) as Settings;
     } catch (error) {
       console.error('Error loading settings:', error);
-      return null;
+      return defaultSettings;
     }
   }
 
-  saveSettings(settings: any): void {
+  saveSettings(settings: Partial<Settings>): void {
     if (!this.username) return;
     try {
-      const serializedSettings = JSON.stringify(settings);
+      const currentSettings = this.getSettings() || {};
+      const mergedSettings = { ...currentSettings, ...settings };
+      const serializedSettings = JSON.stringify(mergedSettings);
       localStorage.setItem(`${SaveController.SETTINGS_KEY}:${formatUsername(this.username)}`, serializedSettings);
     } catch (error) {
       console.error('Error saving settings:', error);

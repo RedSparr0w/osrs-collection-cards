@@ -115,8 +115,8 @@ body {
   margin: 0;
   padding: 0;
   background: radial-gradient(circle at top center, #272116 0%, #18120c 55%, #0f0a06 100%);
-  background-image: url(https://oldschool.runescape.wiki/images/Login_background_%28Yama%29.png);
-  background-size: contain;
+  background-image: url(./images/backgrounds/Varlamore.png);
+  background-size: cover;
   background-position: center center;
   color: var(--gallery);
   font-family: "Runescape", Arial, sans-serif;
@@ -236,6 +236,7 @@ body {
 }
 .settings-menu .menu-display {
   margin-left: auto;
+  padding-left: 8px;
   color: #ff9040;
 }
 

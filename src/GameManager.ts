@@ -41,6 +41,7 @@ export default class GameManager {
 
 		// This will control our basic gameplay flow - login, load data, then play
 		await this.login();
+		this.ui.loadSettings();
 		await this.loadData();
 		await this.play();
 	}

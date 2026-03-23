@@ -1,6 +1,7 @@
 import { LOCAL_STORAGE_BASE_KEY } from "./Constants";
 import GameManager from "./GameManager";
 import { delay } from "./helpers";
+import type { Settings } from "./SaveController";
 
 export const enum Sections {
   Login = 'login',
@@ -71,10 +72,11 @@ export default class UIController {
       const backgroundItems = backgroundSubmenu.querySelectorAll('.menu-item');
       backgroundItems.forEach((item) => {
         item.addEventListener('click', () => {
-          const background = (item as HTMLButtonElement).textContent || '';
-          if (backgroundDisplay) backgroundDisplay.textContent = background;
-          console.debug(`Background changed to: ${background}`);
-          // TODO: Apply background styling
+          const btn = item as HTMLButtonElement;
+          const value = btn.dataset.background || '';
+          const label = btn.textContent || '';
+          this.applyBackground(value, label);
+          this.gameManager.saveController.saveSettings({ background: value });
           backgroundSubmenu.classList.add('hidden');
         });
       });
@@ -85,6 +87,30 @@ export default class UIController {
       logoutButton.addEventListener('click', () => {
         this.logout();
       });
+    }
+  }
+
+  loadSettings(): void {
+    const settings = this.gameManager.saveController.getSettings();
+    if (!settings) return;
+    if (settings.background) {
+      this.applyBackground(settings.background);
+    }
+  }
+
+  private applyBackground(value: string, label?: string): void {
+    console.debug('Applying background:', encodeURI(value)
+  .replace(/\(/g, "%28")
+  .replace(/\)/g, "%29"));
+    document.body.style.backgroundImage = `url(${encodeURI(value).replace(/\(/g, "%28").replace(/\)/g, "%29")})`;
+    const backgroundDisplay = document.getElementById('background-display');
+    if (backgroundDisplay) {
+      if (label) {
+        backgroundDisplay.textContent = label;
+      } else {
+        const match = document.querySelector<HTMLButtonElement>(`#background-submenu .menu-item[data-background="${value}"]`);
+        if (match) backgroundDisplay.textContent = match.textContent;
+      }
     }
   }
 
