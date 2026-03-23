@@ -294,7 +294,6 @@ button:disabled {
   transition: bottom 300ms ease-in-out;
 }
 .card-grid .active-buttons button {
-  tab-index: -1;
   width: 150px;
 }
 .card-grid:has(.is-active) .active-buttons {

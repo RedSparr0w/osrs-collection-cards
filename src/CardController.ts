@@ -6,6 +6,7 @@ export default class CardController {
 	activeCard: Card | null = null;
 	activeCardElement: HTMLElement | null = null;
 	gameManager: GameManager;
+	private activePointerMoveHandler: ((e: PointerEvent) => void) | null = null;
 
 	constructor(gameManager: GameManager) {
 		this.gameManager = gameManager;
@@ -39,6 +40,10 @@ export default class CardController {
 
   // Remove our active state from the currently active card, if it exists
 	deactivate(): void {
+		if (this.activePointerMoveHandler) {
+			document.body.removeEventListener('pointermove', this.activePointerMoveHandler);
+			this.activePointerMoveHandler = null;
+		}
 		if (this.activeCardElement) {
 			this.clearTransforms(this.activeCardElement);
 			const oldActiveEl = this.activeCardElement;
@@ -105,6 +110,7 @@ export default class CardController {
 		const onPointerMove = (e: PointerEvent) => {
 			if (this.activeCardElement !== element) {
 				document.body.removeEventListener('pointermove', onPointerMove);
+				this.activePointerMoveHandler = null;
 				element.style.removeProperty('--brightness');
 				return;
 			}
@@ -128,6 +134,7 @@ export default class CardController {
 			element.style.setProperty('--shine-opacity', '1');
 		};
 
+		this.activePointerMoveHandler = onPointerMove;
 		document.body.addEventListener('pointermove', onPointerMove);
 	}
 }

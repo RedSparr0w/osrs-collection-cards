@@ -75,7 +75,6 @@ export default class Card {
 	private type: CardTypeDefinition;
 	private templateImg: HTMLImageElement | null = null;
 	private backImg: HTMLImageElement | null = null;
-	private maskImg: HTMLImageElement | null = null;
 	private width: number = 0;
 	private height: number = 0;
 	private cachedElement: HTMLElement | null = null;
@@ -98,10 +97,10 @@ export default class Card {
 		// Clear cached element
 		this.cachedElement = null;
 
-		// Clear image references
+		// Image loaders are already nulled after getElement() builds the DOM,
+		// but guard here in case cleanup() is called before getElement() finishes.
 		this.templateImg = null;
 		this.backImg = null;
-		this.maskImg = null;
 
 		// Clear gameManager reference to break circular dependencies
 		(this.gameManager as any) = null;
@@ -136,7 +135,6 @@ export default class Card {
 	async loadImages(): Promise<void> {
 		this.templateImg = await this.loadImage(this.type.template);
 		this.backImg = await this.loadImage(this.type.back);
-		this.maskImg = await this.loadImage(this.type.mask);
 
 		if (!this.width || !this.height) {
 			const aspectRatio = this.templateImg.width / this.templateImg.height;
@@ -322,6 +320,13 @@ export default class Card {
 		root.appendChild(rotator);
 
 		this.cachedElement = root;
+
+		// Release the temporary HTMLImageElement loaders — we only needed them to
+		// read dimensions and copy src strings. They are never attached to the DOM,
+		// so holding them would cause detached-node leaks in the heap profiler.
+		this.templateImg = null;
+		this.backImg = null;
+
 		return root;
 	}
 }
