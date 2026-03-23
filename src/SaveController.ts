@@ -5,7 +5,6 @@ import { formatUsername } from "./helpers";
 export type SaveState = {
   hand: string[]; // Array of task IDs in the player's hand
   completedTaskIds: string[];
-  completionDetectionInitialized: boolean;
   // Add other game state properties as needed
 };
 
@@ -21,7 +20,6 @@ export default class SaveController {
   private defaultState: SaveState = {
     hand: [],
     completedTaskIds: [],
-    completionDetectionInitialized: false,
     // Initialize other default state properties as needed
   }
   username: string | null = null;
@@ -54,10 +52,6 @@ export default class SaveController {
       console.error('Error loading state:', error);
       return this.state;
     }
-  }
-
-  setCompletionDetectionInitialized(value: boolean): void {
-    this.state.completionDetectionInitialized = value;
   }
   
   deleteProfile(): void {

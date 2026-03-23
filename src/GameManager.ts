@@ -70,7 +70,7 @@ export default class GameManager {
 	async loadData(): Promise<void> {
 		const savedState = this.saveController.loadState();
 		this.applySavedTaskState(savedState.completedTaskIds);
-		await this.refreshPlayerTaskCompletionState(!savedState.completionDetectionInitialized);
+		await this.refreshPlayerTaskCompletionState();
 
 		if (savedState.hand) {
 			this.currentHand = savedState.hand
@@ -193,8 +193,8 @@ export default class GameManager {
 		this.saveData();
 		if (this.currentHand.length === 0) {
 			// If we've discarded all our cards, deal a new hand after a short delay
+			await this.refreshPlayerTaskCompletionState();
 			await delay(1000);
-			await this.refreshPlayerTaskCompletionState(true);
 			await this.play();
 		}
 		return true;
@@ -210,14 +210,16 @@ export default class GameManager {
 		});
 	}
 
-	private async refreshPlayerTaskCompletionState(forceRefresh: boolean): Promise<void> {
+	private async refreshPlayerTaskCompletionState(): Promise<void> {
 		const currentUsername = this.saveController.getCurrentUsername();
 		if (!currentUsername) {
+			console.error('No current username found, skipping player task completion state refresh.');
 			return;
 		}
 
-		const playerData = await this.wiki.loadPlayerData(currentUsername, { forceRefresh });
+		const playerData = await this.wiki.loadPlayerData(currentUsername, { forceRefresh: true });
 		if (!playerData) {
+			console.error('Failed to load player data, cannot refresh task completion state.');
 			return;
 		}
 
@@ -226,15 +228,11 @@ export default class GameManager {
 		if (detectedCompletedTaskIds.length > 0) {
 			console.debug('Detected completed tasks from collection log', detectedCompletedTaskIds);
 		}
-
-		if (forceRefresh) {
-			this.currentHand = this.currentHand.filter((task) => task.state !== TASK_STATES.COMPLETE);
-		}
-
-		this.saveController.setCompletionDetectionInitialized(true);
 	}
 
 	private detectCompletedTasksFromPlayerData(): string[] {
+		console.debug('Detecting completed tasks from player data', this.playerData);
+
 		const achievementDiaries = this.playerData.achievementDiaries;
 		const obtainedItemIds = this.playerData.obtainedItemIds;
 		const skills = this.playerData.skills;
@@ -246,7 +244,7 @@ export default class GameManager {
 			}
 
 			// Check achievement diary task
-			if (task.verification.method === 'achievement_diary' && task.verification.region && task.verification.difficulty) {
+			if (task.verification.method === 'achievement-diary' && task.verification.region && task.verification.difficulty) {
 				const regionValues = achievementDiaries[this.normalizeAchievementKey(task.verification.region)] ?? {};
 				if (!regionValues) {
 					console.warn('Player data is missing expected achievement diary region', this.normalizeAchievementKey(task.verification.region), task, { obtainedItemIds, achievementDiaries });
@@ -269,7 +267,7 @@ export default class GameManager {
 			}
 
 			// Check item collection task
-			if (task.verification.method === 'item_collection' && task.verification.itemIds && task.verification.itemIds.length > 0) {
+			if (task.verification.method === 'collection-log' && task.verification.itemIds && task.verification.itemIds.length > 0) {
 				const itemIds = task.verification.itemIds;
 				const requiredCount = task.verification?.count ?? itemIds.length;
 				const obtainedCount = itemIds.filter((itemId) => obtainedItemIds.has(itemId)).length;
