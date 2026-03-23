@@ -235,28 +235,56 @@ export default class GameManager {
 	}
 
 	private detectCompletedTasksFromPlayerData(): string[] {
-		const obtainedItemIds = this.playerData?.obtainedItemIds;
-		if (!obtainedItemIds) {
-			return [];
-		}
+		const obtainedItemIds = this.playerData?.obtainedItemIds ?? new Set<number>();
+		const achievementDiaries = this.playerData?.achievementDiaries ?? {"string": {}};
+
 
 		return this.taskManager.getIncompleteTasks().reduce<string[]>((completedTaskIds, task) => {
-			const itemIds = task.verification?.itemIds;
-			if (!itemIds?.length) {
-				return completedTaskIds;
-			}
+			// Check achievement diary task
+			if (task.verification?.region && task.verification?.difficulty) {
+				const regionValues = achievementDiaries[this.normalizeAchievementKey(task.verification.region)] ?? {};
+				if (!regionValues) {
+					console.warn('Player data is missing expected achievement diary region', this.normalizeAchievementKey(task.verification.region), task, { obtainedItemIds, achievementDiaries });
+					return completedTaskIds;
+				}
 
-			const requiredCount = task.verification?.count ?? itemIds.length;
-			const obtainedCount = itemIds.filter((itemId) => obtainedItemIds.has(itemId)).length;
-			if (obtainedCount < requiredCount) {
-				return completedTaskIds;
-			}
+				const difficultyValue = regionValues[this.normalizeAchievementKey(task.verification.difficulty)];
+				if (!difficultyValue) {
+					console.warn('Player data is missing expected achievement diary', this.normalizeAchievementKey(task.verification.region), 'difficulty', this.normalizeAchievementKey(task.verification.difficulty), task, { obtainedItemIds, achievementDiaries });
+					return completedTaskIds;
+				}
 
-			if (this.taskManager.setState(task.id, TASK_STATES.COMPLETE)) {
+				if (!difficultyValue.complete) {
+					return completedTaskIds;
+				}
+
+				this.taskManager.setState(task.id, TASK_STATES.COMPLETE);
 				completedTaskIds.push(task.id);
+				return completedTaskIds;
+			}
+
+			if (task.verification?.itemIds && task.verification.itemIds.length > 0) {
+				const itemIds = task.verification.itemIds;
+				const requiredCount = task.verification?.count ?? itemIds.length;
+				const obtainedCount = itemIds.filter((itemId) => obtainedItemIds.has(itemId)).length;
+				if (obtainedCount < requiredCount) {
+					return completedTaskIds;
+				}
+
+				if (this.taskManager.setState(task.id, TASK_STATES.COMPLETE)) {
+					completedTaskIds.push(task.id);
+					return completedTaskIds;
+				}
 			}
 
 			return completedTaskIds;
 		}, []);
+	}
+
+	private normalizeAchievementKey(value: string): string {
+		return value
+			.toLowerCase()
+			.replace(/[-_]+/g, ' ')
+			.replace(/\band\b/g, '&');
 	}
 }
