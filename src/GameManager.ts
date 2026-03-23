@@ -35,6 +35,7 @@ export default class GameManager {
 	}
 
 	async start(): Promise<void> {
+		this.ui.initialize();
 		await this.wiki.initialize();
 		await this.taskManager.initialize();
 

@@ -10,7 +10,24 @@
     <main class="app-shell">
       <header class="app-header">
         <h1>OSRS Collection Log | Card Locked</h1>
-        <p id="status-text" class="status-text">TODO: Settings menu here</p>
+        <div class="header-controls">
+          <button id="settings-button" class="settings-button" aria-label="Settings menu">⚙️</button>
+          <div id="settings-menu" class="settings-menu hidden">
+            <span class="settings-title">Settings</span>
+            <div class="settings-menu-content">
+              <button class="menu-item submenu-trigger" id="background-button">Background<span id="background-display" class="menu-display">Yama</span></button>
+              <div id="background-submenu" class="settings-menu hidden">
+                <span class="settings-title">Background</span>
+                <div class="settings-menu-content">
+                  <button class="menu-item" data-background="default">Default</button>
+                  <button class="menu-item" data-background="dark">Dark</button>
+                  <button class="menu-item" data-background="light">Light</button>
+                </div>
+              </div>
+              <button id="logout-button" class="logout-button">Logout</button>
+            </div>
+          </div>
+        </div>
       </header>
       <section id="login" class="login-section" aria-label="Login form">
         <h1>Login</h2>
@@ -31,3 +48,4 @@
     <script src="bundle.js"></script>
 </body>
 </html>
+

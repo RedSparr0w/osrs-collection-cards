@@ -170,11 +170,97 @@ body {
   color: #f0e5cd;
 }
 
-.status-text {
-  margin: 0;
-  color: #d6c8a8;
-  font-size: 14px;
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  position: relative;
 }
+
+.settings-button {
+  padding: 10px;
+  margin: -11px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 200ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.settings-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #5d5447 ;
+  border: 1px solid black;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  min-width: 200px;
+  opacity: 1;
+  color: whitesmoke;
+  visibility: visible;
+  transition: opacity 200ms ease, visibility 200ms ease;
+  z-index: 100;
+
+  &.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  
+  .settings-menu-content, .settings-title {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px;
+    margin: 2px;
+    font-family: 'Runescape Bold', Arial Black, sans-serif;
+    font-size: 16px;
+  }
+
+  .settings-title {
+    color: #5d5447;
+    background-color: black;
+  }
+
+  .settings-menu-content {
+    color: whitesmoke;
+    border: 1px solid black;
+  }
+
+  .menu-item, button {
+    display: flex;
+    align-items: center;
+    gap: 0px;
+    padding: 2px;
+    white-space: nowrap;
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    position: relative;
+    width: 100%;
+    border-radius: 0px;
+
+
+    &:hover {
+      background: #3e3529;
+      color: #ffff00;
+      border: none;
+    }
+  }
+
+  .menu-display {
+    margin-left: auto;
+    color: #ff9040;
+  }
+}
+
 
 section {
   display: none;
@@ -231,7 +317,7 @@ section {
 button {
   padding: 5px;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   background: var(--osrsw-brown);
   color: #f0e5cd;
   font-size: 16px;
@@ -242,13 +328,11 @@ button {
   &:hover {
     background: var(--button-light);
     border-image: url("./images/button_hover.png") 10 fill round;
-    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2), inset 0 -4px 0 rgba(0,0,0,0.15);
   }
 
   &:active {
     background: var(--button-dark);
     border-image: url("./images/button_hover.png") 10 fill round;
-    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 -2px 0 rgba(0,0,0,0.25);
   }
 
   &:disabled {

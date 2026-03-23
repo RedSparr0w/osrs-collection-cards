@@ -1,3 +1,4 @@
+import { LOCAL_STORAGE_BASE_KEY } from "./Constants";
 import GameManager from "./GameManager";
 import { delay } from "./helpers";
 
@@ -11,6 +12,89 @@ export default class UIController {
 
   constructor(gameManager: GameManager) {
     this.gameManager = gameManager;
+  }
+
+  initialize(): void {
+    this.setupSettingsMenu();
+  }
+
+  private setupSettingsMenu(): void {
+    const settingsButton = document.getElementById('settings-button') as HTMLButtonElement;
+    const settingsMenu = document.getElementById('settings-menu') as HTMLElement;
+    const backgroundButton = document.getElementById('background-button') as HTMLButtonElement;
+    const backgroundSubmenu = document.getElementById('background-submenu') as HTMLElement;
+    const backgroundDisplay = document.getElementById('background-display') as HTMLElement;
+    const logoutButton = document.getElementById('logout-button') as HTMLButtonElement;
+
+    if (!settingsButton || !settingsMenu) return;
+
+    // Toggle main menu on button click
+    settingsButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      settingsMenu.classList.toggle('hidden');
+      if (backgroundSubmenu) {
+        backgroundSubmenu.classList.add('hidden');
+      }
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', () => {
+      settingsMenu.classList.add('hidden');
+      if (backgroundSubmenu) {
+        backgroundSubmenu.classList.add('hidden');
+      }
+    });
+
+    // Prevent menu close when clicking inside menu
+    settingsMenu.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+
+    // Background submenu trigger
+    if (backgroundButton && backgroundSubmenu) {
+      backgroundButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+
+        const menuRect = settingsMenu.getBoundingClientRect();
+        const buttonRect = backgroundButton.getBoundingClientRect();
+        const offsetTop = buttonRect.top - menuRect.top - 40; // 10px offset for better alignment
+        backgroundSubmenu.style.top = `${offsetTop}px`;
+        backgroundSubmenu.style.right = '100%';
+
+        backgroundSubmenu.classList.toggle('hidden');
+      });
+
+      backgroundSubmenu.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+
+      const backgroundItems = backgroundSubmenu.querySelectorAll('.menu-item');
+      backgroundItems.forEach((item) => {
+        item.addEventListener('click', () => {
+          const background = (item as HTMLButtonElement).textContent || '';
+          if (backgroundDisplay) backgroundDisplay.textContent = background;
+          console.debug(`Background changed to: ${background}`);
+          // TODO: Apply background styling
+          backgroundSubmenu.classList.add('hidden');
+        });
+      });
+    }
+
+    // Logout button
+    if (logoutButton) {
+      logoutButton.addEventListener('click', () => {
+        this.logout();
+      });
+    }
+  }
+
+  private logout(): void {
+    try {
+      localStorage.removeItem(`${LOCAL_STORAGE_BASE_KEY}:current_username`);
+      window.location.reload();
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   }
 
   async showSection(sectionId: Sections): Promise<void> {
