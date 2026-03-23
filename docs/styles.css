@@ -324,7 +324,7 @@ button:disabled {
   transform-origin: center center;
   transform: translate(var(--active-x), calc(var(--active-y) + var(--hover-lift))) rotateX(var(--active-rotate-x)) rotateZ(var(--active-rotate-z)) translateY(var(--active-dip));
   transition: rotate 10ms ease, left 500ms ease, top 500ms ease, width 500ms ease, transform 500ms ease, box-shadow 220ms ease, filter 200ms ease, opacity 300ms ease;
-  will-change: transform;
+  will-change: transform, top, left, width, box-shadow, filter, opacity;
   filter: brightness(var(--brightness, 1));
 }
 .task-card.is-entering {
@@ -340,6 +340,7 @@ button:disabled {
   --pointer-x: 0;
 }
 .task-card.is-active {
+  will-change: rotate;
   --active-rotate-x: 0deg;
   --active-rotate-z: 0deg;
   --active-dip: 0px;
@@ -384,6 +385,7 @@ button:disabled {
   mask-size: 100% 100%;
   opacity: var(--shine-opacity);
   transition: opacity 500ms ease-in-out;
+  will-change: opacity;
 }
 .task-card .card-face--back {
   transform: rotateY(180deg);
@@ -452,16 +454,21 @@ button:disabled {
   width: 0px;
 }
 .task-card .small-icon {
-  width: calc(var(--card-small-icon-size) * (1 + (var(--scale) - 1) * 0.5));
-  height: calc(var(--card-small-icon-size) * (1 + (var(--scale) - 1) * 0.5));
+  --icon-frame-size: calc(var(--card-small-icon-size) * var(--scale, 1));
+  flex: 0 0 var(--icon-frame-size);
+  width: var(--icon-frame-size);
+  height: var(--icon-frame-size);
+  display: block;
   object-fit: contain;
+  object-position: center;
   image-rendering: pixelated;
-  transition: all 200ms ease;
+  transition: width 200ms ease, height 200ms ease;
 }
 .task-card .small-icon.obtained {
   filter: drop-shadow(2px 2px 2px rgba(107, 199, 31, 0.8));
 }
 .task-card .small-icon.missing {
+  filter: drop-shadow(2px 2px 2px rgba(199, 31, 31, 0.8));
   opacity: 0.5;
 }
 .task-card .template {
