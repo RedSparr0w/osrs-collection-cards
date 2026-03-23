@@ -164,6 +164,125 @@ body {
   position: relative;
 }
 
+.task-browser-button {
+  min-width: 74px;
+  height: 32px;
+  margin: -6px 0;
+  padding: 4px 10px;
+  font-family: "Runescape Bold", Arial Black, sans-serif;
+  font-size: 15px;
+}
+
+.task-browser-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 44px;
+  width: min(540px, 100vw - 60px);
+  max-height: min(72vh, 620px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  background: #5d5447;
+  border: 1px solid black;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 95;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 200ms ease, visibility 200ms ease;
+}
+.task-browser-panel.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.task-browser-panel .task-browser-header {
+  padding: 4px 6px;
+  font-family: "Runescape Bold", Arial Black, sans-serif;
+  font-size: 18px;
+  color: #5d5447;
+  background-color: black;
+}
+.task-browser-panel .task-browser-filters {
+  display: grid;
+  grid-template-columns: auto minmax(110px, 1fr) auto minmax(110px, 1fr);
+  align-items: center;
+  gap: 6px 10px;
+  padding: 6px;
+  border: 1px solid black;
+  color: whitesmoke;
+  font-family: "Runescape Small", Arial, sans-serif;
+  font-size: 16px;
+}
+.task-browser-panel .task-browser-filters label {
+  color: #f0e5cd;
+}
+.task-browser-panel .task-browser-filters select {
+  width: 100%;
+  min-width: 110px;
+  padding: 4px 6px;
+  border: 1px solid black;
+  background: #2b241c;
+  color: #f0e5cd;
+  font-family: "Runescape", Arial, sans-serif;
+  font-size: 15px;
+  outline: none;
+}
+.task-browser-panel .task-browser-summary {
+  padding: 4px 8px;
+  color: #ffdd77;
+  font-family: "Runescape Small", Arial, sans-serif;
+  font-size: 15px;
+  border: 1px solid black;
+  background: rgba(0, 0, 0, 0.2);
+}
+.task-browser-panel .task-browser-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow-y: auto;
+  max-height: 44vh;
+  border: 1px solid black;
+  background: #41382e;
+}
+.task-browser-panel .task-browser-item {
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 8px;
+  font-family: "Runescape", Arial, sans-serif;
+  font-size: 15px;
+  color: #f5efe1;
+  background: rgba(0, 0, 0, 0.2);
+}
+.task-browser-panel .task-browser-item-tier {
+  font-family: "Runescape Bold", Arial Black, sans-serif;
+  color: #b7a17d;
+}
+.task-browser-panel .task-browser-item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.task-browser-panel .task-browser-item-status {
+  font-family: "Runescape Small", Arial, sans-serif;
+  font-size: 14px;
+}
+.task-browser-panel .task-browser-item.is-complete .task-browser-item-status {
+  color: #7fff7f;
+}
+.task-browser-panel .task-browser-item.is-incomplete .task-browser-item-status {
+  color: #ffb8b8;
+}
+.task-browser-panel .task-browser-empty {
+  padding: 10px;
+  color: #f0e5cd;
+  font-family: "Runescape Small", Arial, sans-serif;
+  font-size: 15px;
+  text-align: center;
+}
+
 .settings-button {
   padding: 10px;
   margin: -11px;

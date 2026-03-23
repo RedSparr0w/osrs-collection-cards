@@ -4,6 +4,8 @@ import { formatUsername } from "./helpers";
 
 export type SaveState = {
   hand: string[]; // Array of task IDs in the player's hand
+  completedTaskIds: string[];
+  completionDetectionInitialized: boolean;
   // Add other game state properties as needed
 };
 
@@ -18,6 +20,8 @@ export default class SaveController {
   private gameManager: GameManager;
   private defaultState: SaveState = {
     hand: [],
+    completedTaskIds: [],
+    completionDetectionInitialized: false,
     // Initialize other default state properties as needed
   }
   username: string | null = null;
@@ -31,6 +35,7 @@ export default class SaveController {
     if (!this.username) return;
     try {
       this.state.hand = this.gameManager.getHand().map(task => task.id);
+      this.state.completedTaskIds = this.gameManager.taskManager.getCompletedTasks().map(task => task.id);
       const serializedState = JSON.stringify(this.state);
       localStorage.setItem(`${SaveController.SAVESTATE_KEY}:${formatUsername(this.username)}`, serializedState);
     } catch (error) {
@@ -49,6 +54,10 @@ export default class SaveController {
       console.error('Error loading state:', error);
       return this.state;
     }
+  }
+
+  setCompletionDetectionInitialized(value: boolean): void {
+    this.state.completionDetectionInitialized = value;
   }
   
   deleteProfile(): void {

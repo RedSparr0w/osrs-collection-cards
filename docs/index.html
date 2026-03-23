@@ -11,6 +11,29 @@
       <header class="app-header">
         <h1>OSRS Collection Log | Card Locked</h1>
         <div class="header-controls">
+          <button id="task-browser-button" class="task-browser-button" aria-label="Task browser">Tasks</button>
+          <div id="task-browser-panel" class="task-browser-panel hidden" aria-label="Task browser panel">
+            <div class="task-browser-header">Task Browser</div>
+            <div class="task-browser-filters">
+              <label for="task-status-filter">Status</label>
+              <select id="task-status-filter">
+                <option value="all">All</option>
+                <option value="incomplete">Incomplete</option>
+                <option value="complete">Complete</option>
+              </select>
+              <label for="task-tier-filter">Tier</label>
+              <select id="task-tier-filter">
+                <option value="all">All</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+                <option value="elite">Elite</option>
+                <option value="master">Master</option>
+              </select>
+            </div>
+            <div id="task-browser-summary" class="task-browser-summary"></div>
+            <div id="task-browser-list" class="task-browser-list"></div>
+          </div>
           <button id="settings-button" class="settings-button" aria-label="Settings menu">⚙️</button>
           <div id="settings-menu" class="settings-menu hidden">
             <span class="settings-title">Settings</span>

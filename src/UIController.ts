@@ -1,7 +1,9 @@
 import { LOCAL_STORAGE_BASE_KEY } from "./Constants";
+import { TASK_STATES, TIERS } from "./Constants";
 import GameManager from "./GameManager";
 import { delay } from "./helpers";
 import type { Settings } from "./SaveController";
+import Task from "./Task";
 
 export const enum Sections {
   Login = 'login',
@@ -10,6 +12,8 @@ export const enum Sections {
 
 export default class UIController {
   gameManager: GameManager;
+  private taskStatusFilter: 'all' | TASK_STATES.COMPLETE | TASK_STATES.INCOMPLETE = 'all';
+  private taskTierFilter: 'all' | TIERS = 'all';
 
   constructor(gameManager: GameManager) {
     this.gameManager = gameManager;
@@ -17,6 +21,7 @@ export default class UIController {
 
   initialize(): void {
     this.setupSettingsMenu();
+    this.setupTaskBrowser();
   }
 
   private setupSettingsMenu(): void {
@@ -26,6 +31,7 @@ export default class UIController {
     const backgroundSubmenu = document.getElementById('background-submenu') as HTMLElement;
     const backgroundDisplay = document.getElementById('background-display') as HTMLElement;
     const logoutButton = document.getElementById('logout-button') as HTMLButtonElement;
+    const taskBrowserPanel = document.getElementById('task-browser-panel') as HTMLElement;
 
     if (!settingsButton || !settingsMenu) return;
 
@@ -33,6 +39,9 @@ export default class UIController {
     settingsButton.addEventListener('click', (e) => {
       e.stopPropagation();
       settingsMenu.classList.toggle('hidden');
+      if (taskBrowserPanel) {
+        taskBrowserPanel.classList.add('hidden');
+      }
       if (backgroundSubmenu) {
         backgroundSubmenu.classList.add('hidden');
       }
@@ -41,6 +50,9 @@ export default class UIController {
     // Close menu when clicking outside
     document.addEventListener('click', () => {
       settingsMenu.classList.add('hidden');
+      if (taskBrowserPanel) {
+        taskBrowserPanel.classList.add('hidden');
+      }
       if (backgroundSubmenu) {
         backgroundSubmenu.classList.add('hidden');
       }
@@ -50,6 +62,12 @@ export default class UIController {
     settingsMenu.addEventListener('click', (e) => {
       e.stopPropagation();
     });
+
+    if (taskBrowserPanel) {
+      taskBrowserPanel.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+    }
 
     // Background submenu trigger
     if (backgroundButton && backgroundSubmenu) {
@@ -88,6 +106,101 @@ export default class UIController {
         this.logout();
       });
     }
+  }
+
+  private setupTaskBrowser(): void {
+    const taskBrowserButton = document.getElementById('task-browser-button') as HTMLButtonElement;
+    const taskBrowserPanel = document.getElementById('task-browser-panel') as HTMLElement;
+    const taskStatusFilter = document.getElementById('task-status-filter') as HTMLSelectElement;
+    const taskTierFilter = document.getElementById('task-tier-filter') as HTMLSelectElement;
+    const settingsMenu = document.getElementById('settings-menu') as HTMLElement;
+    const backgroundSubmenu = document.getElementById('background-submenu') as HTMLElement;
+
+    if (!taskBrowserButton || !taskBrowserPanel || !taskStatusFilter || !taskTierFilter) {
+      return;
+    }
+
+    taskBrowserButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      taskBrowserPanel.classList.toggle('hidden');
+      if (!taskBrowserPanel.classList.contains('hidden')) {
+        this.refreshTaskBrowser();
+      }
+      if (settingsMenu) {
+        settingsMenu.classList.add('hidden');
+      }
+      if (backgroundSubmenu) {
+        backgroundSubmenu.classList.add('hidden');
+      }
+    });
+
+    taskStatusFilter.addEventListener('change', () => {
+      this.taskStatusFilter = taskStatusFilter.value as 'all' | TASK_STATES.COMPLETE | TASK_STATES.INCOMPLETE;
+      this.refreshTaskBrowser();
+    });
+
+    taskTierFilter.addEventListener('change', () => {
+      this.taskTierFilter = taskTierFilter.value as 'all' | TIERS;
+      this.refreshTaskBrowser();
+    });
+  }
+
+  refreshTaskBrowser(): void {
+    const listElement = document.getElementById('task-browser-list');
+    const summaryElement = document.getElementById('task-browser-summary');
+    if (!listElement || !summaryElement) {
+      return;
+    }
+
+    const tasks = this.gameManager.taskManager.getAllTasks();
+    const filteredTasks = tasks
+      .filter((task) => {
+        if (this.taskStatusFilter !== 'all' && task.state !== this.taskStatusFilter) {
+          return false;
+        }
+        if (this.taskTierFilter !== 'all' && task.tier !== this.taskTierFilter) {
+          return false;
+        }
+        return true;
+      })
+      .sort((a, b) => this.compareTasks(a, b));
+
+    const completed = tasks.filter((task) => task.state === TASK_STATES.COMPLETE).length;
+    const incomplete = tasks.filter((task) => task.state === TASK_STATES.INCOMPLETE).length;
+    summaryElement.textContent = `Showing ${filteredTasks.length}/${tasks.length} | Incomplete: ${incomplete} | Complete: ${completed}`;
+
+    if (filteredTasks.length === 0) {
+      listElement.innerHTML = '<div class="task-browser-empty">No tasks match your filters.</div>';
+      return;
+    }
+
+    listElement.innerHTML = filteredTasks.map((task) => {
+      const statusClass = task.state === TASK_STATES.COMPLETE ? 'is-complete' : 'is-incomplete';
+      const statusText = task.state === TASK_STATES.COMPLETE ? 'Complete' : 'Incomplete';
+      return `
+        <div class="task-browser-item ${statusClass}">
+          <span class="task-browser-item-tier">${task.tier.toUpperCase()}</span>
+          <span class="task-browser-item-name">${task.name}</span>
+          <span class="task-browser-item-status">${statusText}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  private compareTasks(a: Task, b: Task): number {
+    const tierOrder: Record<TIERS, number> = {
+      [TIERS.EASY]: 0,
+      [TIERS.MEDIUM]: 1,
+      [TIERS.HARD]: 2,
+      [TIERS.ELITE]: 3,
+      [TIERS.MASTER]: 4,
+    };
+
+    if (tierOrder[a.tier] !== tierOrder[b.tier]) {
+      return tierOrder[a.tier] - tierOrder[b.tier];
+    }
+
+    return a.name.localeCompare(b.name);
   }
 
   loadSettings(): void {

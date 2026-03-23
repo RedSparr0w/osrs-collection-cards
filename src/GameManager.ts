@@ -1,5 +1,5 @@
 import { resolve } from 'path';
-import { TIERS } from './Constants';
+import { TASK_STATES, TIERS } from './Constants';
 import HandRenderer from './HandRenderer';
 import SaveController from './SaveController';
 import Task from './Task';
@@ -69,17 +69,21 @@ export default class GameManager {
 
 	async loadData(): Promise<void> {
 		const savedState = this.saveController.loadState();
-		if (savedState) {
-			if (savedState.hand) {
-				this.currentHand = savedState.hand.map((taskID: string) => this.taskManager.getTask(taskID) ?? null).filter((t: Task | null): t is Task => !!t);
-			}
+		this.applySavedTaskState(savedState.completedTaskIds);
+		await this.refreshPlayerTaskCompletionState(!savedState.completionDetectionInitialized);
+
+		if (savedState.hand) {
+			this.currentHand = savedState.hand
+				.map((taskID: string) => this.taskManager.getTask(taskID) ?? null)
+				.filter((task: Task | null): task is Task => !!task && task.state !== TASK_STATES.COMPLETE);
 		}
-		const currentUsername = this.saveController.getCurrentUsername() as string;
-		this.playerData = await this.wiki.loadPlayerData(currentUsername);
+
+		this.saveData();
 	}
 
 	saveData(): void {
 		this.saveController.saveState();
+		this.ui.refreshTaskBrowser();
 	}
 
 	async play(): Promise<void> {
@@ -167,7 +171,11 @@ export default class GameManager {
 	}
 
 	completeSelectedTask(taskId: string): void {
-		console.debug(`Complete clicked for task: ${taskId}`);
+		if (!this.taskManager.setState(taskId, TASK_STATES.COMPLETE)) {
+			return;
+		}
+
+		void this.dispose(taskId);
 	}
 
 	isTaskSelected(taskId: string): boolean {
@@ -186,6 +194,7 @@ export default class GameManager {
 		if (this.currentHand.length === 0) {
 			// If we've discarded all our cards, deal a new hand after a short delay
 			await delay(1000);
+			await this.refreshPlayerTaskCompletionState(true);
 			await this.play();
 		}
 		return true;
@@ -193,5 +202,61 @@ export default class GameManager {
 
 	getHand(): Task[] {
 		return [...this.currentHand];
+	}
+
+	private applySavedTaskState(completedTaskIds: string[]): void {
+		completedTaskIds.forEach((taskId) => {
+			this.taskManager.setState(taskId, TASK_STATES.COMPLETE);
+		});
+	}
+
+	private async refreshPlayerTaskCompletionState(forceRefresh: boolean): Promise<void> {
+		const currentUsername = this.saveController.getCurrentUsername();
+		if (!currentUsername) {
+			return;
+		}
+
+		const playerData = await this.wiki.loadPlayerData(currentUsername, { forceRefresh });
+		if (!playerData) {
+			return;
+		}
+
+		this.playerData = playerData;
+		const detectedCompletedTaskIds = this.detectCompletedTasksFromPlayerData();
+		if (detectedCompletedTaskIds.length > 0) {
+			console.debug('Detected completed tasks from collection log', detectedCompletedTaskIds);
+		}
+
+		if (forceRefresh) {
+			this.currentHand = this.currentHand.filter((task) => task.state !== TASK_STATES.COMPLETE);
+		}
+
+		this.saveController.setCompletionDetectionInitialized(true);
+	}
+
+	private detectCompletedTasksFromPlayerData(): string[] {
+		const obtainedItemIds = this.playerData?.obtainedItemIds;
+		if (!obtainedItemIds) {
+			return [];
+		}
+
+		return this.taskManager.getIncompleteTasks().reduce<string[]>((completedTaskIds, task) => {
+			const itemIds = task.verification?.itemIds;
+			if (!itemIds?.length) {
+				return completedTaskIds;
+			}
+
+			const requiredCount = task.verification?.count ?? itemIds.length;
+			const obtainedCount = itemIds.filter((itemId) => obtainedItemIds.has(itemId)).length;
+			if (obtainedCount < requiredCount) {
+				return completedTaskIds;
+			}
+
+			if (this.taskManager.setState(task.id, TASK_STATES.COMPLETE)) {
+				completedTaskIds.push(task.id);
+			}
+
+			return completedTaskIds;
+		}, []);
 	}
 }
