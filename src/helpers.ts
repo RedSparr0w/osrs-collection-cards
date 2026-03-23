@@ -28,3 +28,29 @@ export const getNumericCssVar = (element: HTMLElement, name: string, fallback = 
 export const formatUsername = (input: string): string => {
 	return input.trim().replace(/\s+/g, '_').toLowerCase();
 };
+
+export const levelToXp = (level: number): number => {
+    let xp = 0;
+
+    for (let i = 1; i < level; i++) {
+        xp += Math.floor(i + 300 * Math.pow(2, i / 7));
+    }
+
+    return Math.floor(xp / 4);
+}
+
+export const xpToLevel = (xp: number): number => {
+    let points = 0;
+    let output = 0;
+
+    for (let lvl = 1; lvl <= 99; lvl++) {
+        points += Math.floor(lvl + 300 * Math.pow(2, lvl / 7));
+        let levelXp = Math.floor(points / 4);
+
+        if (levelXp > xp) {
+            return lvl;
+        }
+    }
+
+    return 99;
+}

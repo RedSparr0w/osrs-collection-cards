@@ -21,10 +21,14 @@ export interface TaskInformation {
 
 export interface Verification {
   method: string
+  // For item collection verification
   itemIds?: number[]
   count?: number
+  // For achievement diary verification
   region?: string
   difficulty?: string
+  // For skill level verification
+  experience?: Record<string, number>
 }
 
 export default class Task implements TaskInformation {

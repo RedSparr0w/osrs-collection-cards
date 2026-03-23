@@ -5,8 +5,8 @@ import SaveController from './SaveController';
 import Task from './Task';
 import TaskManager from './TaskManager';
 import UIController, { Sections } from './UIController';
-import { delay } from './helpers';
-import Wiki, { PlayerData } from './Wiki';
+import { delay, xpToLevel } from './helpers';
+import Wiki, { defaultPlayerData, PlayerData } from './Wiki';
 
 const TIER_WEIGHTS: Record<TIERS, number> = {
 	[TIERS.EASY]: 1.1,
@@ -24,7 +24,7 @@ export default class GameManager {
 	handRenderer: HandRenderer;
 	ui: UIController;
 	saveController: SaveController;
-	playerData: PlayerData | null = null;
+	playerData: PlayerData = defaultPlayerData;
 
 	constructor() {
 		this.wiki = new Wiki(this);
@@ -235,13 +235,18 @@ export default class GameManager {
 	}
 
 	private detectCompletedTasksFromPlayerData(): string[] {
-		const obtainedItemIds = this.playerData?.obtainedItemIds ?? new Set<number>();
-		const achievementDiaries = this.playerData?.achievementDiaries ?? {"string": {}};
-
+		const achievementDiaries = this.playerData.achievementDiaries;
+		const obtainedItemIds = this.playerData.obtainedItemIds;
+		const skills = this.playerData.skills;
 
 		return this.taskManager.getIncompleteTasks().reduce<string[]>((completedTaskIds, task) => {
+			// Nothing we can verify for this task, skip it
+			if (!task.verification || !task.verification.method) {
+				return completedTaskIds;
+			}
+
 			// Check achievement diary task
-			if (task.verification?.region && task.verification?.difficulty) {
+			if (task.verification.method === 'achievement_diary' && task.verification.region && task.verification.difficulty) {
 				const regionValues = achievementDiaries[this.normalizeAchievementKey(task.verification.region)] ?? {};
 				if (!regionValues) {
 					console.warn('Player data is missing expected achievement diary region', this.normalizeAchievementKey(task.verification.region), task, { obtainedItemIds, achievementDiaries });
@@ -263,7 +268,8 @@ export default class GameManager {
 				return completedTaskIds;
 			}
 
-			if (task.verification?.itemIds && task.verification.itemIds.length > 0) {
+			// Check item collection task
+			if (task.verification.method === 'item_collection' && task.verification.itemIds && task.verification.itemIds.length > 0) {
 				const itemIds = task.verification.itemIds;
 				const requiredCount = task.verification?.count ?? itemIds.length;
 				const obtainedCount = itemIds.filter((itemId) => obtainedItemIds.has(itemId)).length;
@@ -272,6 +278,25 @@ export default class GameManager {
 				}
 
 				if (this.taskManager.setState(task.id, TASK_STATES.COMPLETE)) {
+					completedTaskIds.push(task.id);
+					return completedTaskIds;
+				}
+			}
+
+			// Check skill level task
+			if (task.verification.method === 'skill' && task.verification.experience) {
+				const skillsMet = Object.entries(task.verification.experience).filter(([skill, xp]) => {
+					const playerSkillLevel = skills[this.normalizeAchievementKey(skill)] ?? 0;
+					const requiredLevel = xpToLevel(xp);
+					if (playerSkillLevel < requiredLevel) {
+						return false;
+					}
+					return true;
+				});
+
+				// Check how many skills meet requirements, if we meet the count requirement then mark task as complete
+				if (skillsMet.length >= (task.verification.count ?? 0)) {
+					this.taskManager.setState(task.id, TASK_STATES.COMPLETE);
 					completedTaskIds.push(task.id);
 					return completedTaskIds;
 				}

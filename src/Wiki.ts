@@ -19,10 +19,15 @@ export type CollectionLogItem = {
 
 export type PlayerData = {
   obtainedItemIds: Set<number>;
-  achievementDiaries: Object;
-  skills: Object;
-} | null;
+  achievementDiaries: Record<string, Record<string, Record<string, boolean>>>;
+  skills: Record<string, number>;
+};
 
+export const defaultPlayerData: PlayerData = {
+  obtainedItemIds: new Set(),
+  achievementDiaries: {},
+  skills: {},
+};
 
 export default class Wiki {
     collectionLogMap: Map<number, CollectionLogItem> = new Map();
@@ -157,11 +162,7 @@ export default class Wiki {
         } = options;
 
         if (!username) {
-            return {
-                obtainedItemIds: new Set(),
-                achievementDiaries: new Set(),
-                skills: new Map(),
-            };
+            return defaultPlayerData;
         }
 
         // Load from cache if available and not expired
@@ -194,8 +195,8 @@ export default class Wiki {
 
             const payload = await response.json();
             const obtainedItemIds = payload.collection_log;
-            const achievementDiaries = this.keysToLowerCaseDeep(payload.achievement_diaries);
-            const skills = this.keysToLowerCaseDeep(payload.levels);
+            const achievementDiaries = this.keysToLowerCaseDeep(payload.achievement_diaries) as Record<string, Record<string, Record<string, boolean>>>;
+            const skills = this.keysToLowerCaseDeep(payload.levels) as Record<string, number>;
 
             try {
                 localStorage.setItem(cacheKey, JSON.stringify({
@@ -211,11 +212,11 @@ export default class Wiki {
             return {
                 obtainedItemIds: new Set(obtainedItemIds),
                 achievementDiaries,
-                skills
+                skills,
             };
         } catch (error) {
             console.warn('Failed to load player collection log', error);
-            return null;
+            return defaultPlayerData;
         }
     }
 }
