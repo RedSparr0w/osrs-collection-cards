@@ -150,10 +150,14 @@ export default class GameManager {
 		this.selectedTaskId = taskId;
 		this.handRenderer.selectCard(taskId);
 
-		this.currentHand
-			.filter(t => t.id !== taskId)
-			.reverse()
-			.forEach((t, index) => {
+		const selectedIndex = this.currentHand.findIndex(t => t.id === taskId);
+		const cardsToDispose = this.currentHand
+			.map((t, index) => ({ task: t, index }))
+			.filter(({ task }) => task.id !== taskId)
+			.sort((a, b) => Math.abs(b.index - selectedIndex) - Math.abs(a.index - selectedIndex))
+			.map(({ task }) => task);
+
+		cardsToDispose.forEach((t, index) => {
 				window.setTimeout(() => {
 					void this.dispose(t.id);
 				}, 150 * (index + 1));
