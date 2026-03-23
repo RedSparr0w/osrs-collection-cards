@@ -193,7 +193,7 @@ export default class GameManager {
 		this.saveData();
 		if (this.currentHand.length === 0) {
 			// If we've discarded all our cards, deal a new hand after a short delay
-			await this.refreshPlayerTaskCompletionState();
+			await this.refreshPlayerTaskCompletionState(true);
 			await delay(1000);
 			await this.play();
 		}
@@ -210,7 +210,7 @@ export default class GameManager {
 		});
 	}
 
-	private async refreshPlayerTaskCompletionState(): Promise<void> {
+	private async refreshPlayerTaskCompletionState(forceCompleteTasks: boolean = false): Promise<void> {
 		const currentUsername = this.saveController.getCurrentUsername();
 		if (!currentUsername) {
 			console.error('No current username found, skipping player task completion state refresh.');
@@ -224,9 +224,13 @@ export default class GameManager {
 		}
 
 		this.playerData = playerData;
-		const detectedCompletedTaskIds = this.detectCompletedTasksFromPlayerData();
-		if (detectedCompletedTaskIds.length > 0) {
-			console.debug('Detected completed tasks from collection log', detectedCompletedTaskIds);
+		
+		const hasCompleteTasks = this.taskManager.getCompletedTasks().length > 0;
+		if (!hasCompleteTasks || forceCompleteTasks) {
+			const detectedCompletedTaskIds = this.detectCompletedTasksFromPlayerData();
+			if (detectedCompletedTaskIds.length > 0) {
+				console.debug('Detected completed tasks from collection log', detectedCompletedTaskIds);
+			}
 		}
 	}
 

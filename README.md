@@ -4,8 +4,8 @@
 - [ ] Cards
   - [x] Show obtained/unobtained items in the cards
   - [x] Add tooltips to items in card
-  - [ ] Add wiki link in card
-  - [ ] Add button on active card for selecting it
+  - [x] Add wiki link in card
+  - [x] Add button on active card for selecting it
   - [ ] More styles?
     - [ ] Different style per tier?
     - [ ] Slight difference per tier?
@@ -18,25 +18,24 @@
     - [ ] Extra card per hand?
     - [ ] Different style shinies (Holo, Reverse Holo, Different colors)?
     - [ ] Unlock themes?
-- [ ] Implement player data
+- [x] Implement player data
   - [ ] Handle if old tasks are removed from the remote repo
-  - [ ] Save/load our current incomplete/selected/completed/in hand tasks
+  - [x] Save/load our current incomplete/selected/completed/in hand tasks
     - [ ] Store started/completed date for tasks
     - [ ] Notification when your current tasks is completable
     - [ ] Notification when a different task not currently active has been completed
-      - [ ] Auto complete?
-      - [ ] Penalty?
+      - [x] Auto complete
 - [x] Add login screen for selecting character and or entering username
-  - [ ] Multiple save profiles?
+  - [x] Multiple save profiles (kind of)
   - [ ] Option to clear data
 - [ ] User Interface
-  - [ ] Show total completed/incomplete tasks
-  - [ ] Show tasks by tier and completion status
+  - [x] Show total completed/incomplete tasks
+  - [x] Show tasks by tier and completion status
   - [ ] Keyboard controls?
-  - [ ] Settings menu
+  - [x] Settings menu
     - [ ] Themes
-    - [ ] User profiles/login/logout
-    - [ ] Background - https://oldschool.runescape.wiki/w/Main_Menu/Login_screens
+    - [x] Logout
+    - [x] Background
 - [ ] Download wiki data locally on build
   - [ ] Images (HQ + Icon)
   - [ ] JSON
