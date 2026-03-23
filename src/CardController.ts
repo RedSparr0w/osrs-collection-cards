@@ -23,6 +23,13 @@ export default class CardController {
 		this.activeCard = card;
 		this.activeCardElement = element;
 
+		console.debug(`Activated card: ${card.config.title}, wiki: ${this.gameManager.taskManager.getTask(card.config.taskId)?.wikiLink || 'N/A'}	`);
+		this.gameManager.ui.setButtonLinks(
+			this.gameManager.taskManager.getTask(card.config.taskId)?.wikiLink || '',
+			() => this.gameManager.selectCard(card.config.taskId),
+			() => this.gameManager.dispose(card.config.taskId),
+		);
+
 		requestAnimationFrame(() => {
 			if (this.activeCardElement !== element) return;
 			this.moveToCenter(element);

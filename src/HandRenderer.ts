@@ -33,6 +33,7 @@ export default class HandRenderer {
 			this.cardsInHand.set(task.id, card);
 			const cardElement = await card.getElement();
 			this.cardElements.set(task.id, cardElement);
+			cardElement.classList.remove('discarded');
 			card.setFlipped(true);
 			cardElement.tabIndex = 0;
 			cardElement.dataset.taskId = task.id;
@@ -115,6 +116,7 @@ export default class HandRenderer {
 		this.layoutCards();
 		setTimeout(() => {
 			element.remove();
+			this.gameManager.taskManager.getTask(taskId)?.clearCard();
 		}, 1000);
 	}
 

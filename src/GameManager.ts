@@ -136,12 +136,31 @@ export default class GameManager {
 		return cardsToDeal;
 	}
 
-	dispose(taskId: string): boolean {
+	selectCard(taskId: string): void {
+		const task = this.currentHand.find(t => t.id === taskId);
+		if (!task) {
+			console.warn(`Tried to select task with ID ${taskId} but it was not found in the current hand.`);
+			return;
+		}
+		this.currentHand.filter(t => t.id !== taskId).forEach(async t => {
+			await delay(150);
+			this.dispose(t.id);
+		});
+		// TODO: differentiate between selected and active cards
+		// this.handRenderer.setActiveCard(taskId);
+	}
+
+	async dispose(taskId: string): Promise<boolean> {
 		const index = this.currentHand.findIndex(t => t.id === taskId);
 		if (index === -1) return false;
 		this.currentHand.splice(index, 1);
 		this.handRenderer.discardCard(taskId);
 		this.saveData();
+		if (this.currentHand.length === 0) {
+			// If we've discarded all our cards, deal a new hand after a short delay
+			await delay(1000);
+			await this.play();
+		}
 		return true;
 	}
 

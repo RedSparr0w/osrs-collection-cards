@@ -52,6 +52,7 @@ export default class Task implements TaskInformation {
   async getCard() {
     if (!this.card) {
       this.card = new Card({
+        taskId: this.id,
         type: CARD_TYPE.BASIC,
         category: this.tier.toUpperCase(),
         title: this.name,
@@ -62,5 +63,9 @@ export default class Task implements TaskInformation {
       }, this.gameManager);
     }
     return this.card;
+  }
+
+  clearCard(): void {
+    this.card = null;
   }
 }

@@ -58,6 +58,7 @@ export const CARD_TYPE = {
  * User-configurable card input
  */
 export interface CardConfig {
+	taskId: string;
 	type?: CardTypeDefinition;
 	title?: string;
 	description?: string;
@@ -70,7 +71,7 @@ export interface CardConfig {
 }
 
 export default class Card {
-	private config: CardConfig;
+	config: CardConfig;
 	private type: CardTypeDefinition;
 	private templateImg: HTMLImageElement | null = null;
 	private backImg: HTMLImageElement | null = null;
@@ -147,6 +148,8 @@ export default class Card {
 		if (this.cachedElement) {
 			return this.cachedElement;
 		}
+
+		this.cachedElement = null;
 
 		await this.loadImages();
 
