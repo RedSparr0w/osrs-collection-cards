@@ -9,6 +9,14 @@ type DeferredInstallPromptEvent = Event & {
   prompt: () => Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
 };
 
+type FlameAnchorData = {
+  flameX: number;
+  flameY: number;
+  flameWidth: number;
+};
+
+const FLAME_ANCHOR_EVENT = 'background-flame-anchor-change';
+
 export const enum Sections {
   Login = 'login',
   CardGrid = 'card-grid',
@@ -122,7 +130,7 @@ export default class UIController {
           const btn = item as HTMLButtonElement;
           const value = btn.dataset.background || '';
           const label = btn.textContent || '';
-          this.applyBackground(value, label);
+          this.applyBackground(value, label, this.getFlameAnchorData(btn));
           this.gameManager.saveController.saveSettings({ background: value });
           backgroundSubmenu.classList.add('hidden');
         });
@@ -245,20 +253,66 @@ export default class UIController {
     }
   }
 
-  private applyBackground(value: string, label?: string): void {
+  private applyBackground(value: string, label?: string, flameAnchor?: FlameAnchorData): void {
     console.debug('Applying background:', encodeURI(value)
   .replace(/\(/g, "%28")
   .replace(/\)/g, "%29"));
     document.body.style.backgroundImage = `url(${encodeURI(value).replace(/\(/g, "%28").replace(/\)/g, "%29")})`;
     const backgroundDisplay = document.getElementById('background-display');
+    let resolvedBackgroundButton: HTMLButtonElement | null = null;
+
     if (backgroundDisplay) {
       if (label) {
         backgroundDisplay.textContent = label;
       } else {
         const match = document.querySelector<HTMLButtonElement>(`#background-submenu .menu-item[data-background="${value}"]`);
-        if (match) backgroundDisplay.textContent = match.textContent;
+        if (match) {
+          backgroundDisplay.textContent = match.textContent;
+          resolvedBackgroundButton = match;
+        }
+      }
+
+      if (!resolvedBackgroundButton && label) {
+        resolvedBackgroundButton = Array
+          .from(document.querySelectorAll<HTMLButtonElement>('#background-submenu .menu-item'))
+          .find((button) => (button.textContent || '').trim() === label.trim()) ?? null;
       }
     }
+
+    const anchor = flameAnchor ?? this.getFlameAnchorData(resolvedBackgroundButton);
+    document.body.dataset.flameX = `${anchor.flameX}`;
+    document.body.dataset.flameY = `${anchor.flameY}`;
+    document.body.dataset.flameWidth = `${anchor.flameWidth}`;
+    document.body.dispatchEvent(new CustomEvent(FLAME_ANCHOR_EVENT, {
+      detail: {
+        background: value,
+        flameX: anchor.flameX,
+        flameY: anchor.flameY,
+        flameWidth: anchor.flameWidth,
+      },
+    }));
+  }
+
+  private getFlameAnchorData(button?: HTMLButtonElement | null): FlameAnchorData {
+    const fallback: FlameAnchorData = {
+      flameX: 0.2,
+      flameY: 0.73,
+      flameWidth: 0.02,
+    };
+
+    if (!button) {
+      return fallback;
+    }
+
+    const x = Number.parseFloat(button.dataset.flameX ?? '');
+    const y = Number.parseFloat(button.dataset.flameY ?? '');
+    const width = Number.parseFloat(button.dataset.flameWidth ?? '');
+
+    return {
+      flameX: Number.isNaN(x) ? fallback.flameX : x,
+      flameY: Number.isNaN(y) ? fallback.flameY : y,
+      flameWidth: Number.isNaN(width) ? fallback.flameWidth : width,
+    };
   }
 
   private logout(): void {
