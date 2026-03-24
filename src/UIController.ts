@@ -167,7 +167,7 @@ export default class UIController {
 
     const completed = tasks.filter((task) => task.state === TASK_STATES.COMPLETE).length;
     const incomplete = tasks.filter((task) => task.state === TASK_STATES.INCOMPLETE).length;
-    summaryElement.textContent = `Showing ${filteredTasks.length}/${tasks.length} | Incomplete: ${incomplete} | Complete: ${completed}`;
+    summaryElement.textContent = `Viewing ${filteredTasks.length}/${tasks.length} | Incomplete: ${incomplete} | Complete: ${completed}`;
 
     if (filteredTasks.length === 0) {
       listElement.innerHTML = '<div class="task-browser-empty">No tasks match your filters.</div>';
