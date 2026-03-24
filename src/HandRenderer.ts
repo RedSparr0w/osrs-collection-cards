@@ -4,6 +4,19 @@ import Card from './Card';
 import { delay, getNumericCssVar } from './helpers';
 import GameManager from './GameManager';
 
+const FLAME_BURST_EVENT = 'background-flame-burst';
+
+type FlameTarget = {
+	travelX: number;
+	travelY: number;
+	rotateX: number;
+	rotateZ: number;
+	scale: number;
+	side: 'left' | 'right';
+	impactX: number;
+	impactY: number;
+};
+
 export default class HandRenderer {
 	private cardController: CardController;
 	private cardsInHand: Map<string, Card> = new Map();
@@ -129,12 +142,18 @@ export default class HandRenderer {
 		const element = this.cardElements.get(taskId);
 		if (!card || !element) return;
 
-		if (this.cardController.isActive(element)) {
+		const wasActive = this.cardController.isActive(element);
+		const activeRect = wasActive ? element.getBoundingClientRect() : null;
+
+		if (wasActive) {
 			this.cardController.deactivate();
+			if (activeRect) {
+				this.freezeCardAtRect(element, activeRect, 0.42);
+			}
 		}
 
 		this.removeCardEventListeners(taskId, element);
-		this.setDiscardAnimation(element);
+		const discardDurationMs = this.setDiscardAnimation(taskId, element, wasActive);
 
 		this.cardsInHand.delete(taskId);
 		this.cardElements.delete(taskId);
@@ -145,10 +164,17 @@ export default class HandRenderer {
 			// Clean up card references for garbage collection
 			card.cleanup();
 			this.gameManager.taskManager.getTask(taskId)?.clearCard();
-		}, 1000);
+		}, discardDurationMs);
 	}
 
-	private setDiscardAnimation(cardElement: HTMLElement): void {
+	private setDiscardAnimation(taskId: string, cardElement: HTMLElement, wasActive: boolean): number {
+		const flameTarget = this.getFlameTargetForCard(taskId, cardElement, wasActive);
+		if (flameTarget) {
+			this.applyDiscardStyles(cardElement, flameTarget, '0.12', '900ms', '1025ms');
+			this.scheduleFlameBurst(cardElement, flameTarget);
+			return 1075;
+		}
+
 		// Generate random offset for X travel based on card's current X position
 		const rect = cardElement.getBoundingClientRect();
 		const containerWidth = this.cardGridEl.clientWidth;
@@ -170,10 +196,118 @@ export default class HandRenderer {
 		const randomRotateX = -120 - Math.random() * 120;
 		const randomRotateZ = (Math.random() * 360) - 180;
 
-		cardElement.style.setProperty('--discard-x', `${travelX}px`);
-		cardElement.style.setProperty('--discard-y', `${travelY}px`);
-		cardElement.style.setProperty('--discard-rotate-x', `${randomRotateX}deg`);
-		cardElement.style.setProperty('--discard-rotate-z', `${randomRotateZ}deg`);
+		this.applyDiscardStyles(cardElement, {
+			travelX,
+			travelY,
+			rotateX: randomRotateX,
+			rotateZ: randomRotateZ,
+			scale: wasActive ? 0.42 : 0.68,
+		}, '0', '1000ms', '1000ms');
+		return 1000;
+	}
+
+	private getFlameTargetForCard(taskId: string, cardElement: HTMLElement, wasActive: boolean): FlameTarget | null {
+		if (document.body.dataset.flamesEnabled === 'false') {
+			return null;
+		}
+
+		const leftX = Number.parseFloat(document.body.dataset.flameLeftX ?? '');
+		const leftY = Number.parseFloat(document.body.dataset.flameLeftY ?? '');
+		const rightX = Number.parseFloat(document.body.dataset.flameRightX ?? '');
+		const rightY = Number.parseFloat(document.body.dataset.flameRightY ?? '');
+
+		if ([leftX, leftY, rightX, rightY].some((value) => Number.isNaN(value))) {
+			return null;
+		}
+
+		const rect = cardElement.getBoundingClientRect();
+		const centerX = rect.left + rect.width / 2;
+		const activeEntries = Array
+			.from(this.cardElements.entries())
+			.filter(([, element]) => !element.classList.contains('discarded'));
+		const cardIndex = activeEntries.findIndex(([id]) => id === taskId);
+		if (cardIndex === -1) {
+			return null;
+		}
+
+		const midpoint = (activeEntries.length - 1) / 2;
+		const side: 'left' | 'right' = cardIndex <= midpoint ? 'left' : 'right';
+		const target = side === 'left'
+			? { x: leftX, y: leftY }
+			: { x: rightX, y: rightY };
+		const scale = wasActive
+			? 0.08 + Math.random() * 0.04
+			: 0.16 + Math.random() * 0.05;
+
+		return {
+			travelX: target.x - centerX,
+			travelY: target.y - rect.bottom,
+			rotateX: -220 - Math.random() * 120,
+			rotateZ: (target.x < centerX ? -1 : 1) * (500 + Math.random() * 220),
+			scale,
+			side,
+			impactX: target.x,
+			impactY: target.y,
+		};
+	}
+
+	private applyDiscardStyles(cardElement: HTMLElement, target: Pick<FlameTarget, 'travelX' | 'travelY' | 'rotateX' | 'rotateZ' | 'scale'>, opacity: string, duration: string, opacityDuration: string): void {
+		cardElement.style.setProperty('--discard-x', `${target.travelX}px`);
+		cardElement.style.setProperty('--discard-y', `${target.travelY}px`);
+		cardElement.style.setProperty('--discard-rotate-x', `${target.rotateX}deg`);
+		cardElement.style.setProperty('--discard-rotate-z', `${target.rotateZ}deg`);
+		cardElement.style.setProperty('--discard-scale', `${target.scale}`);
+		cardElement.style.setProperty('--discard-opacity', opacity);
+		cardElement.style.setProperty('--discard-duration', duration);
+		cardElement.style.setProperty('--discard-opacity-duration', opacityDuration);
+	}
+
+	private scheduleFlameBurst(cardElement: HTMLElement, flameTarget: { side: 'left' | 'right'; impactX: number; impactY: number }): void {
+		const iconSrc = cardElement.querySelector<HTMLImageElement>('.icon')?.currentSrc
+			|| cardElement.querySelector<HTMLImageElement>('.icon')?.src;
+
+		if (!iconSrc) {
+			return;
+		}
+
+		window.setTimeout(() => {
+			if (document.body.dataset.flamesEnabled === 'false') {
+				return;
+			}
+
+			document.body.dispatchEvent(new CustomEvent(FLAME_BURST_EVENT, {
+				detail: {
+					x: flameTarget.impactX,
+					y: flameTarget.impactY,
+					side: flameTarget.side,
+					imageSrc: iconSrc,
+				},
+			}));
+		}, 640);
+	}
+
+	private freezeCardAtRect(cardElement: HTMLElement, rect: DOMRect, scale: number = 1): void {
+		const offsetParent = cardElement.offsetParent as HTMLElement | null;
+		if (!offsetParent) {
+			return;
+		}
+
+		const parentRect = offsetParent.getBoundingClientRect();
+		const clampedScale = Math.max(0.1, Math.min(1, scale));
+		const nextWidth = rect.width * clampedScale;
+		const nextHeight = rect.height * clampedScale;
+		const nextLeft = (rect.left - parentRect.left) + ((rect.width - nextWidth) / 2);
+		const nextTop = (rect.top - parentRect.top) + (rect.height - nextHeight);
+
+		cardElement.style.left = `${nextLeft}px`;
+		cardElement.style.top = `${nextTop}px`;
+		cardElement.style.width = `${nextWidth}px`;
+		cardElement.style.setProperty('--fan-rotate', '0deg');
+		cardElement.style.setProperty('--fan-dip', '0px');
+		cardElement.style.setProperty('--active-x', '0px');
+		cardElement.style.setProperty('--active-y', '0px');
+		cardElement.style.setProperty('--active-rotate-x', '0deg');
+		cardElement.style.setProperty('--active-rotate-z', '0deg');
 	}
 
 	private removeCardEventListeners(taskId: string, cardElement: HTMLElement): void {

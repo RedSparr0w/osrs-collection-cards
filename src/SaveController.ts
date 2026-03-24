@@ -10,6 +10,7 @@ export type SaveState = {
 
 export type Settings = {
   background: string;
+  flamesEnabled: boolean;
 };
 
 export default class SaveController {
@@ -68,6 +69,7 @@ export default class SaveController {
   getSettings(): Settings {
     const defaultSettings: Settings = {
       background: './images/backgrounds/Yama.png',
+      flamesEnabled: true,
     };
     if (!this.username) return defaultSettings;
     try {

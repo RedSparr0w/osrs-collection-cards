@@ -9,6 +9,22 @@ type DeferredInstallPromptEvent = Event & {
   prompt: () => Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
 };
 
+type FlameAnchorData = {
+  flameX: number;
+  flameY: number;
+  flameWidth: number;
+};
+
+type FlameConfigChangeDetail = {
+  background: string;
+  flamesEnabled: boolean;
+  flameX?: number;
+  flameY?: number;
+  flameWidth?: number;
+};
+
+const FLAME_ANCHOR_EVENT = 'background-flame-anchor-change';
+
 export const enum Sections {
   Login = 'login',
   CardGrid = 'card-grid',
@@ -59,6 +75,8 @@ export default class UIController {
     const backgroundButton = document.getElementById('background-button') as HTMLButtonElement;
     const backgroundSubmenu = document.getElementById('background-submenu') as HTMLElement;
     const backgroundDisplay = document.getElementById('background-display') as HTMLElement;
+    const flamesToggleButton = document.getElementById('flames-toggle-button') as HTMLButtonElement;
+    const flamesToggleDisplay = document.getElementById('flames-toggle-display') as HTMLElement;
     const logoutButton = document.getElementById('logout-button') as HTMLButtonElement;
     const taskBrowserPanel = document.getElementById('task-browser-panel') as HTMLElement;
 
@@ -68,23 +86,13 @@ export default class UIController {
     settingsButton.addEventListener('click', (e) => {
       e.stopPropagation();
       settingsMenu.classList.toggle('hidden');
-      if (taskBrowserPanel) {
-        taskBrowserPanel.classList.add('hidden');
-      }
-      if (backgroundSubmenu) {
-        backgroundSubmenu.classList.add('hidden');
-      }
+      this.closeFloatingPanels(taskBrowserPanel, backgroundSubmenu);
     });
 
     // Close menu when clicking outside
     document.addEventListener('click', () => {
       settingsMenu.classList.add('hidden');
-      if (taskBrowserPanel) {
-        taskBrowserPanel.classList.add('hidden');
-      }
-      if (backgroundSubmenu) {
-        backgroundSubmenu.classList.add('hidden');
-      }
+      this.closeFloatingPanels(taskBrowserPanel, backgroundSubmenu);
     });
 
     // Prevent menu close when clicking inside menu
@@ -98,6 +106,14 @@ export default class UIController {
       });
     }
 
+    if (flamesToggleButton) {
+      flamesToggleButton.addEventListener('click', () => {
+        const nextEnabled = document.body.dataset.flamesEnabled !== 'false';
+        this.applyFlamesEnabled(!nextEnabled, flamesToggleDisplay);
+        this.gameManager.saveController.saveSettings({ flamesEnabled: !nextEnabled });
+      });
+    }
+
     // Background submenu trigger
     if (backgroundButton && backgroundSubmenu) {
       backgroundButton.addEventListener('click', (e) => {
@@ -105,7 +121,7 @@ export default class UIController {
 
         const menuRect = settingsMenu.getBoundingClientRect();
         const buttonRect = backgroundButton.getBoundingClientRect();
-        const offsetTop = buttonRect.top - menuRect.top - 40; // 10px offset for better alignment
+        const offsetTop = buttonRect.top - menuRect.top - 39; // 10px offset for better alignment
         backgroundSubmenu.style.top = `${offsetTop}px`;
         backgroundSubmenu.style.right = '100%';
 
@@ -122,7 +138,7 @@ export default class UIController {
           const btn = item as HTMLButtonElement;
           const value = btn.dataset.background || '';
           const label = btn.textContent || '';
-          this.applyBackground(value, label);
+          this.applyBackground(value, label, this.getFlameAnchorData(btn));
           this.gameManager.saveController.saveSettings({ background: value });
           backgroundSubmenu.classList.add('hidden');
         });
@@ -155,12 +171,7 @@ export default class UIController {
       if (!taskBrowserPanel.classList.contains('hidden')) {
         this.refreshTaskBrowser();
       }
-      if (settingsMenu) {
-        settingsMenu.classList.add('hidden');
-      }
-      if (backgroundSubmenu) {
-        backgroundSubmenu.classList.add('hidden');
-      }
+      this.closeFloatingPanels(settingsMenu, backgroundSubmenu);
     });
 
     taskStatusFilter.addEventListener('change', () => {
@@ -240,25 +251,114 @@ export default class UIController {
   loadSettings(): void {
     const settings = this.gameManager.saveController.getSettings();
     if (!settings) return;
+    this.applyFlamesEnabled(settings.flamesEnabled);
     if (settings.background) {
       this.applyBackground(settings.background);
     }
   }
 
-  private applyBackground(value: string, label?: string): void {
+  private applyBackground(value: string, label?: string, flameAnchor?: FlameAnchorData | null): void {
     console.debug('Applying background:', encodeURI(value)
   .replace(/\(/g, "%28")
   .replace(/\)/g, "%29"));
     document.body.style.backgroundImage = `url(${encodeURI(value).replace(/\(/g, "%28").replace(/\)/g, "%29")})`;
     const backgroundDisplay = document.getElementById('background-display');
+    const resolvedBackgroundButton = this.findBackgroundButton(value, label);
+
     if (backgroundDisplay) {
       if (label) {
         backgroundDisplay.textContent = label;
       } else {
-        const match = document.querySelector<HTMLButtonElement>(`#background-submenu .menu-item[data-background="${value}"]`);
-        if (match) backgroundDisplay.textContent = match.textContent;
+        if (resolvedBackgroundButton) {
+          backgroundDisplay.textContent = resolvedBackgroundButton.textContent;
+        }
       }
     }
+
+    const anchor = flameAnchor ?? this.getFlameAnchorData(resolvedBackgroundButton);
+    this.applyBodyFlameAnchor(anchor);
+    this.dispatchFlameConfig(value, document.body.dataset.flamesEnabled !== 'false', anchor);
+  }
+
+  private getFlameAnchorData(button?: HTMLButtonElement | null): FlameAnchorData | null {
+    if (!button) {
+      return null;
+    }
+
+    const x = Number.parseFloat(button.dataset.flameX ?? '');
+    const y = Number.parseFloat(button.dataset.flameY ?? '');
+    const width = Number.parseFloat(button.dataset.flameWidth ?? '');
+
+    if (Number.isNaN(x) || Number.isNaN(y) || Number.isNaN(width)) {
+      return null;
+    }
+
+    return {
+      flameX: x,
+      flameY: y,
+      flameWidth: width,
+    };
+  }
+
+  private applyFlamesEnabled(enabled: boolean, display?: HTMLElement | null): void {
+    document.body.dataset.flamesEnabled = enabled ? 'true' : 'false';
+
+    const targetDisplay = display ?? document.getElementById('flames-toggle-display');
+    if (targetDisplay) {
+      targetDisplay.textContent = enabled ? 'On' : 'Off';
+    }
+
+    const background = this.gameManager.saveController.getSettings().background;
+    const currentButton = this.findBackgroundButton(background);
+    const anchor = this.getFlameAnchorData(currentButton);
+    this.dispatchFlameConfig(background, enabled, anchor);
+  }
+
+  private closeFloatingPanels(...elements: Array<HTMLElement | null | undefined>): void {
+    elements.forEach((element) => element?.classList.add('hidden'));
+  }
+
+  private findBackgroundButton(background: string, label?: string): HTMLButtonElement | null {
+    const byBackground = document.querySelector<HTMLButtonElement>(`#background-submenu .menu-item[data-background="${background}"]`);
+    if (byBackground) {
+      return byBackground;
+    }
+
+    if (!label) {
+      return null;
+    }
+
+    return Array
+      .from(document.querySelectorAll<HTMLButtonElement>('#background-submenu .menu-item'))
+      .find((button) => (button.textContent || '').trim() === label.trim()) ?? null;
+  }
+
+  private applyBodyFlameAnchor(anchor: FlameAnchorData | null): void {
+    if (anchor) {
+      document.body.dataset.flameX = `${anchor.flameX}`;
+      document.body.dataset.flameY = `${anchor.flameY}`;
+      document.body.dataset.flameWidth = `${anchor.flameWidth}`;
+      return;
+    }
+
+    delete document.body.dataset.flameX;
+    delete document.body.dataset.flameY;
+    delete document.body.dataset.flameWidth;
+  }
+
+  private dispatchFlameConfig(background: string, flamesEnabled: boolean, anchor: FlameAnchorData | null): void {
+    const detail: FlameConfigChangeDetail = {
+      background,
+      flamesEnabled,
+    };
+
+    if (anchor) {
+      detail.flameX = anchor.flameX;
+      detail.flameY = anchor.flameY;
+      detail.flameWidth = anchor.flameWidth;
+    }
+
+    document.body.dispatchEvent(new CustomEvent(FLAME_ANCHOR_EVENT, { detail }));
   }
 
   private logout(): void {
