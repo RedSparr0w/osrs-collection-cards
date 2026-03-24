@@ -42,13 +42,18 @@ export default class Wiki {
     }
 
     async loadCollectionLogItems(forceRefresh: boolean = false): Promise<Map<number, CollectionLogItem>> {
+        let cachedData: Partial<CollectionLogItem>[] | null = null;
+
         try {
             const raw = localStorage.getItem(CL_CACHE_KEY);
             if (raw) {
                 const { ts, data } = JSON.parse(raw);
-                if (!forceRefresh && Date.now() - ts < CL_CACHE_TTL && Array.isArray(data)) {
-                    this.setCollectionLogItems(data);
-                    return Promise.resolve(this.collectionLogMap);
+                if (Array.isArray(data)) {
+                    cachedData = data;
+                    if (!forceRefresh && Date.now() - ts < CL_CACHE_TTL) {
+                        this.setCollectionLogItems(data);
+                        return Promise.resolve(this.collectionLogMap);
+                    }
                 }
             }
         } catch {
@@ -73,7 +78,7 @@ export default class Wiki {
                 return Promise.resolve(this.collectionLogMap);
             }
 
-            const cacheData: Partial<CollectionLogItem>[] = [];
+            const nextCacheData: Partial<CollectionLogItem>[] = [];
 
             const rows = table.querySelectorAll('tr');
             rows.forEach((row, i) => {
@@ -93,23 +98,26 @@ export default class Wiki {
                 const img = cells[0].querySelector('img');
                 const iconUrl = img ? `https://oldschool.runescape.wiki${img.getAttribute('src')?.replace(/\?.*$/, '')}` : '';
 
-                cacheData.push({
+                nextCacheData.push({
                     id: parseInt(id, 10),
                     name,
                     category,
-                    iconUrl, 
+                    iconUrl,
                 });
             });
 
-            this.setCollectionLogItems(cacheData);
+            this.setCollectionLogItems(nextCacheData);
 
             try {
-                localStorage.setItem(CL_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: cacheData }));
+                localStorage.setItem(CL_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: nextCacheData }));
             } catch {
                 // ignore localStorage failures
             }
         } catch (error) {
-            console.warn('Failed to load collection log data', error);
+            console.warn('Failed to load collection log data, using cached data if available', error);
+            if (cachedData) {
+                this.setCollectionLogItems(cachedData);
+            }
         }
 
         return Promise.resolve(this.collectionLogMap);
@@ -167,23 +175,24 @@ export default class Wiki {
 
         // Load from cache if available and not expired
         const cacheKey = `${PLAYER_CACHE_KEY}:${formatUsername(username)}`;
-        if (!forceRefresh) {
-            try {
-                // TODO: Simplify this, maybe make achievement diaries a Map with a Map of tiers.
-                const raw = localStorage.getItem(cacheKey);
-                if (raw) {
-                    const { ts, obtainedItemIds, achievementDiaries, skills } = JSON.parse(raw);
-                    if (Date.now() - ts < PLAYER_CACHE_TTL) {
-                        return {
-                            obtainedItemIds: new Set(obtainedItemIds),
-                            achievementDiaries: achievementDiaries,
-                            skills: skills,
-                        };
-                    }
+        let cachedData: PlayerData | null = null;
+
+        try {
+            const raw = localStorage.getItem(cacheKey);
+            if (raw) {
+                const { ts, obtainedItemIds, achievementDiaries, skills } = JSON.parse(raw);
+                cachedData = {
+                    obtainedItemIds: new Set(obtainedItemIds ?? []),
+                    achievementDiaries: achievementDiaries ?? {},
+                    skills: skills ?? {},
+                };
+
+                if (!forceRefresh && Date.now() - ts < PLAYER_CACHE_TTL) {
+                    return cachedData;
                 }
-            } catch {
-                // ignore corrupt cache
             }
+        } catch {
+            // ignore corrupt cache
         }
 
         try {
@@ -215,7 +224,10 @@ export default class Wiki {
                 skills,
             };
         } catch (error) {
-            console.warn('Failed to load player collection log', error);
+            console.warn('Failed to load player collection log, using cached data if available', error);
+            if (cachedData) {
+                return cachedData;
+            }
             return defaultPlayerData;
         }
     }
