@@ -125,6 +125,10 @@ body {
   overflow: hidden;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 .app-shell {
   display: flex;
   flex-direction: column;

@@ -5,6 +5,10 @@ import { delay } from "./helpers";
 import type { Settings } from "./SaveController";
 import Task from "./Task";
 
+type DeferredInstallPromptEvent = Event & {
+  prompt: () => Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+};
+
 export const enum Sections {
   Login = 'login',
   CardGrid = 'card-grid',
@@ -14,6 +18,7 @@ export default class UIController {
   gameManager: GameManager;
   private taskStatusFilter: 'all' | TASK_STATES.COMPLETE | TASK_STATES.INCOMPLETE = 'all';
   private taskTierFilter: 'all' | TIERS = 'all';
+  private installPrompt: DeferredInstallPromptEvent | null = null;
 
   constructor(gameManager: GameManager) {
     this.gameManager = gameManager;
@@ -22,6 +27,30 @@ export default class UIController {
   initialize(): void {
     this.setupSettingsMenu();
     this.setupTaskBrowser();
+    this.setupInstallButton();
+  }
+
+  private setupInstallButton(): void {
+    const installButton = document.getElementById('install') as HTMLButtonElement | null;
+    if (!installButton) {
+      return;
+    }
+
+    window.addEventListener('beforeinstallprompt', (event) => {
+      event.preventDefault();
+      this.installPrompt = event as DeferredInstallPromptEvent;
+      installButton.hidden = false;
+    });
+
+    installButton.addEventListener('click', async () => {
+      if (!this.installPrompt) {
+        return;
+      }
+
+      await this.installPrompt.prompt();
+      this.installPrompt = null;
+      installButton.hidden = true;
+    });
   }
 
   private setupSettingsMenu(): void {
