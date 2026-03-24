@@ -147,8 +147,10 @@ export default class UIController {
 
   refreshTaskBrowser(): void {
     const listElement = document.getElementById('task-browser-list');
-    const summaryElement = document.getElementById('task-browser-summary');
-    if (!listElement || !summaryElement) {
+    const viewingSummaryElement = document.getElementById('task-browser-summary-viewing');
+    const incompleteSummaryElement = document.getElementById('task-browser-summary-incomplete');
+    const completeSummaryElement = document.getElementById('task-browser-summary-complete');
+    if (!listElement || !viewingSummaryElement || !incompleteSummaryElement || !completeSummaryElement) {
       return;
     }
 
@@ -167,7 +169,9 @@ export default class UIController {
 
     const completed = tasks.filter((task) => task.state === TASK_STATES.COMPLETE).length;
     const incomplete = tasks.filter((task) => task.state === TASK_STATES.INCOMPLETE).length;
-    summaryElement.textContent = `Viewing ${filteredTasks.length}/${tasks.length} | Incomplete: ${incomplete} | Complete: ${completed}`;
+    viewingSummaryElement.textContent = `Viewing ${filteredTasks.length}/${tasks.length}`;
+    incompleteSummaryElement.textContent = `Incomplete: ${incomplete}`;
+    completeSummaryElement.textContent = `Complete: ${completed}`;
 
     if (filteredTasks.length === 0) {
       listElement.innerHTML = '<div class="task-browser-empty">No tasks match your filters.</div>';

@@ -248,12 +248,22 @@ body {
   }
 
   .task-browser-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
     padding: 4px 8px;
     color: #ffdd77;
     font-family: 'Runescape Small', Arial, sans-serif;
     font-size: 15px;
     border: 1px solid black;
     background: rgba(0, 0, 0, 0.2);
+  }
+
+  .task-browser-summary-item {
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .task-browser-list {
@@ -264,6 +274,27 @@ body {
     max-height: 44vh;
     border: 1px solid black;
     background: #41382e;
+    scrollbar-width: thin;
+    scrollbar-color: #8f7754 #211a13;
+
+    &::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #211a13;
+      border-left: 1px solid black;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #a58b63 0%, #7c6445 100%);
+      border: 1px solid #1a140f;
+      border-radius: 2px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #b89b6e 0%, #8a6f4c 100%);
+    }
   }
 
   .task-browser-item {
