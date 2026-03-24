@@ -4,6 +4,7 @@ export enum TIERS {
     HARD = 'hard',
     ELITE = 'elite',
     MASTER = 'master',
+    PETS = 'pets',
 }
 
 export enum TASK_STATES {

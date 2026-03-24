@@ -198,6 +198,7 @@ export default class UIController {
       [TIERS.HARD]: 2,
       [TIERS.ELITE]: 3,
       [TIERS.MASTER]: 4,
+      [TIERS.PETS]: 5,
     };
 
     if (tierOrder[a.tier] !== tierOrder[b.tier]) {

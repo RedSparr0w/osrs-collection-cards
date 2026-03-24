@@ -14,6 +14,7 @@ const TIER_WEIGHTS: Record<TIERS, number> = {
 	[TIERS.HARD]: 0.4,
 	[TIERS.ELITE]: 0.2,
 	[TIERS.MASTER]: 0.1,
+	[TIERS.PETS]: 0.05,
 };
 
 export default class GameManager {
