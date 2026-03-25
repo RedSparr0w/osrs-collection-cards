@@ -15,6 +15,14 @@ type FlameAnchorData = {
   flameWidth: number;
 };
 
+type FlameConfigChangeDetail = {
+  background: string;
+  flamesEnabled: boolean;
+  flameX?: number;
+  flameY?: number;
+  flameWidth?: number;
+};
+
 const FLAME_ANCHOR_EVENT = 'background-flame-anchor-change';
 
 export const enum Sections {
@@ -67,6 +75,8 @@ export default class UIController {
     const backgroundButton = document.getElementById('background-button') as HTMLButtonElement;
     const backgroundSubmenu = document.getElementById('background-submenu') as HTMLElement;
     const backgroundDisplay = document.getElementById('background-display') as HTMLElement;
+    const flamesToggleButton = document.getElementById('flames-toggle-button') as HTMLButtonElement;
+    const flamesToggleDisplay = document.getElementById('flames-toggle-display') as HTMLElement;
     const logoutButton = document.getElementById('logout-button') as HTMLButtonElement;
     const taskBrowserPanel = document.getElementById('task-browser-panel') as HTMLElement;
 
@@ -103,6 +113,14 @@ export default class UIController {
     if (taskBrowserPanel) {
       taskBrowserPanel.addEventListener('click', (e) => {
         e.stopPropagation();
+      });
+    }
+
+    if (flamesToggleButton) {
+      flamesToggleButton.addEventListener('click', () => {
+        const nextEnabled = document.body.dataset.flamesEnabled !== 'false';
+        this.applyFlamesEnabled(!nextEnabled, flamesToggleDisplay);
+        this.gameManager.saveController.saveSettings({ flamesEnabled: !nextEnabled });
       });
     }
 
@@ -248,12 +266,13 @@ export default class UIController {
   loadSettings(): void {
     const settings = this.gameManager.saveController.getSettings();
     if (!settings) return;
+    this.applyFlamesEnabled(settings.flamesEnabled);
     if (settings.background) {
       this.applyBackground(settings.background);
     }
   }
 
-  private applyBackground(value: string, label?: string, flameAnchor?: FlameAnchorData): void {
+  private applyBackground(value: string, label?: string, flameAnchor?: FlameAnchorData | null): void {
     console.debug('Applying background:', encodeURI(value)
   .replace(/\(/g, "%28")
   .replace(/\)/g, "%29"));
@@ -280,39 +299,73 @@ export default class UIController {
     }
 
     const anchor = flameAnchor ?? this.getFlameAnchorData(resolvedBackgroundButton);
-    document.body.dataset.flameX = `${anchor.flameX}`;
-    document.body.dataset.flameY = `${anchor.flameY}`;
-    document.body.dataset.flameWidth = `${anchor.flameWidth}`;
-    document.body.dispatchEvent(new CustomEvent(FLAME_ANCHOR_EVENT, {
-      detail: {
-        background: value,
-        flameX: anchor.flameX,
-        flameY: anchor.flameY,
-        flameWidth: anchor.flameWidth,
-      },
-    }));
-  }
+    if (anchor) {
+      document.body.dataset.flameX = `${anchor.flameX}`;
+      document.body.dataset.flameY = `${anchor.flameY}`;
+      document.body.dataset.flameWidth = `${anchor.flameWidth}`;
+    } else {
+      delete document.body.dataset.flameX;
+      delete document.body.dataset.flameY;
+      delete document.body.dataset.flameWidth;
+    }
 
-  private getFlameAnchorData(button?: HTMLButtonElement | null): FlameAnchorData {
-    const fallback: FlameAnchorData = {
-      flameX: 0.2,
-      flameY: 0.73,
-      flameWidth: 0.02,
+    const detail: FlameConfigChangeDetail = {
+      background: value,
+      flamesEnabled: document.body.dataset.flamesEnabled !== 'false',
     };
 
+    if (anchor) {
+      detail.flameX = anchor.flameX;
+      detail.flameY = anchor.flameY;
+      detail.flameWidth = anchor.flameWidth;
+    }
+
+    document.body.dispatchEvent(new CustomEvent(FLAME_ANCHOR_EVENT, { detail }));
+  }
+
+  private getFlameAnchorData(button?: HTMLButtonElement | null): FlameAnchorData | null {
     if (!button) {
-      return fallback;
+      return null;
     }
 
     const x = Number.parseFloat(button.dataset.flameX ?? '');
     const y = Number.parseFloat(button.dataset.flameY ?? '');
     const width = Number.parseFloat(button.dataset.flameWidth ?? '');
 
+    if (Number.isNaN(x) || Number.isNaN(y) || Number.isNaN(width)) {
+      return null;
+    }
+
     return {
-      flameX: Number.isNaN(x) ? fallback.flameX : x,
-      flameY: Number.isNaN(y) ? fallback.flameY : y,
-      flameWidth: Number.isNaN(width) ? fallback.flameWidth : width,
+      flameX: x,
+      flameY: y,
+      flameWidth: width,
     };
+  }
+
+  private applyFlamesEnabled(enabled: boolean, display?: HTMLElement | null): void {
+    document.body.dataset.flamesEnabled = enabled ? 'true' : 'false';
+
+    const targetDisplay = display ?? document.getElementById('flames-toggle-display');
+    if (targetDisplay) {
+      targetDisplay.textContent = enabled ? 'On' : 'Off';
+    }
+
+    const background = this.gameManager.saveController.getSettings().background;
+    const currentButton = document.querySelector<HTMLButtonElement>(`#background-submenu .menu-item[data-background="${background}"]`);
+    const anchor = this.getFlameAnchorData(currentButton);
+    const detail: FlameConfigChangeDetail = {
+      background,
+      flamesEnabled: enabled,
+    };
+
+    if (anchor) {
+      detail.flameX = anchor.flameX;
+      detail.flameY = anchor.flameY;
+      detail.flameWidth = anchor.flameWidth;
+    }
+
+    document.body.dispatchEvent(new CustomEvent(FLAME_ANCHOR_EVENT, { detail }));
   }
 
   private logout(): void {

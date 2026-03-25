@@ -1,8 +1,9 @@
 type FlameAnchorChangeDetail = {
   background: string;
-  flameX: number;
-  flameY: number;
-  flameWidth: number;
+  flamesEnabled: boolean;
+  flameX?: number;
+  flameY?: number;
+  flameWidth?: number;
 };
 
 type FlameParticle = {
@@ -35,6 +36,8 @@ export default class BackgroundFlameController {
   private anchorX = 0.2;
   private anchorY = 0.73;
   private anchorWidth = 0.02;
+  private flamesEnabled = true;
+  private hasAnchorData = false;
 
   private imageWidth = 1920;
   private imageHeight = 1080;
@@ -78,12 +81,24 @@ export default class BackgroundFlameController {
       return;
     }
 
-    this.anchorX = this.normalize(detail.flameX, 0.2);
-    this.anchorY = this.normalize(detail.flameY, 0.73);
-    this.anchorWidth = Math.max(0.004, this.normalize(detail.flameWidth, 0.02));
-    document.body.dataset.flameX = `${this.anchorX}`;
-    document.body.dataset.flameY = `${this.anchorY}`;
-    document.body.dataset.flameWidth = `${this.anchorWidth}`;
+    this.flamesEnabled = detail.flamesEnabled;
+
+    if (typeof detail.flameX === 'number' && typeof detail.flameY === 'number' && typeof detail.flameWidth === 'number') {
+      this.anchorX = this.normalize(detail.flameX, this.anchorX);
+      this.anchorY = this.normalize(detail.flameY, this.anchorY);
+      this.anchorWidth = Math.max(0.004, this.normalize(detail.flameWidth, this.anchorWidth));
+      this.hasAnchorData = true;
+      document.body.dataset.flameX = `${this.anchorX}`;
+      document.body.dataset.flameY = `${this.anchorY}`;
+      document.body.dataset.flameWidth = `${this.anchorWidth}`;
+    } else {
+      this.hasAnchorData = false;
+      delete document.body.dataset.flameX;
+      delete document.body.dataset.flameY;
+      delete document.body.dataset.flameWidth;
+      this.leftParticles = [];
+      this.rightParticles = [];
+    }
 
     if (detail.background && detail.background !== this.activeBackgroundUrl) {
       void this.updateImageDimensions(detail.background);
@@ -110,6 +125,12 @@ export default class BackgroundFlameController {
     const deltaMs = Math.min(50, time - this.lastFrameTime);
     this.lastFrameTime = time;
     const delta = deltaMs / 1000;
+
+    if (!this.flamesEnabled || !this.hasAnchorData) {
+      this.ctx.clearRect(0, 0, this.viewportWidth, this.viewportHeight);
+      window.requestAnimationFrame(this.tick);
+      return;
+    }
 
     const emitters = this.getEmitterBases();
     this.spawnParticles(delta, emitters.left, emitters.right);
@@ -278,10 +299,20 @@ export default class BackgroundFlameController {
   }
 
   private syncAnchorFromBodyData(): void {
+    this.flamesEnabled = document.body.dataset.flamesEnabled !== 'false';
     const { flameX, flameY, flameWidth } = document.body.dataset;
-    this.anchorX = this.normalize(flameX, this.anchorX);
-    this.anchorY = this.normalize(flameY, this.anchorY);
-    this.anchorWidth = Math.max(0.004, this.normalize(flameWidth, this.anchorWidth));
+    const parsedX = typeof flameX === 'string' ? Number.parseFloat(flameX) : NaN;
+    const parsedY = typeof flameY === 'string' ? Number.parseFloat(flameY) : NaN;
+    const parsedWidth = typeof flameWidth === 'string' ? Number.parseFloat(flameWidth) : NaN;
+
+    this.hasAnchorData = !Number.isNaN(parsedX) && !Number.isNaN(parsedY) && !Number.isNaN(parsedWidth);
+    if (!this.hasAnchorData) {
+      return;
+    }
+
+    this.anchorX = this.normalize(parsedX, this.anchorX);
+    this.anchorY = this.normalize(parsedY, this.anchorY);
+    this.anchorWidth = Math.max(0.004, this.normalize(parsedWidth, this.anchorWidth));
   }
 
   private normalize(value: string | number | undefined, fallback: number): number {
