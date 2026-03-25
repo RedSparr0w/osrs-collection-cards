@@ -16,9 +16,6 @@ type FlameBurstDetail = {
 type FlameBurstSample = {
   x: number;
   y: number;
-  r: number;
-  g: number;
-  b: number;
   alpha: number;
 };
 
@@ -38,12 +35,8 @@ type FlameParticle = {
   wavePhase: number;
   maxRise: number;
   blockSkew: number;
-  colorR?: number;
-  colorG?: number;
-  colorB?: number;
   alphaScale?: number;
   burstDelay?: number;
-  activeLife?: number;
 };
 
 const FLAME_ANCHOR_EVENT = 'background-flame-anchor-change';
@@ -227,7 +220,6 @@ export default class BackgroundFlameController {
     const offsetX = (sample.x - 0.5) * iconWidth;
     const offsetY = (1 - sample.y) * iconHeight;
     const driftDirection = detail.side === 'left' ? 1 : -1;
-    const blended = this.blendSampleToFlame(sample);
     const burstDelay = (1 - sample.y) * 0.55;
     const activeLife = 1.95 + Math.random() * 1.2;
 
@@ -247,12 +239,8 @@ export default class BackgroundFlameController {
       wavePhase: Math.random() * Math.PI * 2,
       maxRise: 165 + Math.random() * 145,
       blockSkew: (Math.random() * 2 - 1) * 2,
-      colorR: blended.r,
-      colorG: blended.g,
-      colorB: blended.b,
       alphaScale: 0.92 + sample.alpha * 0.38,
       burstDelay,
-      activeLife,
     };
   }
 
@@ -295,9 +283,9 @@ export default class BackgroundFlameController {
   private drawParticleArray(particles: FlameParticle[]): void {
     for (const particle of particles) {
       const burstDelay = particle.burstDelay ?? 0;
-      const activeLife = particle.activeLife ?? particle.life;
       const effectiveAge = Math.max(0, particle.age - burstDelay);
-      const lifeProgress = activeLife > 0 ? Math.min(1, effectiveAge / activeLife) : 1;
+      const activeLife = Math.max(0.001, particle.life - burstDelay);
+      const lifeProgress = Math.min(1, effectiveAge / activeLife);
       const remaining = 1 - lifeProgress;
       const holdProgress = burstDelay > 0 ? Math.min(1, particle.age / burstDelay) : 1;
       const riseProgress = Math.max(0, Math.min(1, (particle.originY - particle.y) / particle.maxRise));
@@ -323,24 +311,15 @@ export default class BackgroundFlameController {
       const left = drawX - blockWidth * 0.5 + particle.blockSkew * riseProgress;
       const gradient = this.ctx.createLinearGradient(0, top, 0, top + blockHeight);
 
-      if (typeof particle.colorR === 'number' && typeof particle.colorG === 'number' && typeof particle.colorB === 'number') {
-        gradient.addColorStop(0, `rgba(${particle.colorR}, ${particle.colorG}, ${particle.colorB}, 0)`);
-        gradient.addColorStop(0.2, `rgba(${particle.colorR}, ${particle.colorG}, ${particle.colorB}, ${alpha * 0.28})`);
-        gradient.addColorStop(0.7, `rgba(${Math.min(255, particle.colorR + 24)}, ${Math.min(255, particle.colorG + 18)}, ${Math.min(255, particle.colorB + 6)}, ${alpha * 0.88})`);
-        gradient.addColorStop(1, `rgba(255, 236, 156, ${alpha})`);
-      } else {
-        gradient.addColorStop(0, `hsla(${22 + particle.hueShift}, 98%, 46%, 0)`);
-        gradient.addColorStop(0.2, `hsla(${14 + particle.hueShift}, 96%, 45%, ${alpha * 0.3})`);
-        gradient.addColorStop(0.65, `hsla(${30 + particle.hueShift}, 100%, 56%, ${alpha * 0.9})`);
-        gradient.addColorStop(1, `hsla(${48 + particle.hueShift}, 100%, 72%, ${alpha})`);
-      }
+      gradient.addColorStop(0, `hsla(${22 + particle.hueShift}, 98%, 46%, 0)`);
+      gradient.addColorStop(0.2, `hsla(${14 + particle.hueShift}, 96%, 45%, ${alpha * 0.3})`);
+      gradient.addColorStop(0.65, `hsla(${30 + particle.hueShift}, 100%, 56%, ${alpha * 0.9})`);
+      gradient.addColorStop(1, `hsla(${48 + particle.hueShift}, 100%, 72%, ${alpha})`);
 
       this.ctx.fillStyle = gradient;
       this.ctx.fillRect(left, top, blockWidth, blockHeight);
 
-      this.ctx.fillStyle = typeof particle.colorR === 'number' && typeof particle.colorG === 'number' && typeof particle.colorB === 'number'
-        ? `rgba(255, 244, 198, ${alpha * 0.5})`
-        : `hsla(${54 + particle.hueShift}, 100%, 78%, ${alpha * 0.55})`;
+      this.ctx.fillStyle = `hsla(${54 + particle.hueShift}, 100%, 78%, ${alpha * 0.55})`;
       this.ctx.fillRect(left + blockWidth * 0.2, top + blockHeight * 0.52, blockWidth * 0.45, blockHeight * 0.3);
     }
   }
@@ -398,9 +377,6 @@ export default class BackgroundFlameController {
           samples.push({
             x: x / (sampleSize - 1),
             y: y / (sampleSize - 1),
-            r: imageData[index],
-            g: imageData[index + 1],
-            b: imageData[index + 2],
             alpha,
           });
         }
@@ -434,22 +410,11 @@ export default class BackgroundFlameController {
         samples.push({
           x: x / 11,
           y: y / 11,
-          r: 244,
-          g: 140 - y * 8,
-          b: 52,
           alpha: 0.8,
         });
       }
     }
     return samples;
-  }
-
-  private blendSampleToFlame(sample: FlameBurstSample): { r: number; g: number; b: number } {
-    return {
-      r: Math.round(sample.r * 0.35 + 255 * 0.65),
-      g: Math.round(sample.g * 0.28 + 166 * 0.72),
-      b: Math.round(sample.b * 0.18 + 52 * 0.82),
-    };
   }
 
   private getEmitterBases(): { left: { x: number; y: number }; right: { x: number; y: number } } {

@@ -6,6 +6,17 @@ import GameManager from './GameManager';
 
 const FLAME_BURST_EVENT = 'background-flame-burst';
 
+type FlameTarget = {
+	travelX: number;
+	travelY: number;
+	rotateX: number;
+	rotateZ: number;
+	scale: number;
+	side: 'left' | 'right';
+	impactX: number;
+	impactY: number;
+};
+
 export default class HandRenderer {
 	private cardController: CardController;
 	private cardsInHand: Map<string, Card> = new Map();
@@ -159,14 +170,7 @@ export default class HandRenderer {
 	private setDiscardAnimation(taskId: string, cardElement: HTMLElement, wasActive: boolean): number {
 		const flameTarget = this.getFlameTargetForCard(taskId, cardElement, wasActive);
 		if (flameTarget) {
-			cardElement.style.setProperty('--discard-x', `${flameTarget.travelX}px`);
-			cardElement.style.setProperty('--discard-y', `${flameTarget.travelY}px`);
-			cardElement.style.setProperty('--discard-rotate-x', `${flameTarget.rotateX}deg`);
-			cardElement.style.setProperty('--discard-rotate-z', `${flameTarget.rotateZ}deg`);
-			cardElement.style.setProperty('--discard-scale', `${flameTarget.scale}`);
-			cardElement.style.setProperty('--discard-opacity', '0.12');
-			cardElement.style.setProperty('--discard-duration', '900ms');
-			cardElement.style.setProperty('--discard-opacity-duration', '1025ms');
+			this.applyDiscardStyles(cardElement, flameTarget, '0.12', '900ms', '1025ms');
 			this.scheduleFlameBurst(cardElement, flameTarget);
 			return 1075;
 		}
@@ -192,18 +196,17 @@ export default class HandRenderer {
 		const randomRotateX = -120 - Math.random() * 120;
 		const randomRotateZ = (Math.random() * 360) - 180;
 
-		cardElement.style.setProperty('--discard-x', `${travelX}px`);
-		cardElement.style.setProperty('--discard-y', `${travelY}px`);
-		cardElement.style.setProperty('--discard-rotate-x', `${randomRotateX}deg`);
-		cardElement.style.setProperty('--discard-rotate-z', `${randomRotateZ}deg`);
-		cardElement.style.setProperty('--discard-scale', wasActive ? '0.42' : '0.68');
-		cardElement.style.setProperty('--discard-opacity', '0');
-		cardElement.style.setProperty('--discard-duration', '1000ms');
-		cardElement.style.setProperty('--discard-opacity-duration', '1000ms');
+		this.applyDiscardStyles(cardElement, {
+			travelX,
+			travelY,
+			rotateX: randomRotateX,
+			rotateZ: randomRotateZ,
+			scale: wasActive ? 0.42 : 0.68,
+		}, '0', '1000ms', '1000ms');
 		return 1000;
 	}
 
-	private getFlameTargetForCard(taskId: string, cardElement: HTMLElement, wasActive: boolean): { travelX: number; travelY: number; rotateX: number; rotateZ: number; scale: number; side: 'left' | 'right'; impactX: number; impactY: number } | null {
+	private getFlameTargetForCard(taskId: string, cardElement: HTMLElement, wasActive: boolean): FlameTarget | null {
 		if (document.body.dataset.flamesEnabled === 'false') {
 			return null;
 		}
@@ -246,6 +249,17 @@ export default class HandRenderer {
 			impactX: target.x,
 			impactY: target.y,
 		};
+	}
+
+	private applyDiscardStyles(cardElement: HTMLElement, target: Pick<FlameTarget, 'travelX' | 'travelY' | 'rotateX' | 'rotateZ' | 'scale'>, opacity: string, duration: string, opacityDuration: string): void {
+		cardElement.style.setProperty('--discard-x', `${target.travelX}px`);
+		cardElement.style.setProperty('--discard-y', `${target.travelY}px`);
+		cardElement.style.setProperty('--discard-rotate-x', `${target.rotateX}deg`);
+		cardElement.style.setProperty('--discard-rotate-z', `${target.rotateZ}deg`);
+		cardElement.style.setProperty('--discard-scale', `${target.scale}`);
+		cardElement.style.setProperty('--discard-opacity', opacity);
+		cardElement.style.setProperty('--discard-duration', duration);
+		cardElement.style.setProperty('--discard-opacity-duration', opacityDuration);
 	}
 
 	private scheduleFlameBurst(cardElement: HTMLElement, flameTarget: { side: 'left' | 'right'; impactX: number; impactY: number }): void {
