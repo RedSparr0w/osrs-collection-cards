@@ -657,12 +657,18 @@ button {
 
   &.discarded {
     pointer-events: none;
+    transform-origin: center bottom;
     --discard-x: 0px;
     --discard-y: 100vh;
     --discard-rotate-x: -180deg;
     --discard-rotate-z: 0deg;
-    transform: translate(var(--discard-x), var(--discard-y)) rotateX(var(--discard-rotate-x)) rotateZ(var(--discard-rotate-z));
-    transition: transform 1000ms ease-in, opacity 1000ms ease-in;
+    --discard-scale: 0.75;
+    --discard-opacity: 0;
+    --discard-duration: 1000ms;
+    --discard-opacity-duration: 1000ms;
+    opacity: var(--discard-opacity);
+    transform: translate(var(--discard-x), var(--discard-y)) scale(var(--discard-scale)) rotateX(var(--discard-rotate-x)) rotateZ(var(--discard-rotate-z));
+    transition: transform var(--discard-duration) ease-in, opacity var(--discard-opacity-duration) ease-in;
   }
 
   --pointer-y: 0;

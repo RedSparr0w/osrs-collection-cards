@@ -96,6 +96,7 @@ export default class BackgroundFlameController {
       delete document.body.dataset.flameX;
       delete document.body.dataset.flameY;
       delete document.body.dataset.flameWidth;
+      this.clearEmitterDatasets();
       this.leftParticles = [];
       this.rightParticles = [];
     }
@@ -127,12 +128,14 @@ export default class BackgroundFlameController {
     const delta = deltaMs / 1000;
 
     if (!this.flamesEnabled || !this.hasAnchorData) {
+      this.clearEmitterDatasets();
       this.ctx.clearRect(0, 0, this.viewportWidth, this.viewportHeight);
       window.requestAnimationFrame(this.tick);
       return;
     }
 
     const emitters = this.getEmitterBases();
+    this.syncEmitterDatasets(emitters);
     this.spawnParticles(delta, emitters.left, emitters.right);
     this.updateParticles(delta);
     this.renderParticles();
@@ -262,6 +265,20 @@ export default class BackgroundFlameController {
       left: { x: leftX, y: baseY },
       right: { x: rightX, y: baseY },
     };
+  }
+
+  private syncEmitterDatasets(emitters: { left: { x: number; y: number }; right: { x: number; y: number } }): void {
+    document.body.dataset.flameLeftX = `${emitters.left.x}`;
+    document.body.dataset.flameLeftY = `${emitters.left.y}`;
+    document.body.dataset.flameRightX = `${emitters.right.x}`;
+    document.body.dataset.flameRightY = `${emitters.right.y}`;
+  }
+
+  private clearEmitterDatasets(): void {
+    delete document.body.dataset.flameLeftX;
+    delete document.body.dataset.flameLeftY;
+    delete document.body.dataset.flameRightX;
+    delete document.body.dataset.flameRightY;
   }
 
   private getCoverScale(): number {

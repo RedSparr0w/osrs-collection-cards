@@ -129,12 +129,18 @@ export default class HandRenderer {
 		const element = this.cardElements.get(taskId);
 		if (!card || !element) return;
 
-		if (this.cardController.isActive(element)) {
+		const wasActive = this.cardController.isActive(element);
+		const activeRect = wasActive ? element.getBoundingClientRect() : null;
+
+		if (wasActive) {
 			this.cardController.deactivate();
+			if (activeRect) {
+				this.freezeCardAtRect(element, activeRect, 0.52);
+			}
 		}
 
 		this.removeCardEventListeners(taskId, element);
-		this.setDiscardAnimation(element);
+		const discardDurationMs = this.setDiscardAnimation(taskId, element, wasActive);
 
 		this.cardsInHand.delete(taskId);
 		this.cardElements.delete(taskId);
@@ -145,10 +151,23 @@ export default class HandRenderer {
 			// Clean up card references for garbage collection
 			card.cleanup();
 			this.gameManager.taskManager.getTask(taskId)?.clearCard();
-		}, 1000);
+		}, discardDurationMs);
 	}
 
-	private setDiscardAnimation(cardElement: HTMLElement): void {
+	private setDiscardAnimation(taskId: string, cardElement: HTMLElement, wasActive: boolean): number {
+		const flameTarget = this.getFlameTargetForCard(taskId, cardElement, wasActive);
+		if (flameTarget) {
+			cardElement.style.setProperty('--discard-x', `${flameTarget.travelX}px`);
+			cardElement.style.setProperty('--discard-y', `${flameTarget.travelY}px`);
+			cardElement.style.setProperty('--discard-rotate-x', `${flameTarget.rotateX}deg`);
+			cardElement.style.setProperty('--discard-rotate-z', `${flameTarget.rotateZ}deg`);
+			cardElement.style.setProperty('--discard-scale', `${flameTarget.scale}`);
+			cardElement.style.setProperty('--discard-opacity', '0.12');
+			cardElement.style.setProperty('--discard-duration', '900ms');
+			cardElement.style.setProperty('--discard-opacity-duration', '1025ms');
+			return 1075;
+		}
+
 		// Generate random offset for X travel based on card's current X position
 		const rect = cardElement.getBoundingClientRect();
 		const containerWidth = this.cardGridEl.clientWidth;
@@ -174,6 +193,76 @@ export default class HandRenderer {
 		cardElement.style.setProperty('--discard-y', `${travelY}px`);
 		cardElement.style.setProperty('--discard-rotate-x', `${randomRotateX}deg`);
 		cardElement.style.setProperty('--discard-rotate-z', `${randomRotateZ}deg`);
+		cardElement.style.setProperty('--discard-scale', wasActive ? '0.42' : '0.68');
+		cardElement.style.setProperty('--discard-opacity', '0');
+		cardElement.style.setProperty('--discard-duration', '1000ms');
+		cardElement.style.setProperty('--discard-opacity-duration', '1000ms');
+		return 1000;
+	}
+
+	private getFlameTargetForCard(taskId: string, cardElement: HTMLElement, wasActive: boolean): { travelX: number; travelY: number; rotateX: number; rotateZ: number; scale: number } | null {
+		if (document.body.dataset.flamesEnabled === 'false') {
+			return null;
+		}
+
+		const leftX = Number.parseFloat(document.body.dataset.flameLeftX ?? '');
+		const leftY = Number.parseFloat(document.body.dataset.flameLeftY ?? '');
+		const rightX = Number.parseFloat(document.body.dataset.flameRightX ?? '');
+		const rightY = Number.parseFloat(document.body.dataset.flameRightY ?? '');
+
+		if ([leftX, leftY, rightX, rightY].some((value) => Number.isNaN(value))) {
+			return null;
+		}
+
+		const rect = cardElement.getBoundingClientRect();
+		const centerX = rect.left + rect.width / 2;
+		const activeEntries = Array
+			.from(this.cardElements.entries())
+			.filter(([, element]) => !element.classList.contains('discarded'));
+		const cardIndex = activeEntries.findIndex(([id]) => id === taskId);
+		if (cardIndex === -1) {
+			return null;
+		}
+
+		const midpoint = (activeEntries.length - 1) / 2;
+		const target = cardIndex <= midpoint
+			? { x: leftX, y: leftY }
+			: { x: rightX, y: rightY };
+		const scale = wasActive
+			? 0.08 + Math.random() * 0.04
+			: 0.16 + Math.random() * 0.05;
+
+		return {
+			travelX: target.x - centerX,
+			travelY: target.y - rect.bottom,
+			rotateX: -220 - Math.random() * 120,
+			rotateZ: (target.x < centerX ? -1 : 1) * (500 + Math.random() * 220),
+			scale,
+		};
+	}
+
+	private freezeCardAtRect(cardElement: HTMLElement, rect: DOMRect, scale: number = 1): void {
+		const offsetParent = cardElement.offsetParent as HTMLElement | null;
+		if (!offsetParent) {
+			return;
+		}
+
+		const parentRect = offsetParent.getBoundingClientRect();
+		const clampedScale = Math.max(0.1, Math.min(1, scale));
+		const nextWidth = rect.width * clampedScale;
+		const nextHeight = rect.height * clampedScale;
+		const nextLeft = (rect.left - parentRect.left) + ((rect.width - nextWidth) / 2);
+		const nextTop = (rect.top - parentRect.top) + (rect.height - nextHeight);
+
+		cardElement.style.left = `${nextLeft}px`;
+		cardElement.style.top = `${nextTop}px`;
+		cardElement.style.width = `${nextWidth}px`;
+		cardElement.style.setProperty('--fan-rotate', '0deg');
+		cardElement.style.setProperty('--fan-dip', '0px');
+		cardElement.style.setProperty('--active-x', '0px');
+		cardElement.style.setProperty('--active-y', '0px');
+		cardElement.style.setProperty('--active-rotate-x', '0deg');
+		cardElement.style.setProperty('--active-rotate-z', '0deg');
 	}
 
 	private removeCardEventListeners(taskId: string, cardElement: HTMLElement): void {
