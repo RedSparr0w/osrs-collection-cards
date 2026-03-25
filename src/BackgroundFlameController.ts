@@ -20,6 +20,7 @@ type FlameParticle = {
   waveFrequency: number;
   wavePhase: number;
   maxRise: number;
+  blockSkew: number;
 };
 
 const FLAME_ANCHOR_EVENT = 'background-flame-anchor-change';
@@ -44,8 +45,8 @@ export default class BackgroundFlameController {
 
   private leftSpawnAccumulator = 0;
   private rightSpawnAccumulator = 0;
-  private readonly leftSpawnRate = 74;
-  private readonly rightSpawnRate = 67;
+  private readonly leftSpawnRate = 82;
+  private readonly rightSpawnRate = 74;
 
   private lastFrameTime = 0;
 
@@ -119,8 +120,9 @@ export default class BackgroundFlameController {
   };
 
   private spawnParticles(delta: number, leftBase: { x: number; y: number }, rightBase: { x: number; y: number }): void {
-    this.leftSpawnAccumulator += delta * this.leftSpawnRate;
-    this.rightSpawnAccumulator += delta * this.rightSpawnRate;
+    const widthDensity = Math.max(0.7, Math.min(2.2, this.anchorWidth / 0.02));
+    this.leftSpawnAccumulator += delta * this.leftSpawnRate * widthDensity;
+    this.rightSpawnAccumulator += delta * this.rightSpawnRate * widthDensity;
 
     while (this.leftSpawnAccumulator >= 1) {
       this.leftParticles.push(this.createParticle(leftBase, 1));
@@ -135,26 +137,27 @@ export default class BackgroundFlameController {
 
   private createParticle(base: { x: number; y: number }, driftDirection: 1 | -1): FlameParticle {
     const scale = this.getCoverScale();
-    const baseHalfWidth = Math.max(10, this.imageWidth * scale * this.anchorWidth * 0.65);
+    const baseHalfWidth = Math.max(8, this.imageWidth * scale * this.anchorWidth * 0.5);
     const x = base.x + (Math.random() * 2 - 1) * baseHalfWidth;
-    const y = base.y + (Math.random() * 2 - 1) * 1.5;
-    const upward = 60 + Math.random() * 130;
+    const y = base.y + (Math.random() * 2 - 1) * 2;
+    const upward = 95 + Math.random() * 150;
 
     return {
       x,
       y,
       originX: x,
       originY: y,
-      vx: driftDirection * (3 + Math.random() * 10) + (Math.random() * 2 - 1) * 6,
-      vy: -(upward + Math.random() * 30),
+      vx: driftDirection * (2 + Math.random() * 9) + (Math.random() * 2 - 1) * 5,
+      vy: -(upward + Math.random() * 36),
       age: 0,
-      life: 0.9 + Math.random() * 0.9,
-      size: 5 + Math.random() * 8,
+      life: 1.15 + Math.random() * 1.05,
+      size: 6 + Math.random() * 9,
       hueShift: (Math.random() * 2 - 1) * 6,
       waveAmplitude: 2 + Math.random() * 6,
       waveFrequency: 6 + Math.random() * 8,
       wavePhase: Math.random() * Math.PI * 2,
-      maxRise: 95 + Math.random() * 140,
+      maxRise: 150 + Math.random() * 170,
+      blockSkew: (Math.random() * 2 - 1) * 3,
     };
   }
 
@@ -170,9 +173,9 @@ export default class BackgroundFlameController {
         return false;
       }
 
-      particle.vx += windBias * delta * 4;
-      particle.vx *= 0.992;
-      particle.vy += 50 * delta;
+      particle.vx += windBias * delta * 3.2;
+      particle.vx *= 0.993;
+      particle.vy += 30 * delta;
       particle.x += particle.vx * delta;
       particle.y += particle.vy * delta;
       return true;
@@ -199,29 +202,27 @@ export default class BackgroundFlameController {
         * (0.25 + riseProgress * 1.1);
       const drawX = particle.x + wave;
       const taper = 1 - (riseProgress * 0.5);
-      const radius = particle.size * (0.7 + remaining * 0.95) * Math.max(0.3, taper);
+      const blockWidth = particle.size * (0.9 + remaining * 0.95) * Math.max(0.45, taper);
+      const blockHeight = particle.size * (1.25 + remaining * 1.35) * Math.max(0.35, taper);
       const alphaByLife = Math.pow(remaining, 1.9);
       const alphaByTop = 1 - Math.pow(riseProgress, 1.5);
-      const alpha = Math.max(0, alphaByLife * alphaByTop);
+      const alphaByBase = 0.5 + Math.min(0.5, riseProgress * 2.4);
+      const alpha = Math.max(0, alphaByLife * alphaByTop * alphaByBase);
 
-      const gradient = this.ctx.createRadialGradient(
-        drawX,
-        particle.y,
-        radius * 0.2,
-        drawX,
-        particle.y,
-        radius,
-      );
+      const top = particle.y - blockHeight * 0.5;
+      const left = drawX - blockWidth * 0.5 + particle.blockSkew * riseProgress;
+      const gradient = this.ctx.createLinearGradient(0, top, 0, top + blockHeight);
 
-      gradient.addColorStop(0, `hsla(${45 + particle.hueShift}, 100%, 78%, ${alpha})`);
-      gradient.addColorStop(0.45, `hsla(${30 + particle.hueShift}, 100%, 60%, ${alpha * 0.9})`);
-      gradient.addColorStop(0.8, `hsla(${14 + particle.hueShift}, 96%, 44%, ${alpha * 0.35})`);
-      gradient.addColorStop(1, `hsla(${8 + particle.hueShift}, 96%, 40%, 0)`);
+      gradient.addColorStop(0, `hsla(${22 + particle.hueShift}, 98%, 46%, 0)`);
+      gradient.addColorStop(0.2, `hsla(${14 + particle.hueShift}, 96%, 45%, ${alpha * 0.3})`);
+      gradient.addColorStop(0.65, `hsla(${30 + particle.hueShift}, 100%, 56%, ${alpha * 0.9})`);
+      gradient.addColorStop(1, `hsla(${48 + particle.hueShift}, 100%, 72%, ${alpha})`);
 
       this.ctx.fillStyle = gradient;
-      this.ctx.beginPath();
-      this.ctx.arc(drawX, particle.y, radius, 0, Math.PI * 2);
-      this.ctx.fill();
+      this.ctx.fillRect(left, top, blockWidth, blockHeight);
+
+      this.ctx.fillStyle = `hsla(${54 + particle.hueShift}, 100%, 78%, ${alpha * 0.55})`;
+      this.ctx.fillRect(left + blockWidth * 0.2, top + blockHeight * 0.52, blockWidth * 0.45, blockHeight * 0.3);
     }
   }
 
