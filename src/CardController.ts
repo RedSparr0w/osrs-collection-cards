@@ -127,7 +127,7 @@ export default class CardController {
 		const currentSize = getNumericCssVar(element, '--active-size', 1) || 1;
 		const baseHeight = element.offsetHeight / currentSize;
 		if (!baseHeight) return;
-		const targetHeight = window.innerHeight * 0.8;
+		const targetHeight = window.innerHeight * 0.7;
 		const nextSize = targetHeight / baseHeight;
 		element.style.setProperty('--active-size', `${nextSize}`);
 	}
@@ -135,7 +135,7 @@ export default class CardController {
 	private moveToCenter(element: HTMLElement): void {
 		const scale = getNumericCssVar(element, '--active-size', 1)
 		const parentRect = (element.offsetParent as HTMLElement).getBoundingClientRect()
-		const width = Math.min(Math.max(window.innerWidth * 0.2, 160), 260);
+		const width = Math.min(Math.max(window.innerWidth * 0.25, 160), 260);
 		const height = width * (1.41); // aspect ratio of the card
 		const targetX = (parentRect.width - (width * scale)) / 2;
 		const targetY = (parentRect.height - (height * scale)) / 2 - 50; // lift it up a bit to fit the buttons below

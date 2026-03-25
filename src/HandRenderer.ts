@@ -4,6 +4,8 @@ import Card from './Card';
 import { delay, getNumericCssVar } from './helpers';
 import GameManager from './GameManager';
 
+const FLAME_BURST_EVENT = 'background-flame-burst';
+
 export default class HandRenderer {
 	private cardController: CardController;
 	private cardsInHand: Map<string, Card> = new Map();
@@ -135,7 +137,7 @@ export default class HandRenderer {
 		if (wasActive) {
 			this.cardController.deactivate();
 			if (activeRect) {
-				this.freezeCardAtRect(element, activeRect, 0.52);
+				this.freezeCardAtRect(element, activeRect, 0.42);
 			}
 		}
 
@@ -165,6 +167,7 @@ export default class HandRenderer {
 			cardElement.style.setProperty('--discard-opacity', '0.12');
 			cardElement.style.setProperty('--discard-duration', '900ms');
 			cardElement.style.setProperty('--discard-opacity-duration', '1025ms');
+			this.scheduleFlameBurst(cardElement, flameTarget);
 			return 1075;
 		}
 
@@ -200,7 +203,7 @@ export default class HandRenderer {
 		return 1000;
 	}
 
-	private getFlameTargetForCard(taskId: string, cardElement: HTMLElement, wasActive: boolean): { travelX: number; travelY: number; rotateX: number; rotateZ: number; scale: number } | null {
+	private getFlameTargetForCard(taskId: string, cardElement: HTMLElement, wasActive: boolean): { travelX: number; travelY: number; rotateX: number; rotateZ: number; scale: number; side: 'left' | 'right'; impactX: number; impactY: number } | null {
 		if (document.body.dataset.flamesEnabled === 'false') {
 			return null;
 		}
@@ -225,7 +228,8 @@ export default class HandRenderer {
 		}
 
 		const midpoint = (activeEntries.length - 1) / 2;
-		const target = cardIndex <= midpoint
+		const side: 'left' | 'right' = cardIndex <= midpoint ? 'left' : 'right';
+		const target = side === 'left'
 			? { x: leftX, y: leftY }
 			: { x: rightX, y: rightY };
 		const scale = wasActive
@@ -238,7 +242,34 @@ export default class HandRenderer {
 			rotateX: -220 - Math.random() * 120,
 			rotateZ: (target.x < centerX ? -1 : 1) * (500 + Math.random() * 220),
 			scale,
+			side,
+			impactX: target.x,
+			impactY: target.y,
 		};
+	}
+
+	private scheduleFlameBurst(cardElement: HTMLElement, flameTarget: { side: 'left' | 'right'; impactX: number; impactY: number }): void {
+		const iconSrc = cardElement.querySelector<HTMLImageElement>('.icon')?.currentSrc
+			|| cardElement.querySelector<HTMLImageElement>('.icon')?.src;
+
+		if (!iconSrc) {
+			return;
+		}
+
+		window.setTimeout(() => {
+			if (document.body.dataset.flamesEnabled === 'false') {
+				return;
+			}
+
+			document.body.dispatchEvent(new CustomEvent(FLAME_BURST_EVENT, {
+				detail: {
+					x: flameTarget.impactX,
+					y: flameTarget.impactY,
+					side: flameTarget.side,
+					imageSrc: iconSrc,
+				},
+			}));
+		}, 640);
 	}
 
 	private freezeCardAtRect(cardElement: HTMLElement, rect: DOMRect, scale: number = 1): void {

@@ -167,7 +167,7 @@ export default class GameManager {
 		cardsToDispose.forEach((t, index) => {
 				window.setTimeout(() => {
 					void this.dispose(t.id);
-				}, 350 * (index + 1));
+				}, 500 * (index));
 			});
 	}
 
