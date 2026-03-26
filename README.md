@@ -18,16 +18,18 @@
     - [ ] Extra card per hand?
     - [ ] Different style shinies (Holo, Reverse Holo, Different colors)?
     - [ ] Unlock themes?
+    - [ ] Something else?
 - [x] Implement player data
-  - [ ] Handle if old tasks are removed from the remote repo
+  - [ ] Handle if old tasks are removed from the remote repo and is your current task
   - [x] Save/load our current incomplete/selected/completed/in hand tasks
     - [ ] Store started/completed date for tasks
     - [ ] Notification when your current tasks is completable
     - [ ] Notification when a different task not currently active has been completed
       - [x] Auto complete
 - [x] Add login screen for selecting character and or entering username
-  - [x] Multiple save profiles (kind of)
-  - [ ] Option to clear data
+  - [x] Multiple save profiles
+    - [ ] Show which accounts your browser has
+    - [ ] Option to clear data
 - [ ] User Interface
   - [x] Show total completed/incomplete tasks
   - [x] Show tasks by tier and completion status
@@ -42,12 +44,4 @@
   - [ ] Setup job to run automatically
     - [ ] Weekly?
     - [ ] Each time tasks change
-- [ ] PR to remote task list updating main image links?
-
-### Completed
-- [x] Import tasks
-- [x] Load tasks as card
-- [x] Import wiki data
-- [x] Import player data
-- [x] Manage card positions (+animations)
-- [x] Add subtle animations to cards etc
+- [x] PR to remote task list updating main image links?
