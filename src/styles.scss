@@ -501,13 +501,13 @@ section {
 button {
   padding: 5px;
   border: none;
-  border-radius: 4px;
   background: var(--osrsw-brown);
   color: #f0e5cd;
   font-size: 16px;
   cursor: pointer;
   border: 10px solid transparent;
   border-image: url("./images/button.png") 10 fill round;
+  border-radius: 4px;
 
   &:hover {
     background: var(--button-light);
